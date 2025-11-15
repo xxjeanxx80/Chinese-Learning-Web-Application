@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import type React from 'react';
-import { Sentence } from '../data/sentences';
 import { getSentencesForLevelAndTopic, getTopicsForLevel } from '../utils/sentenceStorage';
 import './SentencePractice.css';
 
@@ -11,8 +10,6 @@ interface SentencePracticeProps {
 const SentencePractice: React.FC<SentencePracticeProps> = ({ level }) => {
   const [currentTopic, setCurrentTopic] = useState<string>('');
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [showPinyin, setShowPinyin] = useState(false);
-  const [showVietnamese, setShowVietnamese] = useState(false);
   const [isFlipped, setIsFlipped] = useState(false);
   const [practiceMode, setPracticeMode] = useState<'flashcard' | 'pinyin' | 'meaning'>('flashcard');
   const [userAnswer, setUserAnswer] = useState('');
@@ -38,8 +35,6 @@ const SentencePractice: React.FC<SentencePracticeProps> = ({ level }) => {
       if (updatedSentences.length > 0) {
         const randomIndex = Math.floor(Math.random() * updatedSentences.length);
         setCurrentIndex(randomIndex);
-        setShowPinyin(false);
-        setShowVietnamese(false);
         setIsFlipped(false);
         setUserAnswer('');
         setShowResult(false);
@@ -57,8 +52,6 @@ const SentencePractice: React.FC<SentencePracticeProps> = ({ level }) => {
         if (updatedSentences.length > 0) {
           const randomIndex = Math.floor(Math.random() * updatedSentences.length);
           setCurrentIndex(randomIndex);
-          setShowPinyin(false);
-          setShowVietnamese(false);
           setIsFlipped(false);
           setUserAnswer('');
           setShowResult(false);
@@ -100,8 +93,6 @@ const SentencePractice: React.FC<SentencePracticeProps> = ({ level }) => {
       if (updatedSentences.length > 0) {
         const randomIndex = Math.floor(Math.random() * updatedSentences.length);
         setCurrentIndex(randomIndex);
-        setShowPinyin(false);
-        setShowVietnamese(false);
         setIsFlipped(false);
         setUserAnswer('');
         setShowResult(false);
@@ -128,7 +119,7 @@ const SentencePractice: React.FC<SentencePracticeProps> = ({ level }) => {
   };
 
   const handleCheck = () => {
-    if (!userAnswer.trim()) return;
+    if (!userAnswer.trim() || !currentSentence) return;
 
     let correct = false;
     if (practiceMode === 'pinyin') {

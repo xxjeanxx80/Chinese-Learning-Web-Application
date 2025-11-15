@@ -1,4 +1,4 @@
-import { Sentence, hskSentences, getSentencesByLevel } from '../data/sentences';
+import { Sentence, getSentencesByLevel } from '../data/sentences';
 import * as XLSX from 'xlsx';
 
 const STORAGE_KEY = 'hsk_custom_sentences';

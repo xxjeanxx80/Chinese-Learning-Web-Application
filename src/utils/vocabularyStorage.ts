@@ -336,7 +336,7 @@ export function exportToExcelAll(): void {
 /**
  * Validate format từ vựng
  */
-function validateVocabulary(vocab: any): vocab is Vocabulary {
+function _validateVocabulary(vocab: any): vocab is Vocabulary {
   return (
     typeof vocab === 'object' &&
     vocab !== null &&

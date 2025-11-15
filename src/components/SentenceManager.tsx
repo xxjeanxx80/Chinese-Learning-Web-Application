@@ -432,7 +432,6 @@ const SentenceManager: React.FC<SentenceManagerProps> = ({ currentLevel }) => {
                   sentence={sentence}
                   isCustom={isCustom}
                   customIndex={customIndex}
-                  sentenceTopic={sentenceTopic}
                   onEdit={(idx) => handleEdit(idx, sentenceTopic)}
                   onDelete={(idx) => handleDelete(idx, sentenceTopic)}
                   getTopicName={getTopicName}
@@ -451,11 +450,10 @@ const SentenceItem = memo<{
   sentence: Sentence;
   isCustom: boolean;
   customIndex: number;
-  sentenceTopic: string;
   onEdit: (index: number) => void;
   onDelete: (index: number) => void;
   getTopicName: (topic: string) => string;
-}>(({ sentence, isCustom, customIndex, sentenceTopic, onEdit, onDelete, getTopicName }) => {
+}>(({ sentence, isCustom, customIndex, onEdit, onDelete, getTopicName }) => {
   return (
     <div className={`sentence-item ${isCustom ? 'custom' : 'default'}`}>
       <div className="sentence-content">
