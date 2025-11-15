@@ -133,7 +133,7 @@ const Translate: React.FC<TranslateProps> = ({ currentLevel = 'hsk1' }) => {
     try {
       // Sử dụng thư viện pinyin-pro đã cài đặt
       // pinyin-pro với type: 'all' sẽ trả về AllData[] (mảng chứa object với origin, pinyin, etc.)
-      const pinyinResult = pinyin(chinese, {
+      const pinyinResult: any = pinyin(chinese, {
         toneType: 'symbol', // Có dấu thanh điệu: nǐ hǎo
         type: 'all', // Trả về AllData[]
         multiple: false,
@@ -161,9 +161,10 @@ const Translate: React.FC<TranslateProps> = ({ currentLevel = 'hsk1' }) => {
           .filter((p: string) => p && /[a-zāáǎàēéěèīíǐìōóǒòūúǔùǖǘǚǜ]/.test(p));
         
         cleanPinyin = pinyinParts.join(' ').trim();
-      } else if (typeof pinyinResult === 'string') {
+      } else if (pinyinResult && typeof pinyinResult === 'string') {
         // Nếu là string, loại bỏ chữ Hán
-        cleanPinyin = pinyinResult
+        const pinyinString: string = pinyinResult;
+        cleanPinyin = pinyinString
           .replace(/[\u4e00-\u9fff]/g, '') // Loại bỏ chữ Hán
           .replace(/[^\w\sāáǎàēéěèīíǐìōóǒòūúǔùǖǘǚǜ]/g, ' ') // Loại bỏ ký tự đặc biệt
           .replace(/\s+/g, ' ') // Chuẩn hóa khoảng trắng
