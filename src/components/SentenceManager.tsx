@@ -35,7 +35,6 @@ const SentenceManager: React.FC<SentenceManagerProps> = ({ currentLevel, current
   const [searchQuery, setSearchQuery] = useState('');
   const itemsPerPage = 50;
 
-  const topics = getTopicsForLevel(currentLevel);
   const availableTopics = ['office', 'social', 'school', 'shopping', 'daily', 'travel', 'food', 'health'];
 
   // Memoize danh sách câu để tránh tính toán lại không cần thiết

@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { getItemsToReview, reviewSRSItem, getAllSRSItems, removeFromSRS, SRSItem } from '../utils/srsStorage';
+import React, { useState, useEffect, useCallback } from 'react';
+import { getItemsToReview, reviewSRSItem, SRSItem } from '../utils/srsStorage';
 import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
 import './SRSReview.css';
 
@@ -69,17 +69,6 @@ const SRSReview: React.FC<SRSReviewProps> = ({ level }) => {
     },
     enabled: !!currentItem,
   });
-
-  const formatDate = (timestamp: number): string => {
-    const date = new Date(timestamp);
-    return date.toLocaleDateString('vi-VN', { 
-      day: '2-digit', 
-      month: '2-digit', 
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  };
 
   const getDaysUntilReview = (nextReview: number): number => {
     const now = Date.now();

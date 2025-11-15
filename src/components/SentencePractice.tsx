@@ -3,10 +3,8 @@ import type React from 'react';
 import { getSentencesForLevelAndTopic, getSentencesForLevel } from '../utils/sentenceStorage';
 import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
 import { addStudySession } from '../utils/statisticsStorage';
-import { addToSRS, reviewSRSItem } from '../utils/srsStorage';
 import { addWrongSentence, markSentenceCorrect } from '../utils/sentenceWrongAnswersStorage';
 import { markSentenceLearned } from '../utils/learnedItemsStorage';
-import { Sentence } from '../data/sentences';
 import './SentencePractice.css';
 
 interface SentencePracticeProps {

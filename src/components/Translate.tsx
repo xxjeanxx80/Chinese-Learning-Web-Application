@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect, useMemo } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import './Translate.css';
 import { addVocabulary } from '../utils/vocabularyStorage';
 import { addSentence } from '../utils/sentenceStorage';
@@ -142,11 +142,11 @@ const Translate: React.FC<TranslateProps> = ({ currentLevel = 'hsk1' }) => {
       console.log('pinyin-pro result (type: all):', pinyinResult);
 
       // Xử lý kết quả: pinyinResult có thể là AllData[] hoặc string
-      let cleanPinyin = '';
+      let cleanPinyin: string = '';
       
       if (Array.isArray(pinyinResult)) {
         // Nếu là mảng AllData[], extract pinyin từ mỗi item
-        cleanPinyin = pinyinResult
+        const pinyinParts: string[] = pinyinResult
           .map((item: any) => {
             // item có thể là AllData object hoặc string
             if (typeof item === 'string') {
@@ -158,9 +158,9 @@ const Translate: React.FC<TranslateProps> = ({ currentLevel = 'hsk1' }) => {
             }
             return '';
           })
-          .filter((p: string) => p && /[a-zāáǎàēéěèīíǐìōóǒòūúǔùǖǘǚǜ]/.test(p))
-          .join(' ')
-          .trim();
+          .filter((p: string) => p && /[a-zāáǎàēéěèīíǐìōóǒòūúǔùǖǘǚǜ]/.test(p));
+        
+        cleanPinyin = pinyinParts.join(' ').trim();
       } else if (typeof pinyinResult === 'string') {
         // Nếu là string, loại bỏ chữ Hán
         cleanPinyin = pinyinResult

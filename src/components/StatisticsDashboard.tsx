@@ -9,7 +9,7 @@ interface StatisticsDashboardProps {
   currentLevel?: string;
 }
 
-const StatisticsDashboard: React.FC<StatisticsDashboardProps> = ({ currentLevel }) => {
+const StatisticsDashboard: React.FC<StatisticsDashboardProps> = ({ currentLevel: _currentLevel }) => {
   const [stats, setStats] = useState<Statistics>(getStatistics());
   const [period, setPeriod] = useState<'day' | 'week' | 'month'>('week');
   const [showResetConfirm, setShowResetConfirm] = useState(false);
