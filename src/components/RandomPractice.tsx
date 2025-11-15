@@ -17,7 +17,7 @@ interface PracticeQuestion {
 }
 
 const RandomPractice: React.FC<RandomPracticeProps> = ({ level }) => {
-  const [vocabularies, setVocabularies] = useState<Vocabulary[]>(getVocabulariesForLevel(level));
+  const [_vocabularies, setVocabularies] = useState<Vocabulary[]>(getVocabulariesForLevel(level));
   const [currentQuestion, setCurrentQuestion] = useState<PracticeQuestion | null>(null);
   const [userAnswer, setUserAnswer] = useState('');
   const [showResult, setShowResult] = useState(false);
