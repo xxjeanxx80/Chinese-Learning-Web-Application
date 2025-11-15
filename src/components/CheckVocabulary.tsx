@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, memo } from 'react';
 import { Vocabulary } from '../data/vocabulary';
 import { getVocabulariesForLevel } from '../utils/vocabularyStorage';
 import './CheckVocabulary.css';
@@ -15,7 +15,8 @@ const CheckVocabulary: React.FC<CheckVocabularyProps> = ({ level }) => {
   const [score, setScore] = useState({ correct: 0, total: 0 });
   const [isCorrect, setIsCorrect] = useState(false);
 
-  const currentWord = vocabularies[currentIndex];
+  // Memoize currentWord để tránh tính toán lại
+  const currentWord = useMemo(() => vocabularies[currentIndex], [vocabularies, currentIndex]);
   
   useEffect(() => {
     const updatedVocab = getVocabulariesForLevel(level);
@@ -53,12 +54,12 @@ const CheckVocabulary: React.FC<CheckVocabularyProps> = ({ level }) => {
     };
   }, [level]);
 
-  const normalizePinyin = (pinyin: string): string => {
+  const normalizePinyin = useCallback((pinyin: string): string => {
     return pinyin.toLowerCase().trim().replace(/\s+/g, ' ');
-  };
+  }, []);
 
-  const handleCheck = () => {
-    if (!userAnswer.trim()) return;
+  const handleCheck = useCallback(() => {
+    if (!userAnswer.trim() || !currentWord) return;
     
     const normalizedUser = normalizePinyin(userAnswer);
     const normalizedCorrect = normalizePinyin(currentWord.pinyin);
@@ -70,14 +71,15 @@ const CheckVocabulary: React.FC<CheckVocabularyProps> = ({ level }) => {
       correct: prev.correct + (correct ? 1 : 0),
       total: prev.total + 1
     }));
-  };
+  }, [userAnswer, currentWord, normalizePinyin]);
 
-  const handleNext = () => {
+  const handleNext = useCallback(() => {
+    if (vocabularies.length === 0) return;
     const randomIndex = Math.floor(Math.random() * vocabularies.length);
     setCurrentIndex(randomIndex);
     setUserAnswer('');
     setShowResult(false);
-  };
+  }, [vocabularies.length]);
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
@@ -149,4 +151,4 @@ const CheckVocabulary: React.FC<CheckVocabularyProps> = ({ level }) => {
   );
 };
 
-export default CheckVocabulary;
+export default memo(CheckVocabulary);

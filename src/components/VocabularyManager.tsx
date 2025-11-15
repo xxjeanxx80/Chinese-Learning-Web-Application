@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, memo } from 'react';
 import { Vocabulary } from '../data/vocabulary';
 import {
   getCustomVocabularies,
@@ -7,8 +7,7 @@ import {
   updateVocabulary,
   clearAllCustomVocabularies,
   exportCustomVocabularies,
-  exportToExcelCustom,
-  importCustomVocabularies,
+  importCustomVocabulariesFromExcel,
   getVocabulariesForLevel
 } from '../utils/vocabularyStorage';
 import './VocabularyManager.css';
@@ -28,26 +27,27 @@ const VocabularyManager: React.FC<VocabularyManagerProps> = ({ currentLevel }) =
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [showDefault, setShowDefault] = useState(true);
 
-  useEffect(() => {
-    updateVocabList();
+  // Memoize danh sách từ vựng để tránh tính toán lại không cần thiết
+  const allVocabMemo = useMemo(() => {
+    if (showDefault) {
+      return getVocabulariesForLevel(currentLevel);
+    } else {
+      return getCustomVocabularies()[currentLevel] || [];
+    }
   }, [currentLevel, showDefault, customVocab]);
 
-  const updateVocabList = () => {
-    if (showDefault) {
-      setAllVocab(getVocabulariesForLevel(currentLevel));
-    } else {
-      setAllVocab(getCustomVocabularies()[currentLevel] || []);
-    }
-  };
+  useEffect(() => {
+    setAllVocab(allVocabMemo);
+  }, [allVocabMemo]);
 
-  const handleInputChange = (field: keyof Vocabulary, value: string) => {
+  const handleInputChange = useCallback((field: keyof Vocabulary, value: string) => {
     setFormData(prev => ({
       ...prev,
       [field]: value
     }));
-  };
+  }, []);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = useCallback((e: React.FormEvent) => {
     e.preventDefault();
     
     if (!formData.chinese.trim() || !formData.pinyin.trim() || !formData.vietnamese.trim()) {
@@ -70,17 +70,17 @@ const VocabularyManager: React.FC<VocabularyManagerProps> = ({ currentLevel }) =
     
     // Dispatch custom event to notify other components
     window.dispatchEvent(new Event('vocabUpdated'));
-  };
+  }, [formData, editingIndex, currentLevel]);
 
-  const handleEdit = (index: number) => {
+  const handleEdit = useCallback((index: number) => {
     const customVocabList = getCustomVocabularies()[currentLevel] || [];
     if (customVocabList[index]) {
       setFormData(customVocabList[index]);
       setEditingIndex(index);
     }
-  };
+  }, [currentLevel]);
 
-  const handleDelete = (index: number) => {
+  const handleDelete = useCallback((index: number) => {
     if (window.confirm('Bạn có chắc muốn xóa từ vựng này?')) {
       removeVocabulary(currentLevel, index);
       setCustomVocab(getCustomVocabularies());
@@ -90,7 +90,7 @@ const VocabularyManager: React.FC<VocabularyManagerProps> = ({ currentLevel }) =
         setFormData({ chinese: '', pinyin: '', vietnamese: '' });
       }
     }
-  };
+  }, [currentLevel, editingIndex]);
 
   const handleClear = () => {
     if (window.confirm('Bạn có chắc muốn xóa TẤT CẢ từ vựng tự thêm? Hành động này không thể hoàn tác!')) {
@@ -105,37 +105,24 @@ const VocabularyManager: React.FC<VocabularyManagerProps> = ({ currentLevel }) =
   const [importMode, setImportMode] = useState<'merge' | 'replace'>('merge');
 
   const handleExport = () => {
-    const data = exportCustomVocabularies();
-    const blob = new Blob([data], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `hsk-custom-vocabularies-${new Date().toISOString().split('T')[0]}.json`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+    exportCustomVocabularies();
   };
 
-  const handleImport = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const content = event.target?.result as string;
-      const merge = importMode === 'merge';
-      const result = importCustomVocabularies(content, merge);
-      
-      if (result.success) {
-        setCustomVocab(getCustomVocabularies());
-        window.dispatchEvent(new Event('vocabUpdated'));
-        alert(result.message);
-      } else {
-        alert(result.message || 'Import thất bại! Vui lòng kiểm tra định dạng file JSON.');
-      }
-    };
-    reader.readAsText(file);
+    const merge = importMode === 'merge';
+    const result = await importCustomVocabulariesFromExcel(file, currentLevel, merge);
+    
+    if (result.success) {
+      setCustomVocab(getCustomVocabularies());
+      window.dispatchEvent(new Event('vocabUpdated'));
+      alert(result.message);
+    } else {
+      alert(result.message || 'Import thất bại! Vui lòng kiểm tra định dạng file Excel.');
+    }
+    
     e.target.value = ''; // Reset input
   };
 
@@ -223,24 +210,20 @@ const VocabularyManager: React.FC<VocabularyManagerProps> = ({ currentLevel }) =
               <h4 className="export-title">📥 Sao lưu (Backup)</h4>
               <div className="export-buttons">
                 <button onClick={handleExport} className="btn-export">
-                  💾 JSON - Từ tự thêm
+                  📊 Excel - Từ tự thêm
                 </button>
               </div>
-            </div>
-            <div className="export-section">
-              <h4 className="export-title">📊 Xuất Excel</h4>
-              <div className="export-excel-buttons">
-                <button onClick={() => exportToExcelCustom()} className="btn-excel-custom">
-                  📗 Excel - Từ tự thêm
-                </button>
-              </div>
+              <p className="export-note">
+                Format: A1=Chữ Hán, B1=Pinyin, C1=Nghĩa tiếng Việt
+              </p>
             </div>
             <div className="import-section">
+              <h4 className="import-title">📤 Import Excel</h4>
               <label className="btn-import">
-                📤 Import JSON
+                Chọn file Excel
                 <input
                   type="file"
-                  accept=".json"
+                  accept=".xlsx,.xls"
                   onChange={handleImport}
                   style={{ display: 'none' }}
                 />
@@ -267,6 +250,10 @@ const VocabularyManager: React.FC<VocabularyManagerProps> = ({ currentLevel }) =
                   Replace (Thay thế)
                 </label>
               </div>
+              <p className="import-note">
+                Format: A1=Chữ Hán, B1=Pinyin, C1=Nghĩa tiếng Việt<br/>
+                Mỗi dòng là 1 từ vựng
+              </p>
             </div>
             {customVocabList.length > 0 && (
               <button onClick={handleClear} className="btn-danger">
@@ -287,34 +274,14 @@ const VocabularyManager: React.FC<VocabularyManagerProps> = ({ currentLevel }) =
               const customIndex = isCustom ? index - (showDefault ? allVocab.length - customVocabList.length : 0) : -1;
               
               return (
-                <div key={index} className={`vocab-item ${isCustom ? 'custom' : 'default'}`}>
-                  <div className="vocab-content">
-                    <div className="vocab-chinese">{vocab.chinese}</div>
-                    <div className="vocab-pinyin">{vocab.pinyin}</div>
-                    <div className="vocab-meaning">{vocab.vietnamese}</div>
-                  </div>
-                  {isCustom && (
-                    <div className="vocab-actions">
-                      <button
-                        onClick={() => handleEdit(customIndex)}
-                        className="btn-edit"
-                        title="Sửa"
-                      >
-                        ✏️
-                      </button>
-                      <button
-                        onClick={() => handleDelete(customIndex)}
-                        className="btn-delete"
-                        title="Xóa"
-                      >
-                        🗑️
-                      </button>
-                    </div>
-                  )}
-                  {!isCustom && (
-                    <div className="vocab-badge">Mặc định</div>
-                  )}
-                </div>
+                <VocabItem
+                  key={`${vocab.chinese}-${index}`}
+                  vocab={vocab}
+                  isCustom={isCustom}
+                  customIndex={customIndex}
+                  onEdit={handleEdit}
+                  onDelete={handleDelete}
+                />
               );
             })}
           </div>
@@ -324,5 +291,47 @@ const VocabularyManager: React.FC<VocabularyManagerProps> = ({ currentLevel }) =
   );
 };
 
-export default VocabularyManager;
+// Memoize item component để tránh re-render không cần thiết
+const VocabItem = memo<{
+  vocab: Vocabulary;
+  isCustom: boolean;
+  customIndex: number;
+  onEdit: (index: number) => void;
+  onDelete: (index: number) => void;
+}>(({ vocab, isCustom, customIndex, onEdit, onDelete }) => {
+  return (
+    <div className={`vocab-item ${isCustom ? 'custom' : 'default'}`}>
+      <div className="vocab-content">
+        <div className="vocab-chinese">{vocab.chinese}</div>
+        <div className="vocab-pinyin">{vocab.pinyin}</div>
+        <div className="vocab-meaning">{vocab.vietnamese}</div>
+      </div>
+      {isCustom && (
+        <div className="vocab-actions">
+          <button
+            onClick={() => onEdit(customIndex)}
+            className="btn-edit"
+            title="Sửa"
+          >
+            ✏️
+          </button>
+          <button
+            onClick={() => onDelete(customIndex)}
+            className="btn-delete"
+            title="Xóa"
+          >
+            🗑️
+          </button>
+        </div>
+      )}
+      {!isCustom && (
+        <div className="vocab-badge">Mặc định</div>
+      )}
+    </div>
+  );
+});
+
+VocabItem.displayName = 'VocabItem';
+
+export default memo(VocabularyManager);
 

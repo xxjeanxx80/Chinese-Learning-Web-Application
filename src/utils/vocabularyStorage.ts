@@ -100,10 +100,57 @@ export function clearAllCustomVocabularies(): void {
 }
 
 /**
- * Export từ vựng custom ra JSON (để sao lưu)
+ * Export từ vựng custom ra Excel (để sao lưu)
+ * Format: A1=Chữ Hán, B1=Pinyin, C1=Nghĩa tiếng Việt
  */
-export function exportCustomVocabularies(): string {
-  return JSON.stringify(getCustomVocabularies(), null, 2);
+export function exportCustomVocabularies(): void {
+  try {
+    const custom = getCustomVocabularies();
+    
+    // Tạo workbook
+    const workbook = XLSX.utils.book_new();
+    
+    // Tạo sheet tổng hợp (tất cả từ vựng trong 1 sheet)
+    const allData = [
+      ['Chữ Hán', 'Pinyin', 'Nghĩa tiếng Việt'] // Header row
+    ];
+    
+    const levels = ['hsk1', 'hsk2', 'hsk3', 'hsk4', 'hsk5'];
+    let hasData = false;
+    
+    levels.forEach((level) => {
+      if (custom[level] && custom[level].length > 0) {
+        hasData = true;
+        custom[level].forEach(vocab => {
+          allData.push([
+            vocab.chinese || '',
+            vocab.pinyin || '',
+            vocab.vietnamese || ''
+          ]);
+        });
+      }
+    });
+    
+    // Luôn tạo worksheet, ngay cả khi không có dữ liệu
+    const worksheet = XLSX.utils.aoa_to_sheet(allData);
+    worksheet['!cols'] = [
+      { wch: 15 },  // Chữ Hán
+      { wch: 20 },  // Pinyin
+      { wch: 30 }   // Nghĩa tiếng Việt
+    ];
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Từ vựng');
+    
+    // Xuất file
+    const fileName = `hsk-custom-vocabularies-${new Date().toISOString().split('T')[0]}.xlsx`;
+    XLSX.writeFile(workbook, fileName);
+    
+    if (!hasData) {
+      console.warn('Không có dữ liệu để export, nhưng file Excel đã được tạo với header.');
+    }
+  } catch (error) {
+    console.error('Error exporting to Excel:', error);
+    alert('Lỗi khi xuất file Excel! Vui lòng thử lại.');
+  }
 }
 
 /**
@@ -303,98 +350,135 @@ function validateVocabulary(vocab: any): vocab is Vocabulary {
 }
 
 /**
- * Import từ vựng custom từ JSON (merge hoặc replace)
- * @param jsonString JSON string
+ * Import từ vựng custom từ Excel (merge hoặc replace)
+ * Format: A1=Chữ Hán, B1=Pinyin, C1=Nghĩa tiếng Việt
+ * @param file Excel file
+ * @param level Level HSK để import vào
  * @param merge true = merge với dữ liệu hiện có, false = thay thế hoàn toàn
  */
-export function importCustomVocabularies(jsonString: string, merge: boolean = true): { success: boolean; message: string; added: number; errors: number } {
-  try {
-    const data = JSON.parse(jsonString);
+export function importCustomVocabulariesFromExcel(file: File, level: string, merge: boolean = true): Promise<{ success: boolean; message: string; added: number; errors: number }> {
+  return new Promise((resolve) => {
+    const reader = new FileReader();
     
-    // Validate structure
-    if (typeof data !== 'object' || data === null) {
-      return { success: false, message: 'Dữ liệu không hợp lệ! File phải là object JSON.', added: 0, errors: 0 };
-    }
-
-    const currentCustom = getCustomVocabularies();
-    const result: CustomVocabularies = merge ? { ...currentCustom } : {
-      hsk1: [],
-      hsk2: [],
-      hsk3: [],
-      hsk4: [],
-      hsk5: []
-    };
-
-    let totalAdded = 0;
-    let totalErrors = 0;
-    const validLevels = ['hsk1', 'hsk2', 'hsk3', 'hsk4', 'hsk5'];
-
-    // Process each level
-    for (const level of validLevels) {
-      if (!data[level]) {
-        if (!merge) {
-          result[level] = [];
-        }
-        continue;
-      }
-
-      if (!Array.isArray(data[level])) {
-        totalErrors++;
-        console.warn(`Level ${level} không phải là array, bỏ qua.`);
-        if (!merge) {
-          result[level] = [];
-        }
-        continue;
-      }
-
-      // Initialize if needed
-      if (!result[level]) {
-        result[level] = [];
-      }
-
-      // Process vocabularies
-      const existingChinese = new Set(result[level].map(v => v.chinese));
-      const existingPinyin = new Set(result[level].map(v => `${v.pinyin}|${v.vietnamese}`));
-
-      for (const vocab of data[level]) {
-        if (!validateVocabulary(vocab)) {
-          totalErrors++;
-          console.warn(`Từ vựng không hợp lệ trong ${level}:`, vocab);
-          continue;
+    reader.onload = (e) => {
+      try {
+        const data = new Uint8Array(e.target?.result as ArrayBuffer);
+        const workbook = XLSX.read(data, { type: 'array' });
+        
+        // Lấy sheet đầu tiên
+        const firstSheetName = workbook.SheetNames[0];
+        const worksheet = workbook.Sheets[firstSheetName];
+        
+        // Chuyển đổi sang JSON (array of arrays)
+        const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: '' }) as any[][];
+        
+        if (jsonData.length < 2) {
+          resolve({ 
+            success: false, 
+            message: 'File Excel không có dữ liệu! Vui lòng kiểm tra lại.', 
+            added: 0, 
+            errors: 0 
+          });
+          return;
         }
 
-        // Check duplicate
-        const normalizedVocab: Vocabulary = {
-          chinese: vocab.chinese.trim(),
-          pinyin: vocab.pinyin.trim(),
-          vietnamese: vocab.vietnamese.trim()
+        const currentCustom = getCustomVocabularies();
+        const result: CustomVocabularies = merge ? { ...currentCustom } : {
+          hsk1: [],
+          hsk2: [],
+          hsk3: [],
+          hsk4: [],
+          hsk5: []
         };
 
-        const isDuplicate = existingChinese.has(normalizedVocab.chinese) || 
-                           existingPinyin.has(`${normalizedVocab.pinyin}|${normalizedVocab.vietnamese}`);
-
-        if (!isDuplicate) {
-          result[level].push(normalizedVocab);
-          existingChinese.add(normalizedVocab.chinese);
-          existingPinyin.add(`${normalizedVocab.pinyin}|${normalizedVocab.vietnamese}`);
-          totalAdded++;
+        const targetLevel = level.toLowerCase();
+        const validLevels = ['hsk1', 'hsk2', 'hsk3', 'hsk4', 'hsk5'];
+        
+        if (!validLevels.includes(targetLevel)) {
+          resolve({ 
+            success: false, 
+            message: `Level ${level} không hợp lệ!`, 
+            added: 0, 
+            errors: 0 
+          });
+          return;
         }
+        
+        if (!result[targetLevel]) {
+          result[targetLevel] = [];
+        }
+
+        let totalAdded = 0;
+        let totalErrors = 0;
+
+        // Bỏ qua dòng header (dòng đầu tiên)
+        for (let i = 1; i < jsonData.length; i++) {
+          const row = jsonData[i];
+          
+          // Format: A=Chữ Hán, B=Pinyin, C=Nghĩa tiếng Việt
+          const chinese = String(row[0] || '').trim();
+          const pinyin = String(row[1] || '').trim();
+          const vietnamese = String(row[2] || '').trim();
+          
+          // Bỏ qua dòng trống
+          if (!chinese && !pinyin && !vietnamese) {
+            continue;
+          }
+          
+          // Validate
+          if (!chinese || !pinyin || !vietnamese) {
+            totalErrors++;
+            console.warn(`Dòng ${i + 1} thiếu thông tin:`, row);
+            continue;
+          }
+
+          const vocab: Vocabulary = {
+            chinese,
+            pinyin,
+            vietnamese
+          };
+
+          // Check duplicate
+          const existingChinese = new Set(result[targetLevel].map(v => v.chinese));
+          const existingPinyin = new Set(result[targetLevel].map(v => `${v.pinyin}|${v.vietnamese}`));
+
+          const isDuplicate = existingChinese.has(vocab.chinese) || 
+                             existingPinyin.has(`${vocab.pinyin}|${vocab.vietnamese}`);
+
+          if (!isDuplicate) {
+            result[targetLevel].push(vocab);
+            existingChinese.add(vocab.chinese);
+            existingPinyin.add(`${vocab.pinyin}|${vocab.vietnamese}`);
+            totalAdded++;
+          }
+        }
+
+        // Save result
+        saveCustomVocabularies(result);
+
+        const message = `Import thành công! Đã thêm ${totalAdded} từ vựng vào ${targetLevel.toUpperCase()}${totalErrors > 0 ? `, ${totalErrors} lỗi đã bỏ qua.` : '.'}`;
+        resolve({ success: true, message, added: totalAdded, errors: totalErrors });
+      } catch (error) {
+        console.error('Error importing vocabularies from Excel:', error);
+        resolve({ 
+          success: false, 
+          message: `Lỗi khi import: ${error instanceof Error ? error.message : 'Định dạng Excel không hợp lệ!'}`, 
+          added: 0, 
+          errors: 0 
+        });
       }
-    }
-
-    // Save result
-    saveCustomVocabularies(result);
-
-    const message = `Import thành công! Đã thêm ${totalAdded} từ vựng${totalErrors > 0 ? `, ${totalErrors} lỗi đã bỏ qua.` : '.'}`;
-    return { success: true, message, added: totalAdded, errors: totalErrors };
-  } catch (error) {
-    console.error('Error importing vocabularies:', error);
-    return { 
-      success: false, 
-      message: `Lỗi khi import: ${error instanceof Error ? error.message : 'Định dạng JSON không hợp lệ!'}`, 
-      added: 0, 
-      errors: 0 
     };
-  }
+    
+    reader.onerror = () => {
+      resolve({ 
+        success: false, 
+        message: 'Lỗi khi đọc file! Vui lòng thử lại.', 
+        added: 0, 
+        errors: 0 
+      });
+    };
+    
+    reader.readAsArrayBuffer(file);
+  });
 }
 

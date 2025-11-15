@@ -1,36 +1,48 @@
 .tab-navigation {
   display: flex;
-  gap: 15px;
-  justify-content: center;
-  margin-bottom: 30px;
-  flex-wrap: wrap;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
 }
 
 .tab-button {
-  padding: 15px 30px;
-  font-size: 1.1rem;
+  padding: 10px 15px;
+  font-size: 0.9rem;
   font-weight: 600;
-  border: 3px solid;
-  border-radius: 30px;
-  background: white;
+  border: 2px solid;
+  border-radius: 8px;
+  background: transparent;
   cursor: pointer;
   transition: all 0.3s ease;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  text-align: left;
+  width: 100%;
 }
 
 .tab-button:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
+  transform: translateX(5px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .tab-button.active {
-  transform: translateY(-3px);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+  transform: translateX(5px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+@media (max-width: 1024px) {
+  .tab-navigation {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+  }
 }
 
 @media (max-width: 768px) {
+  .tab-navigation {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
   .tab-button {
-    padding: 12px 20px;
-    font-size: 1rem;
+    padding: 10px 12px;
+    font-size: 0.85rem;
   }
 }

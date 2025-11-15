@@ -205,6 +205,25 @@
   width: 100%;
 }
 
+.export-note,
+.import-note {
+  margin: 8px 0 0 0;
+  font-size: 0.8rem;
+  color: #666;
+  line-height: 1.4;
+}
+
+.import-title {
+  margin: 0;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #555;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid #e0e0e0;
+}
+
 .import-section {
   display: flex;
   flex-direction: column;
