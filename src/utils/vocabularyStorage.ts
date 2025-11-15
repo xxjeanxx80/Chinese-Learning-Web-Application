@@ -333,21 +333,6 @@ export function exportToExcelAll(): void {
   XLSX.writeFile(workbook, fileName);
 }
 
-/**
- * Validate format từ vựng
- */
-function _validateVocabulary(vocab: any): vocab is Vocabulary {
-  return (
-    typeof vocab === 'object' &&
-    vocab !== null &&
-    typeof vocab.chinese === 'string' &&
-    typeof vocab.pinyin === 'string' &&
-    typeof vocab.vietnamese === 'string' &&
-    vocab.chinese.trim() !== '' &&
-    vocab.pinyin.trim() !== '' &&
-    vocab.vietnamese.trim() !== ''
-  );
-}
 
 /**
  * Import từ vựng custom từ Excel (merge hoặc replace)
