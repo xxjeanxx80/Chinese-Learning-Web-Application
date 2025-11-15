@@ -1,0 +1,135 @@
+.app {
+  min-height: 100vh;
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.app-header {
+  color: white;
+  margin-bottom: 30px;
+}
+
+.header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.header-title {
+  text-align: center;
+  flex: 1;
+  min-width: 300px;
+}
+
+.app-header h1 {
+  font-size: 2.5rem;
+  margin-bottom: 10px;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.app-header p {
+  font-size: 1.1rem;
+  opacity: 0.9;
+}
+
+.header-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.btn-reset {
+  padding: 10px 20px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  border: 2px solid white;
+  border-radius: 25px;
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+  white-space: nowrap;
+}
+
+.btn-reset:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.function-selector {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-bottom: 30px;
+}
+
+.function-selector button {
+  padding: 12px 24px;
+  font-size: 1rem;
+  border: none;
+  border-radius: 25px;
+  background: white;
+  color: #667eea;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.function-selector button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.function-selector button.active {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+}
+
+.app-main {
+  background: white;
+  border-radius: 20px;
+  padding: 30px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  min-height: 500px;
+}
+
+@media (max-width: 768px) {
+  .header-content {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .header-title {
+    width: 100%;
+  }
+  
+  .header-actions {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .btn-reset {
+    flex: 1;
+    min-width: 140px;
+  }
+  
+  .app-header h1 {
+    font-size: 1.8rem;
+  }
+  
+  .function-selector {
+    flex-direction: column;
+  }
+  
+  .function-selector button {
+    width: 100%;
+  }
+}

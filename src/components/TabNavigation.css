@@ -1,0 +1,36 @@
+.tab-navigation {
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+  margin-bottom: 30px;
+  flex-wrap: wrap;
+}
+
+.tab-button {
+  padding: 15px 30px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  border: 3px solid;
+  border-radius: 30px;
+  background: white;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.tab-button:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
+}
+
+.tab-button.active {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+}
+
+@media (max-width: 768px) {
+  .tab-button {
+    padding: 12px 20px;
+    font-size: 1rem;
+  }
+}

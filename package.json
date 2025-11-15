@@ -1,0 +1,27 @@
+{
+  "name": "app-hoc-tieng-trung",
+  "version": "1.0.0",
+  "description": "Ứng dụng học tiếng Trung HSK1-HSK5",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "import:csv": "tsx scripts/import-csv.ts",
+    "import:json": "tsx scripts/import-json.ts"
+  },
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "xlsx": "^0.18.5"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "@types/react": "^18.2.0",
+    "@types/react-dom": "^18.2.0",
+    "@vitejs/plugin-react": "^4.2.0",
+    "csv-parse": "^5.5.3",
+    "tsx": "^4.7.0",
+    "typescript": "^5.2.2",
+    "vite": "^5.0.0"
+  }
+}

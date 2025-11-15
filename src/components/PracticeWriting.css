@@ -1,0 +1,232 @@
+.practice-writing {
+  text-align: center;
+}
+
+.score-display {
+  margin-bottom: 20px;
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #667eea;
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  align-items: center;
+}
+
+.practice-mode-selector {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin-bottom: 30px;
+}
+
+.practice-mode-selector button {
+  padding: 10px 20px;
+  font-size: 1rem;
+  font-weight: 600;
+  border: 2px solid #667eea;
+  border-radius: 20px;
+  background: white;
+  color: #667eea;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.practice-mode-selector button:hover {
+  background: #f0f0f0;
+}
+
+.practice-mode-selector button.active {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-color: transparent;
+}
+
+.question-display {
+  margin: 40px 0;
+  padding: 30px;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  border-radius: 15px;
+}
+
+.pinyin-display h2 {
+  font-size: 3rem;
+  margin-bottom: 15px;
+  color: #333;
+  font-weight: 700;
+  letter-spacing: 3px;
+}
+
+.meaning-display p {
+  font-size: 1.5rem;
+  color: #555;
+  font-weight: 500;
+  margin-bottom: 15px;
+}
+
+.instruction {
+  font-size: 1.2rem;
+  color: #667eea;
+  font-weight: 600;
+  margin-top: 20px;
+}
+
+.options-section {
+  margin: 30px 0;
+}
+
+.options-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 15px;
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.option-button {
+  padding: 25px;
+  font-size: 2rem;
+  font-weight: 600;
+  border: 3px solid #ddd;
+  border-radius: 15px;
+  background: white;
+  color: #333;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  min-height: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.option-button:hover:not(:disabled) {
+  border-color: #667eea;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.option-button:disabled {
+  cursor: not-allowed;
+}
+
+.option-button.correct-option {
+  background: #4CAF50;
+  color: white;
+  border-color: #4CAF50;
+}
+
+.option-button.wrong-option {
+  background: #f44336;
+  color: white;
+  border-color: #f44336;
+}
+
+.input-section {
+  margin: 30px 0;
+}
+
+.input-section input {
+  width: 100%;
+  max-width: 400px;
+  padding: 15px 20px;
+  font-size: 1.5rem;
+  border: 2px solid #ddd;
+  border-radius: 10px;
+  margin-bottom: 20px;
+  text-align: center;
+  transition: border-color 0.3s;
+}
+
+.input-section input:focus {
+  outline: none;
+  border-color: #667eea;
+}
+
+.input-section input:disabled {
+  background-color: #f5f5f5;
+  cursor: not-allowed;
+}
+
+.check-button,
+.next-button {
+  padding: 12px 40px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  border: none;
+  border-radius: 25px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
+.check-button:hover,
+.next-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+}
+
+.result-section {
+  margin-top: 30px;
+}
+
+.result {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 15px;
+  padding: 15px;
+  border-radius: 10px;
+}
+
+.result.correct {
+  color: #4CAF50;
+  background-color: #e8f5e9;
+}
+
+.result.incorrect {
+  color: #f44336;
+  background-color: #ffebee;
+}
+
+.correct-answer {
+  margin: 15px 0;
+  font-size: 1.1rem;
+  color: #666;
+}
+
+.correct-answer strong {
+  color: #667eea;
+  font-size: 1.5rem;
+}
+
+.practice-writing-empty {
+  text-align: center;
+  padding: 50px;
+  font-size: 1.2rem;
+  color: #999;
+}
+
+@media (max-width: 768px) {
+  .pinyin-display h2 {
+    font-size: 2rem;
+  }
+  
+  .meaning-display p {
+    font-size: 1.2rem;
+  }
+  
+  .options-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .option-button {
+    font-size: 1.5rem;
+    padding: 20px;
+    min-height: 80px;
+  }
+  
+  .input-section input {
+    font-size: 1.2rem;
+  }
+}

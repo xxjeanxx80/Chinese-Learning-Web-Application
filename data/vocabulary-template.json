@@ -1,0 +1,48 @@
+{
+  "hsk1": [
+    {
+      "chinese": "你好",
+      "pinyin": "nǐ hǎo",
+      "vietnamese": "xin chào"
+    },
+    {
+      "chinese": "再见",
+      "pinyin": "zài jiàn",
+      "vietnamese": "tạm biệt"
+    }
+  ],
+  "hsk2": [
+    {
+      "chinese": "学校",
+      "pinyin": "xué xiào",
+      "vietnamese": "trường học"
+    },
+    {
+      "chinese": "学生",
+      "pinyin": "xué sheng",
+      "vietnamese": "học sinh"
+    }
+  ],
+  "hsk3": [
+    {
+      "chinese": "认识",
+      "pinyin": "rèn shi",
+      "vietnamese": "quen biết"
+    }
+  ],
+  "hsk4": [
+    {
+      "chinese": "环境",
+      "pinyin": "huán jìng",
+      "vietnamese": "môi trường"
+    }
+  ],
+  "hsk5": [
+    {
+      "chinese": "现象",
+      "pinyin": "xiàn xiàng",
+      "vietnamese": "hiện tượng"
+    }
+  ]
+}
+
