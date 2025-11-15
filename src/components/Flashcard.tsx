@@ -60,15 +60,26 @@ const Flashcard: React.FC<FlashcardProps> = ({ level }) => {
     setIsFlipped(!isFlipped);
   };
 
-  const handleNext = () => {
-    const randomIndex = Math.floor(Math.random() * vocabularies.length);
-    setCurrentIndex(randomIndex);
+  const handlePrevious = () => {
+    if (currentIndex > 0) {
+      setCurrentIndex(currentIndex - 1);
+    } else {
+      setCurrentIndex(vocabularies.length - 1);
+    }
     setIsFlipped(false);
   };
 
-  const handlePrevious = () => {
-    const randomIndex = Math.floor(Math.random() * vocabularies.length);
-    setCurrentIndex(randomIndex);
+  const handleNext = () => {
+    if (currentIndex < vocabularies.length - 1) {
+      setCurrentIndex(currentIndex + 1);
+    } else {
+      setCurrentIndex(0);
+    }
+    setIsFlipped(false);
+  };
+
+  const handleCardSelect = (index: number) => {
+    setCurrentIndex(index);
     setIsFlipped(false);
   };
 
@@ -112,6 +123,23 @@ const Flashcard: React.FC<FlashcardProps> = ({ level }) => {
         <button onClick={handleNext} className="control-button">
           Sau →
         </button>
+      </div>
+
+      <div className="flashcard-list">
+        <h3>Danh sách thẻ ({vocabularies.length} thẻ)</h3>
+        <div className="cards-grid">
+          {vocabularies.map((vocab, index) => (
+            <div
+              key={index}
+              className={`card-item ${index === currentIndex ? 'active' : ''} ${seenWords.has(index) ? 'seen' : ''}`}
+              onClick={() => handleCardSelect(index)}
+              title={`${vocab.chinese} - ${vocab.vietnamese}`}
+            >
+              <div className="card-number">{index + 1}</div>
+              <div className="card-chinese">{vocab.chinese}</div>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );

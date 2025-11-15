@@ -1,16 +1,20 @@
-import { useState, lazy, Suspense, useMemo, useCallback } from 'react';
+import { useState, lazy, Suspense, useMemo, useCallback, useEffect } from 'react';
 import './App.css';
 import HSKLevelSelector from './components/HSKLevelSelector';
+import TopicSelector from './components/TopicSelector';
 import { resetScores, resetFlashcardProgress } from './utils/resetProgress';
 
 // Lazy load components để giảm bundle size ban đầu
 const CheckVocabulary = lazy(() => import('./components/CheckVocabulary'));
 const Flashcard = lazy(() => import('./components/Flashcard'));
 const PracticeWriting = lazy(() => import('./components/PracticeWriting'));
+const PracticeMeaning = lazy(() => import('./components/PracticeMeaning'));
 const RandomPractice = lazy(() => import('./components/RandomPractice'));
 const VocabularyManager = lazy(() => import('./components/VocabularyManager'));
 const SentencePractice = lazy(() => import('./components/SentencePractice'));
 const SentenceManager = lazy(() => import('./components/SentenceManager'));
+const RandomSentencePractice = lazy(() => import('./components/RandomSentencePractice'));
+const Translate = lazy(() => import('./components/Translate'));
 
 // Loading component đơn giản
 const ComponentLoader = () => (
@@ -26,26 +30,50 @@ const ComponentLoader = () => (
   </div>
 );
 
-type FunctionType = 'vocabulary' | 'flashcard' | 'writing' | 'random' | 'manage' | 'sentence' | 'sentence-manage';
+type FunctionType = 'vocabulary' | 'flashcard' | 'writing' | 'meaning' | 'random' | 'manage' | 'sentence-pinyin' | 'sentence-flashcard' | 'sentence-writing' | 'sentence-meaning' | 'sentence-random' | 'sentence-manage' | 'translate';
 
 function App() {
   const [currentLevel, setCurrentLevel] = useState<string>('hsk1');
   const [currentFunction, setCurrentFunction] = useState<FunctionType>('vocabulary');
   const [expandedMenu, setExpandedMenu] = useState<'vocab' | 'sentence' | null>('vocab');
+  const [currentTopic, setCurrentTopic] = useState<string>('');
+
+  // Tự động chọn "Tất cả chủ đề" khi chuyển sang sentence mode
+  useEffect(() => {
+    const isSentenceMode = currentFunction.startsWith('sentence-');
+    if (isSentenceMode) {
+      // Mặc định chọn "Tất cả chủ đề" (empty string)
+      if (!currentTopic) {
+        setCurrentTopic('');
+      }
+    }
+  }, [currentFunction, currentLevel, currentTopic]);
 
   const handleFunctionChange = useCallback((func: FunctionType) => {
     setCurrentFunction(func);
     // Tự động mở menu tương ứng
-    if (func === 'vocabulary' || func === 'flashcard' || func === 'writing' || func === 'random' || func === 'manage') {
+    if (func === 'vocabulary' || func === 'flashcard' || func === 'writing' || func === 'meaning' || func === 'random' || func === 'manage') {
       setExpandedMenu('vocab');
-    } else if (func === 'sentence' || func === 'sentence-manage') {
+    } else if (func === 'sentence-pinyin' || func === 'sentence-flashcard' || func === 'sentence-writing' || func === 'sentence-meaning' || func === 'sentence-random' || func === 'sentence-manage') {
       setExpandedMenu('sentence');
+    } else if (func === 'translate') {
+      setExpandedMenu(null);
     }
   }, []);
 
   const renderFunction = useMemo(() => {
     const props = { level: currentLevel };
     const managerProps = { currentLevel };
+    const sentenceProps = { 
+      level: currentLevel, 
+      currentTopic, 
+      onTopicChange: setCurrentTopic 
+    };
+    const sentenceManagerProps = {
+      currentLevel,
+      currentTopic,
+      onTopicChange: setCurrentTopic
+    };
     
     switch (currentFunction) {
       case 'vocabulary':
@@ -54,18 +82,30 @@ function App() {
         return <Flashcard {...props} />;
       case 'writing':
         return <PracticeWriting {...props} />;
+      case 'meaning':
+        return <PracticeMeaning {...props} />;
       case 'random':
         return <RandomPractice {...props} />;
       case 'manage':
         return <VocabularyManager {...managerProps} />;
-      case 'sentence':
-        return <SentencePractice {...props} />;
+      case 'sentence-pinyin':
+        return <SentencePractice {...sentenceProps} initialMode="pinyin" />;
+      case 'sentence-flashcard':
+        return <SentencePractice {...sentenceProps} initialMode="flashcard" />;
+      case 'sentence-writing':
+        return <SentencePractice {...sentenceProps} initialMode="writing" />;
+      case 'sentence-meaning':
+        return <SentencePractice {...sentenceProps} initialMode="meaning" />;
+      case 'sentence-random':
+        return <RandomSentencePractice {...sentenceProps} />;
       case 'sentence-manage':
-        return <SentenceManager {...managerProps} />;
+        return <SentenceManager {...sentenceManagerProps} />;
+      case 'translate':
+        return <Translate currentLevel={currentLevel} />;
       default:
         return <CheckVocabulary {...props} />;
     }
-  }, [currentFunction, currentLevel]);
+  }, [currentFunction, currentLevel, currentTopic]);
 
   const handleResetScores = useCallback(() => {
     if (window.confirm('Bạn có chắc muốn reset tất cả điểm số? Điểm sẽ về 0/0.')) {
@@ -91,6 +131,13 @@ function App() {
               currentLevel={currentLevel}
               onLevelChange={setCurrentLevel}
             />
+            {currentFunction.startsWith('sentence-') && (
+              <TopicSelector
+                currentLevel={currentLevel}
+                currentTopic={currentTopic}
+                onTopicChange={setCurrentTopic}
+              />
+            )}
             <div className="reset-buttons-group">
               <button 
                 onClick={handleResetScores}
@@ -134,8 +181,8 @@ function App() {
                       className={`menu-item ${currentFunction === 'vocabulary' ? 'active' : ''}`}
                       onClick={() => handleFunctionChange('vocabulary')}
                     >
-                      <span className="menu-icon">✅</span>
-                      <span className="menu-text">Kiểm tra từ vựng</span>
+                      <span className="menu-icon">📝</span>
+                      <span className="menu-text">Viết Pinyin</span>
                     </button>
                     <button 
                       className={`menu-item ${currentFunction === 'flashcard' ? 'active' : ''}`}
@@ -149,7 +196,14 @@ function App() {
                       onClick={() => handleFunctionChange('writing')}
                     >
                       <span className="menu-icon">✍️</span>
-                      <span className="menu-text">Luyện viết</span>
+                      <span className="menu-text">Viết Hán Tự</span>
+                    </button>
+                    <button 
+                      className={`menu-item ${currentFunction === 'meaning' ? 'active' : ''}`}
+                      onClick={() => handleFunctionChange('meaning')}
+                    >
+                      <span className="menu-icon">💭</span>
+                      <span className="menu-text">Viết Nghĩa</span>
                     </button>
                     <button 
                       className={`menu-item ${currentFunction === 'random' ? 'active' : ''}`}
@@ -182,11 +236,39 @@ function App() {
                 {expandedMenu === 'sentence' && (
                   <div className="menu-submenu">
                     <button 
-                      className={`menu-item ${currentFunction === 'sentence' ? 'active' : ''}`}
-                      onClick={() => handleFunctionChange('sentence')}
+                      className={`menu-item ${currentFunction === 'sentence-pinyin' ? 'active' : ''}`}
+                      onClick={() => handleFunctionChange('sentence-pinyin')}
                     >
-                      <span className="menu-icon">💬</span>
-                      <span className="menu-text">Học câu tiếng Trung</span>
+                      <span className="menu-icon">📝</span>
+                      <span className="menu-text">Viết Pinyin</span>
+                    </button>
+                    <button 
+                      className={`menu-item ${currentFunction === 'sentence-flashcard' ? 'active' : ''}`}
+                      onClick={() => handleFunctionChange('sentence-flashcard')}
+                    >
+                      <span className="menu-icon">🃏</span>
+                      <span className="menu-text">Flashcard</span>
+                    </button>
+                    <button 
+                      className={`menu-item ${currentFunction === 'sentence-writing' ? 'active' : ''}`}
+                      onClick={() => handleFunctionChange('sentence-writing')}
+                    >
+                      <span className="menu-icon">✍️</span>
+                      <span className="menu-text">Viết Hán Tự</span>
+                    </button>
+                    <button 
+                      className={`menu-item ${currentFunction === 'sentence-meaning' ? 'active' : ''}`}
+                      onClick={() => handleFunctionChange('sentence-meaning')}
+                    >
+                      <span className="menu-icon">💭</span>
+                      <span className="menu-text">Viết Nghĩa</span>
+                    </button>
+                    <button 
+                      className={`menu-item ${currentFunction === 'sentence-random' ? 'active' : ''}`}
+                      onClick={() => handleFunctionChange('sentence-random')}
+                    >
+                      <span className="menu-icon">🎲</span>
+                      <span className="menu-text">Luyện tập ngẫu nhiên</span>
                     </button>
                     <button 
                       className={`menu-item ${currentFunction === 'sentence-manage' ? 'active' : ''}`}
@@ -197,6 +279,17 @@ function App() {
                     </button>
                   </div>
                 )}
+              </div>
+
+              {/* Dịch thuật */}
+              <div className="menu-group">
+                <button
+                  className={`menu-item menu-item-standalone ${currentFunction === 'translate' ? 'active' : ''}`}
+                  onClick={() => handleFunctionChange('translate')}
+                >
+                  <span className="menu-icon">🌐</span>
+                  <span className="menu-text">Dịch thuật</span>
+                </button>
               </div>
             </nav>
           </div>

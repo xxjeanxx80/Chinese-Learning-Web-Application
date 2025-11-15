@@ -15,10 +15,11 @@ import './SentenceManager.css';
 
 interface SentenceManagerProps {
   currentLevel: string;
+  currentTopic: string;
+  onTopicChange: (topic: string) => void;
 }
 
-const SentenceManager: React.FC<SentenceManagerProps> = ({ currentLevel }) => {
-  const [currentTopic, setCurrentTopic] = useState<string>('');
+const SentenceManager: React.FC<SentenceManagerProps> = ({ currentLevel, currentTopic, onTopicChange }) => {
   const [customSentences, setCustomSentences] = useState(getCustomSentences());
   const [allSentences, setAllSentences] = useState<Sentence[]>([]);
   const [formData, setFormData] = useState<Sentence>({
@@ -30,6 +31,9 @@ const SentenceManager: React.FC<SentenceManagerProps> = ({ currentLevel }) => {
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [editingTopic, setEditingTopic] = useState<string>('');
   const [showDefault, setShowDefault] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [searchQuery, setSearchQuery] = useState('');
+  const itemsPerPage = 50;
 
   const topics = getTopicsForLevel(currentLevel);
   const availableTopics = ['office', 'social', 'school', 'shopping', 'daily', 'travel', 'food', 'health'];
@@ -68,7 +72,28 @@ const SentenceManager: React.FC<SentenceManagerProps> = ({ currentLevel }) => {
 
   useEffect(() => {
     setAllSentences(allSentencesMemo);
+    setCurrentPage(1); // Reset về trang 1 khi danh sách thay đổi
   }, [allSentencesMemo]);
+
+  // Lọc câu theo search query
+  const filteredSentences = useMemo(() => {
+    if (!searchQuery.trim()) {
+      return allSentences;
+    }
+    const query = searchQuery.toLowerCase().trim();
+    return allSentences.filter(sentence => 
+      sentence.chinese.toLowerCase().includes(query) ||
+      sentence.pinyin.toLowerCase().includes(query) ||
+      sentence.vietnamese.toLowerCase().includes(query) ||
+      (sentence.category && sentence.category.toLowerCase().includes(query))
+    );
+  }, [allSentences, searchQuery]);
+
+  // Tính toán pagination
+  const totalPages = Math.ceil(filteredSentences.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedSentences = filteredSentences.slice(startIndex, endIndex);
 
   const handleInputChange = useCallback((field: keyof Sentence, value: string) => {
     setFormData(prev => ({
@@ -101,10 +126,6 @@ const SentenceManager: React.FC<SentenceManagerProps> = ({ currentLevel }) => {
       // Thêm câu mới
       addSentence(currentLevel, topic, formData);
       
-      // Nếu category khác với currentTopic, tự động chuyển sang topic đó để hiển thị câu vừa thêm
-      if (topic !== currentTopic) {
-        setCurrentTopic(topic);
-      }
     }
 
     // Reset form
@@ -113,7 +134,12 @@ const SentenceManager: React.FC<SentenceManagerProps> = ({ currentLevel }) => {
     
     // Dispatch custom event to notify other components
     window.dispatchEvent(new Event('sentencesUpdated'));
-  }, [formData, editingIndex, editingTopic, currentLevel, currentTopic]);
+    
+    // Nếu category khác với currentTopic, tự động chuyển sang topic đó để hiển thị câu vừa thêm
+    if (topic !== currentTopic) {
+      onTopicChange(topic);
+    }
+  }, [formData, editingIndex, editingTopic, currentLevel, currentTopic, onTopicChange]);
 
   const handleEdit = useCallback((index: number, topic?: string) => {
     // Nếu không có currentTopic, cần truyền topic vào
@@ -126,10 +152,10 @@ const SentenceManager: React.FC<SentenceManagerProps> = ({ currentLevel }) => {
       setEditingTopic(editTopic);
       // Tự động chuyển sang topic của câu đang edit
       if (!currentTopic || currentTopic !== editTopic) {
-        setCurrentTopic(editTopic);
+        onTopicChange(editTopic);
       }
     }
-  }, [currentLevel, currentTopic]);
+  }, [currentLevel, currentTopic, onTopicChange]);
 
   const handleDelete = useCallback((index: number, topic?: string) => {
     // Nếu không có currentTopic, cần truyền topic vào
@@ -218,38 +244,60 @@ const SentenceManager: React.FC<SentenceManagerProps> = ({ currentLevel }) => {
     <div className="sentence-manager">
       <div className="manager-header">
         <h2>💬 Quản lý câu tiếng Trung - {currentLevel.toUpperCase()}</h2>
-        <div className="toggle-view">
-          <label>
-            <input
-              type="checkbox"
-              checked={showDefault}
-              onChange={(e) => setShowDefault(e.target.checked)}
-            />
-            Hiển thị câu mặc định
-          </label>
+        <div className="header-actions">
+          <div className="toggle-view">
+            <label>
+              <input
+                type="checkbox"
+                checked={showDefault}
+                onChange={(e) => setShowDefault(e.target.checked)}
+              />
+              Hiển thị câu mặc định
+            </label>
+          </div>
+          <div className="header-export-import">
+            <button 
+              onClick={handleExport} 
+              className="btn-export-compact"
+              title="Format: A1=Chữ Hán, B1=Pinyin, C1=Nghĩa tiếng Việt, D1=Category"
+            >
+              📥 Sao lưu Excel
+            </button>
+            <div className="import-compact-wrapper">
+              <label className="btn-import-compact">
+                📤 Import Excel
+                <input
+                  type="file"
+                  accept=".xlsx,.xls"
+                  onChange={handleImport}
+                  style={{ display: 'none' }}
+                />
+              </label>
+              <div className="import-mode-compact">
+                <label>
+                  <input
+                    type="radio"
+                    name="importMode"
+                    value="merge"
+                    checked={importMode === 'merge'}
+                    onChange={(e) => setImportMode(e.target.value as 'merge' | 'replace')}
+                  />
+                  Gộp
+                </label>
+                <label>
+                  <input
+                    type="radio"
+                    name="importMode"
+                    value="replace"
+                    checked={importMode === 'replace'}
+                    onChange={(e) => setImportMode(e.target.value as 'merge' | 'replace')}
+                  />
+                  Thay thế
+                </label>
+              </div>
+            </div>
+          </div>
         </div>
-      </div>
-
-      <div className="topic-selector-section">
-        <label>Chủ đề:</label>
-        <select 
-          value={currentTopic} 
-          onChange={(e) => {
-            const selectedTopic = e.target.value;
-            setCurrentTopic(selectedTopic);
-            setFormData({ chinese: '', pinyin: '', vietnamese: '', category: selectedTopic });
-            setEditingIndex(null);
-            setEditingTopic('');
-          }}
-          className="topic-select"
-        >
-          <option value="">-- Chọn chủ đề --</option>
-          {topics.map(topic => (
-            <option key={topic} value={topic}>
-              {getTopicName(topic)}
-            </option>
-          ))}
-        </select>
       </div>
 
       <div className="add-sentence-form">
@@ -329,60 +377,35 @@ const SentenceManager: React.FC<SentenceManagerProps> = ({ currentLevel }) => {
           <h3>
             📚 Danh sách câu
             {currentTopic ? (
-              <> ({allSentences.length} câu - {customSentenceList} câu tự thêm)</>
+              <> ({filteredSentences.length} câu - {customSentenceList} câu tự thêm)</>
             ) : (
-              <> ({allSentences.length} câu - {customSentenceList} câu tự thêm từ tất cả chủ đề)</>
+              <> ({filteredSentences.length} câu - {customSentenceList} câu tự thêm từ tất cả chủ đề)</>
             )}
           </h3>
-          <div className="list-actions">
-            <div className="export-section">
-              <h4 className="export-title">📥 Sao lưu (Backup)</h4>
-              <div className="export-buttons">
-                <button onClick={handleExport} className="btn-export">
-                  📊 Excel - Câu tự thêm
+          <div className="list-header-actions">
+            <div className="search-box">
+              <input
+                type="text"
+                placeholder="🔍 Tìm kiếm (chữ Hán, pinyin, nghĩa)..."
+                value={searchQuery}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value);
+                  setCurrentPage(1); // Reset về trang 1 khi search
+                }}
+                className="search-input"
+              />
+              {searchQuery && (
+                <button
+                  onClick={() => {
+                    setSearchQuery('');
+                    setCurrentPage(1);
+                  }}
+                  className="btn-clear-search"
+                  title="Xóa tìm kiếm"
+                >
+                  ✕
                 </button>
-              </div>
-              <p className="export-note">
-                Format: A1=Chữ Hán, B1=Pinyin, C1=Nghĩa tiếng Việt, D1=Category
-              </p>
-            </div>
-            <div className="import-section">
-              <h4 className="import-title">📤 Import Excel</h4>
-              <label className="btn-import">
-                Chọn file Excel
-                <input
-                  type="file"
-                  accept=".xlsx,.xls"
-                  onChange={handleImport}
-                  style={{ display: 'none' }}
-                />
-              </label>
-              <div className="import-mode-selector">
-                <label>
-                  <input
-                    type="radio"
-                    name="importMode"
-                    value="merge"
-                    checked={importMode === 'merge'}
-                    onChange={(e) => setImportMode(e.target.value as 'merge' | 'replace')}
-                  />
-                  Merge (Gộp)
-                </label>
-                <label>
-                  <input
-                    type="radio"
-                    name="importMode"
-                    value="replace"
-                    checked={importMode === 'replace'}
-                    onChange={(e) => setImportMode(e.target.value as 'merge' | 'replace')}
-                  />
-                  Replace (Thay thế)
-                </label>
-              </div>
-              <p className="import-note">
-                Format: A1=Chữ Hán, B1=Pinyin, C1=Nghĩa tiếng Việt, D1=Category<br/>
-                Mỗi dòng là 1 câu. Category dùng để phân loại topic.
-              </p>
+              )}
             </div>
             {customSentenceList > 0 && (
               <button onClick={handleClear} className="btn-danger">
@@ -392,53 +415,89 @@ const SentenceManager: React.FC<SentenceManagerProps> = ({ currentLevel }) => {
           </div>
         </div>
 
-        {allSentences.length === 0 ? (
+        {filteredSentences.length === 0 ? (
           <div className="empty-message">
-            <p>Chưa có câu nào. Hãy thêm câu mới!</p>
+            <p>
+              {searchQuery 
+                ? `Không tìm thấy câu nào với từ khóa "${searchQuery}"` 
+                : 'Chưa có câu nào. Hãy thêm câu mới!'}
+            </p>
           </div>
         ) : (
-          <div className="sentence-list">
-            {allSentences.map((sentence, index) => {
-              // Tính toán isCustom và customIndex
-              let isCustom = false;
-              let customIndex = -1;
-              const sentenceTopic = sentence.category || '';
-              
-              if (currentTopic) {
-                // Nếu có chọn topic, logic như cũ
-                const customList = getCustomSentences()[currentLevel]?.[currentTopic] || [];
-                isCustom = index >= (showDefault ? allSentences.length - customList.length : 0);
-                customIndex = isCustom ? index - (showDefault ? allSentences.length - customList.length : 0) : -1;
-              } else {
-                // Nếu không chọn topic, kiểm tra xem câu này có phải custom không
-                const custom = getCustomSentences()[currentLevel] || {};
-                if (sentenceTopic && custom[sentenceTopic]) {
-                  const topicCustomList = custom[sentenceTopic];
-                  const foundIndex = topicCustomList.findIndex(
+          <>
+            <div className="sentence-list">
+              {paginatedSentences.map((sentence, localIndex) => {
+                const index = startIndex + localIndex;
+                // Tính toán isCustom và customIndex
+                let isCustom = false;
+                let customIndex = -1;
+                const sentenceTopic = sentence.category || '';
+                
+                if (currentTopic) {
+                  // Nếu có chọn topic, logic như cũ
+                  const customList = getCustomSentences()[currentLevel]?.[currentTopic] || [];
+                  // Tìm index trong danh sách gốc (allSentences) để xác định isCustom
+                  const originalIndex = allSentences.findIndex(
                     s => s.chinese === sentence.chinese && 
                          s.pinyin === sentence.pinyin && 
                          s.vietnamese === sentence.vietnamese
                   );
-                  if (foundIndex !== -1) {
-                    isCustom = true;
-                    customIndex = foundIndex;
+                  if (originalIndex !== -1) {
+                    isCustom = originalIndex >= (showDefault ? allSentences.length - customList.length : 0);
+                    customIndex = isCustom ? originalIndex - (showDefault ? allSentences.length - customList.length : 0) : -1;
+                  }
+                } else {
+                  // Nếu không chọn topic, kiểm tra xem câu này có phải custom không
+                  const custom = getCustomSentences()[currentLevel] || {};
+                  if (sentenceTopic && custom[sentenceTopic]) {
+                    const topicCustomList = custom[sentenceTopic];
+                    const foundIndex = topicCustomList.findIndex(
+                      s => s.chinese === sentence.chinese && 
+                           s.pinyin === sentence.pinyin && 
+                           s.vietnamese === sentence.vietnamese
+                    );
+                    if (foundIndex !== -1) {
+                      isCustom = true;
+                      customIndex = foundIndex;
+                    }
                   }
                 }
-              }
-              
-              return (
-                <SentenceItem
-                  key={`${sentence.chinese}-${index}-${sentenceTopic}`}
-                  sentence={sentence}
-                  isCustom={isCustom}
-                  customIndex={customIndex}
-                  onEdit={(idx) => handleEdit(idx, sentenceTopic)}
-                  onDelete={(idx) => handleDelete(idx, sentenceTopic)}
-                  getTopicName={getTopicName}
-                />
-              );
-            })}
-          </div>
+                
+                return (
+                  <SentenceItem
+                    key={`${sentence.chinese}-${index}-${sentenceTopic}`}
+                    sentence={sentence}
+                    isCustom={isCustom}
+                    customIndex={customIndex}
+                    onEdit={(idx) => handleEdit(idx, sentenceTopic)}
+                    onDelete={(idx) => handleDelete(idx, sentenceTopic)}
+                    getTopicName={getTopicName}
+                  />
+                );
+              })}
+            </div>
+            {totalPages > 1 && (
+              <div className="pagination">
+                <button
+                  onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                  disabled={currentPage === 1}
+                  className="pagination-btn"
+                >
+                  ← Trước
+                </button>
+                <span className="pagination-info">
+                  Trang {currentPage} / {totalPages} ({filteredSentences.length} câu)
+                </span>
+                <button
+                  onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                  disabled={currentPage === totalPages}
+                  className="pagination-btn"
+                >
+                  Sau →
+                </button>
+              </div>
+            )}
+          </>
         )}
       </div>
     </div>
@@ -483,9 +542,6 @@ const SentenceItem = memo<{
             🗑️
           </button>
         </div>
-      )}
-      {!isCustom && (
-        <div className="sentence-badge">Mặc định</div>
       )}
     </div>
   );

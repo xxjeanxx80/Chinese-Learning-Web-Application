@@ -26,6 +26,9 @@ const VocabularyManager: React.FC<VocabularyManagerProps> = ({ currentLevel }) =
   });
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [showDefault, setShowDefault] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [searchQuery, setSearchQuery] = useState('');
+  const itemsPerPage = 50;
 
   // Memoize danh sách từ vựng để tránh tính toán lại không cần thiết
   const allVocabMemo = useMemo(() => {
@@ -38,6 +41,7 @@ const VocabularyManager: React.FC<VocabularyManagerProps> = ({ currentLevel }) =
 
   useEffect(() => {
     setAllVocab(allVocabMemo);
+    setCurrentPage(1); // Reset về trang 1 khi danh sách thay đổi
   }, [allVocabMemo]);
 
   const handleInputChange = useCallback((field: keyof Vocabulary, value: string) => {
@@ -126,21 +130,86 @@ const VocabularyManager: React.FC<VocabularyManagerProps> = ({ currentLevel }) =
     e.target.value = ''; // Reset input
   };
 
-  const customVocabList = getCustomVocabularies()[currentLevel] || [];
+  const customVocabList = useMemo(() => {
+    return getCustomVocabularies()[currentLevel] || [];
+  }, [currentLevel, customVocab]);
+
+  // Lọc từ vựng theo search query
+  const filteredVocab = useMemo(() => {
+    if (!searchQuery.trim()) {
+      return allVocab;
+    }
+    const query = searchQuery.toLowerCase().trim();
+    return allVocab.filter(vocab => 
+      vocab.chinese.toLowerCase().includes(query) ||
+      vocab.pinyin.toLowerCase().includes(query) ||
+      vocab.vietnamese.toLowerCase().includes(query)
+    );
+  }, [allVocab, searchQuery]);
+
+  // Tính toán pagination
+  const totalPages = Math.ceil(filteredVocab.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedVocab = filteredVocab.slice(startIndex, endIndex);
 
   return (
     <div className="vocabulary-manager">
       <div className="manager-header">
         <h2>📝 Quản lý từ vựng - {currentLevel.toUpperCase()}</h2>
-        <div className="toggle-view">
-          <label>
-            <input
-              type="checkbox"
-              checked={showDefault}
-              onChange={(e) => setShowDefault(e.target.checked)}
-            />
-            Hiển thị từ vựng mặc định
-          </label>
+        <div className="header-actions">
+          <div className="toggle-view">
+            <label>
+              <input
+                type="checkbox"
+                checked={showDefault}
+                onChange={(e) => setShowDefault(e.target.checked)}
+              />
+              Hiển thị từ vựng mặc định
+            </label>
+          </div>
+          <div className="header-export-import">
+            <button 
+              onClick={handleExport} 
+              className="btn-export-compact"
+              title="Format: A1=Chữ Hán, B1=Pinyin, C1=Nghĩa tiếng Việt"
+            >
+              📥 Sao lưu Excel
+            </button>
+            <div className="import-compact-wrapper">
+              <label className="btn-import-compact">
+                📤 Import Excel
+                <input
+                  type="file"
+                  accept=".xlsx,.xls"
+                  onChange={handleImport}
+                  style={{ display: 'none' }}
+                />
+              </label>
+              <div className="import-mode-compact">
+                <label>
+                  <input
+                    type="radio"
+                    name="importMode"
+                    value="merge"
+                    checked={importMode === 'merge'}
+                    onChange={(e) => setImportMode(e.target.value as 'merge' | 'replace')}
+                  />
+                  Gộp
+                </label>
+                <label>
+                  <input
+                    type="radio"
+                    name="importMode"
+                    value="replace"
+                    checked={importMode === 'replace'}
+                    onChange={(e) => setImportMode(e.target.value as 'merge' | 'replace')}
+                  />
+                  Thay thế
+                </label>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -203,57 +272,32 @@ const VocabularyManager: React.FC<VocabularyManagerProps> = ({ currentLevel }) =
         <div className="list-header">
           <h3>
             📚 Danh sách từ vựng 
-            ({allVocab.length} từ - {customVocabList.length} từ tự thêm)
+            ({filteredVocab.length} từ - {customVocabList.length} từ tự thêm)
           </h3>
-          <div className="list-actions">
-            <div className="export-section">
-              <h4 className="export-title">📥 Sao lưu (Backup)</h4>
-              <div className="export-buttons">
-                <button onClick={handleExport} className="btn-export">
-                  📊 Excel - Từ tự thêm
+          <div className="list-header-actions">
+            <div className="search-box">
+              <input
+                type="text"
+                placeholder="🔍 Tìm kiếm (chữ Hán, pinyin, nghĩa)..."
+                value={searchQuery}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value);
+                  setCurrentPage(1); // Reset về trang 1 khi search
+                }}
+                className="search-input"
+              />
+              {searchQuery && (
+                <button
+                  onClick={() => {
+                    setSearchQuery('');
+                    setCurrentPage(1);
+                  }}
+                  className="btn-clear-search"
+                  title="Xóa tìm kiếm"
+                >
+                  ✕
                 </button>
-              </div>
-              <p className="export-note">
-                Format: A1=Chữ Hán, B1=Pinyin, C1=Nghĩa tiếng Việt
-              </p>
-            </div>
-            <div className="import-section">
-              <h4 className="import-title">📤 Import Excel</h4>
-              <label className="btn-import">
-                Chọn file Excel
-                <input
-                  type="file"
-                  accept=".xlsx,.xls"
-                  onChange={handleImport}
-                  style={{ display: 'none' }}
-                />
-              </label>
-              <div className="import-mode-selector">
-                <label>
-                  <input
-                    type="radio"
-                    name="importMode"
-                    value="merge"
-                    checked={importMode === 'merge'}
-                    onChange={(e) => setImportMode(e.target.value as 'merge' | 'replace')}
-                  />
-                  Merge (Gộp)
-                </label>
-                <label>
-                  <input
-                    type="radio"
-                    name="importMode"
-                    value="replace"
-                    checked={importMode === 'replace'}
-                    onChange={(e) => setImportMode(e.target.value as 'merge' | 'replace')}
-                  />
-                  Replace (Thay thế)
-                </label>
-              </div>
-              <p className="import-note">
-                Format: A1=Chữ Hán, B1=Pinyin, C1=Nghĩa tiếng Việt<br/>
-                Mỗi dòng là 1 từ vựng
-              </p>
+              )}
             </div>
             {customVocabList.length > 0 && (
               <button onClick={handleClear} className="btn-danger">
@@ -263,28 +307,62 @@ const VocabularyManager: React.FC<VocabularyManagerProps> = ({ currentLevel }) =
           </div>
         </div>
 
-        {allVocab.length === 0 ? (
+        {filteredVocab.length === 0 ? (
           <div className="empty-message">
-            <p>Chưa có từ vựng nào. Hãy thêm từ vựng mới!</p>
+            <p>
+              {searchQuery 
+                ? `Không tìm thấy từ vựng nào với từ khóa "${searchQuery}"` 
+                : 'Chưa có từ vựng nào. Hãy thêm từ vựng mới!'}
+            </p>
           </div>
         ) : (
-          <div className="vocab-list">
-            {allVocab.map((vocab, index) => {
-              const isCustom = index >= (showDefault ? allVocab.length - customVocabList.length : 0);
-              const customIndex = isCustom ? index - (showDefault ? allVocab.length - customVocabList.length : 0) : -1;
-              
-              return (
-                <VocabItem
-                  key={`${vocab.chinese}-${index}`}
-                  vocab={vocab}
-                  isCustom={isCustom}
-                  customIndex={customIndex}
-                  onEdit={handleEdit}
-                  onDelete={handleDelete}
-                />
-              );
-            })}
-          </div>
+          <>
+            <div className="vocab-list">
+              {paginatedVocab.map((vocab, localIndex) => {
+                const index = startIndex + localIndex;
+                // Tìm index trong danh sách gốc (allVocab) để xác định isCustom
+                const originalIndex = allVocab.findIndex(
+                  v => v.chinese === vocab.chinese && 
+                       v.pinyin === vocab.pinyin && 
+                       v.vietnamese === vocab.vietnamese
+                );
+                const isCustom = originalIndex >= (showDefault ? allVocab.length - customVocabList.length : 0);
+                const customIndex = isCustom ? originalIndex - (showDefault ? allVocab.length - customVocabList.length : 0) : -1;
+                
+                return (
+                  <VocabItem
+                    key={`${vocab.chinese}-${index}`}
+                    vocab={vocab}
+                    isCustom={isCustom}
+                    customIndex={customIndex}
+                    onEdit={handleEdit}
+                    onDelete={handleDelete}
+                  />
+                );
+              })}
+            </div>
+            {totalPages > 1 && (
+              <div className="pagination">
+                <button
+                  onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                  disabled={currentPage === 1}
+                  className="pagination-btn"
+                >
+                  ← Trước
+                </button>
+                <span className="pagination-info">
+                  Trang {currentPage} / {totalPages} ({filteredVocab.length} từ)
+                </span>
+                <button
+                  onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                  disabled={currentPage === totalPages}
+                  className="pagination-btn"
+                >
+                  Sau →
+                </button>
+              </div>
+            )}
+          </>
         )}
       </div>
     </div>
@@ -323,9 +401,6 @@ const VocabItem = memo<{
             🗑️
           </button>
         </div>
-      )}
-      {!isCustom && (
-        <div className="vocab-badge">Mặc định</div>
       )}
     </div>
   );

@@ -335,17 +335,13 @@ export function importCustomSentencesFromExcel(file: File, level: string, merge:
             category: topic
           };
 
-          // Check duplicate
+          // Check duplicate - chỉ check chữ Hán (A1)
           const existingChinese = new Set(result[targetLevel][topic].map(s => s.chinese));
-          const existingPinyin = new Set(result[targetLevel][topic].map(s => `${s.pinyin}|${s.vietnamese}`));
-
-          const isDuplicate = existingChinese.has(sentence.chinese) || 
-                             existingPinyin.has(`${sentence.pinyin}|${sentence.vietnamese}`);
+          const isDuplicate = existingChinese.has(sentence.chinese);
 
           if (!isDuplicate) {
             result[targetLevel][topic].push(sentence);
             existingChinese.add(sentence.chinese);
-            existingPinyin.add(`${sentence.pinyin}|${sentence.vietnamese}`);
             totalAdded++;
             topicStats[topic] = (topicStats[topic] || 0) + 1;
           }

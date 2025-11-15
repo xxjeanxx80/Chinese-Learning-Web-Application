@@ -18,6 +18,12 @@
   color: #666;
 }
 
+.progress-info {
+  font-size: 0.85rem;
+  color: #999;
+  font-weight: 500;
+}
+
 .word-display {
   margin: 40px 0;
   padding: 30px;

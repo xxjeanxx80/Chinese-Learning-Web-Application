@@ -13,6 +13,12 @@
   align-items: center;
 }
 
+.progress-info {
+  font-size: 0.85rem;
+  color: #999;
+  font-weight: 500;
+}
+
 .practice-mode-selector {
   display: flex;
   gap: 10px;
@@ -42,6 +48,35 @@
   border-color: transparent;
 }
 
+.practice-mode-selector-secondary {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.practice-mode-selector-secondary button {
+  padding: 8px 16px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  border: 2px solid #667eea;
+  border-radius: 15px;
+  background: white;
+  color: #667eea;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.practice-mode-selector-secondary button:hover {
+  background: #f0f0f0;
+}
+
+.practice-mode-selector-secondary button.active {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-color: transparent;
+}
+
 .question-display {
   margin: 40px 0;
   padding: 30px;
@@ -62,6 +97,21 @@
   color: #555;
   font-weight: 500;
   margin-bottom: 15px;
+}
+
+.chinese-display h2 {
+  font-size: 4rem;
+  margin-bottom: 15px;
+  color: #333;
+  font-weight: 700;
+}
+
+.pinyin-hint p {
+  font-size: 1.3rem;
+  color: #667eea;
+  font-weight: 600;
+  margin-bottom: 15px;
+  letter-spacing: 1px;
 }
 
 .instruction {

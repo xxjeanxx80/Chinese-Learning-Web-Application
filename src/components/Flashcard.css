@@ -145,6 +145,82 @@
   color: #999;
 }
 
+.flashcard-list {
+  width: 100%;
+  margin-top: 30px;
+  padding-top: 30px;
+  border-top: 2px solid #e0e0e0;
+}
+
+.flashcard-list h3 {
+  font-size: 1.2rem;
+  color: #667eea;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+  gap: 12px;
+  max-height: 400px;
+  overflow-y: auto;
+  padding: 10px;
+}
+
+.card-item {
+  aspect-ratio: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 10px;
+  border: 2px solid #e0e0e0;
+  border-radius: 12px;
+  background: white;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.card-item:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+  border-color: #667eea;
+}
+
+.card-item.active {
+  border-color: #667eea;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+}
+
+.card-item.seen {
+  background: #f0f0f0;
+}
+
+.card-item.active.seen {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.card-number {
+  font-size: 0.75rem;
+  font-weight: 600;
+  opacity: 0.7;
+  margin-bottom: 4px;
+}
+
+.card-item.active .card-number {
+  opacity: 0.9;
+}
+
+.card-chinese {
+  font-size: 1.2rem;
+  font-weight: 600;
+  text-align: center;
+}
+
 @media (max-width: 768px) {
   .flashcard {
     height: 300px;
@@ -165,5 +241,14 @@
   .control-button {
     padding: 10px 20px;
     font-size: 0.9rem;
+  }
+
+  .cards-grid {
+    grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+    gap: 8px;
+  }
+
+  .card-chinese {
+    font-size: 1rem;
   }
 }

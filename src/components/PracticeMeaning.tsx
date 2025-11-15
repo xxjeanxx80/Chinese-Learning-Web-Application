@@ -1,13 +1,13 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Vocabulary } from '../data/vocabulary';
 import { getVocabulariesForLevel } from '../utils/vocabularyStorage';
-import './PracticeWriting.css';
+import './PracticeMeaning.css';
 
-interface PracticeWritingProps {
+interface PracticeMeaningProps {
   level: string;
 }
 
-const PracticeWriting: React.FC<PracticeWritingProps> = ({ level }) => {
+const PracticeMeaning: React.FC<PracticeMeaningProps> = ({ level }) => {
   const [vocabularies, setVocabularies] = useState<Vocabulary[]>(getVocabulariesForLevel(level));
   const [currentIndex, setCurrentIndex] = useState(0);
   const [userAnswer, setUserAnswer] = useState('');
@@ -59,18 +59,23 @@ const PracticeWriting: React.FC<PracticeWritingProps> = ({ level }) => {
 
   const generateOptions = (correctIndex: number, vocabList: Vocabulary[]) => {
     const correctWord = vocabList[correctIndex];
-    const wrongWords = vocabList
+    const wrongMeanings = vocabList
       .filter((_, idx) => idx !== correctIndex)
       .sort(() => Math.random() - 0.5)
       .slice(0, 3)
-      .map(w => w.chinese);
+      .map(w => w.vietnamese);
     
-    const allOptions = [correctWord.chinese, ...wrongWords].sort(() => Math.random() - 0.5);
+    const allOptions = [correctWord.vietnamese, ...wrongMeanings].sort(() => Math.random() - 0.5);
     setOptions(allOptions);
   };
 
+  const normalizeAnswer = (answer: string): string => {
+    return answer.toLowerCase().trim().replace(/\s+/g, ' ');
+  };
+
   const handleCheck = (answer: string) => {
-    const correct = answer === currentWord.chinese;
+    const correct = normalizeAnswer(answer) === normalizeAnswer(currentWord.vietnamese);
+    
     setIsCorrect(correct);
     setUserAnswer(answer);
     setShowResult(true);
@@ -84,7 +89,8 @@ const PracticeWriting: React.FC<PracticeWritingProps> = ({ level }) => {
 
   const handleTypeCheck = () => {
     if (!userAnswer.trim()) return;
-    const correct = userAnswer.trim() === currentWord.chinese;
+    const correct = normalizeAnswer(userAnswer) === normalizeAnswer(currentWord.vietnamese);
+    
     setIsCorrect(correct);
     setShowResult(true);
     // Lưu kết quả cho từ vựng này
@@ -119,11 +125,11 @@ const PracticeWriting: React.FC<PracticeWritingProps> = ({ level }) => {
   };
 
   if (!currentWord) {
-    return <div className="practice-writing-empty">Không có từ vựng cho cấp độ này</div>;
+    return <div className="practice-meaning-empty">Không có từ vựng cho cấp độ này</div>;
   }
 
   return (
-    <div className="practice-writing">
+    <div className="practice-meaning">
       <div className="score-display">
         <span>Điểm: {score.correct}/{score.total}</span>
         {score.total > 0 && (
@@ -143,7 +149,7 @@ const PracticeWriting: React.FC<PracticeWritingProps> = ({ level }) => {
           className={!showOptions ? 'active' : ''}
           onClick={() => setShowOptions(false)}
         >
-          ⌨️ Viết Hán Tự
+          ⌨️ Nhập nghĩa
         </button>
         <button
           className={showOptions ? 'active' : ''}
@@ -154,30 +160,35 @@ const PracticeWriting: React.FC<PracticeWritingProps> = ({ level }) => {
       </div>
 
       <div className="question-display">
-        <div className="pinyin-display">
-          <h2>{currentWord.pinyin}</h2>
+        <div className="chinese-display">
+          <h2>{currentWord.chinese}</h2>
         </div>
-        <div className="meaning-display">
-          <p>{currentWord.vietnamese}</p>
+        <div className="pinyin-hint">
+          <p>Pinyin: {currentWord.pinyin}</p>
         </div>
         <div className="instruction">
-          {showOptions ? 'Chọn chữ Hán đúng:' : 'Nhập chữ Hán:'}
+          {showOptions ? 'Chọn nghĩa đúng:' : 'Nhập nghĩa tiếng Việt:'}
         </div>
       </div>
 
       {showOptions ? (
         <div className="options-section">
           <div className="options-grid">
-            {options.map((option, idx) => (
-              <button
-                key={idx}
-                className={`option-button ${showResult && option === currentWord.chinese ? 'correct-option' : ''} ${showResult && userAnswer === option && option !== currentWord.chinese ? 'wrong-option' : ''}`}
-                onClick={() => !showResult && handleCheck(option)}
-                disabled={showResult}
-              >
-                {option}
-              </button>
-            ))}
+            {options.map((option, idx) => {
+              const isCorrectOption = normalizeAnswer(option) === normalizeAnswer(currentWord.vietnamese);
+              const isWrongOption = showResult && userAnswer === option && !isCorrectOption;
+              
+              return (
+                <button
+                  key={idx}
+                  className={`option-button ${showResult && isCorrectOption ? 'correct-option' : ''} ${isWrongOption ? 'wrong-option' : ''}`}
+                  onClick={() => !showResult && handleCheck(option)}
+                  disabled={showResult}
+                >
+                  {option}
+                </button>
+              );
+            })}
           </div>
         </div>
       ) : (
@@ -187,7 +198,7 @@ const PracticeWriting: React.FC<PracticeWritingProps> = ({ level }) => {
             value={userAnswer}
             onChange={(e) => setUserAnswer(e.target.value)}
             onKeyPress={handleKeyPress}
-            placeholder="Nhập chữ Hán..."
+            placeholder="Nhập nghĩa tiếng Việt..."
             disabled={showResult}
             autoFocus
           />
@@ -205,7 +216,11 @@ const PracticeWriting: React.FC<PracticeWritingProps> = ({ level }) => {
             {isCorrect ? '✓ Đúng rồi!' : '✗ Sai rồi!'}
           </div>
           <div className="correct-answer">
-            Đáp án đúng: <strong>{currentWord.chinese}</strong>
+            Đáp án đúng: <strong>{currentWord.vietnamese}</strong>
+          </div>
+          <div className="word-info">
+            Chữ: <strong>{currentWord.chinese}</strong> | 
+            Pinyin: <strong>{currentWord.pinyin}</strong>
           </div>
           <button className="next-button" onClick={handleNext} autoFocus>
             Từ tiếp theo
@@ -216,4 +231,5 @@ const PracticeWriting: React.FC<PracticeWritingProps> = ({ level }) => {
   );
 };
 
-export default PracticeWriting;
+export default PracticeMeaning;
+

@@ -1,76 +1,81 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Vocabulary } from '../data/vocabulary';
-import { getVocabulariesForLevel } from '../utils/vocabularyStorage';
-import './RandomPractice.css';
+import { Sentence } from '../data/sentences';
+import { getSentencesForLevelAndTopic } from '../utils/sentenceStorage';
+import './RandomSentencePractice.css';
 
-interface RandomPracticeProps {
+interface RandomSentencePracticeProps {
   level: string;
+  currentTopic: string;
+  onTopicChange: (topic: string) => void;
 }
 
 type PracticeType = 'pinyin' | 'writing' | 'meaning';
 
 interface PracticeQuestion {
-  word: Vocabulary;
+  sentence: Sentence;
   type: PracticeType;
   question: string;
   answer: string;
 }
 
-const RandomPractice: React.FC<RandomPracticeProps> = ({ level }) => {
-  const [vocabularies, setVocabularies] = useState<Vocabulary[]>(getVocabulariesForLevel(level));
+const RandomSentencePractice: React.FC<RandomSentencePracticeProps> = ({ level, currentTopic }) => {
   const [currentQuestion, setCurrentQuestion] = useState<PracticeQuestion | null>(null);
   const [userAnswer, setUserAnswer] = useState('');
   const [showResult, setShowResult] = useState(false);
   const [isCorrect, setIsCorrect] = useState(false);
-  // Lưu trạng thái đúng/sai cho từng từ vựng: Map<chinese, boolean>
-  // Mỗi từ vựng chỉ được tính 1 lần (đúng nếu có ít nhất 1 câu đúng)
-  const [wordResults, setWordResults] = useState<Map<string, boolean>>(new Map());
+  // Lưu trạng thái đúng/sai cho từng câu: Map<chinese, boolean>
+  // Mỗi câu chỉ được tính 1 lần (đúng nếu có ít nhất 1 câu đúng)
+  const [sentenceResults, setSentenceResults] = useState<Map<string, boolean>>(new Map());
   const [options, setOptions] = useState<string[]>([]);
 
   useEffect(() => {
-    const updatedVocab = getVocabulariesForLevel(level);
-    setVocabularies(updatedVocab);
-    if (updatedVocab.length > 0) {
-      generateQuestion();
-    }
-  }, [level]);
-
-  // Reload when vocabularies change
-  useEffect(() => {
-    const handleStorageChange = () => {
-      const updatedVocab = getVocabulariesForLevel(level);
-      setVocabularies(updatedVocab);
-      if (updatedVocab.length > 0) {
+    if (currentTopic) {
+      const sentences = getSentencesForLevelAndTopic(level, currentTopic);
+      if (sentences.length > 0) {
         generateQuestion();
+      }
+    }
+  }, [level, currentTopic]);
+
+  // Reload when sentences change
+  useEffect(() => {
+    const handleSentencesUpdate = () => {
+      if (currentTopic) {
+        const sentences = getSentencesForLevelAndTopic(level, currentTopic);
+        if (sentences.length > 0) {
+          generateQuestion();
+        }
       }
     };
     
     const handleResetProgress = (e: Event) => {
       const customEvent = e as CustomEvent;
       if (customEvent.detail?.type === 'scores' || customEvent.detail?.type === 'all') {
-        setWordResults(new Map());
+        setSentenceResults(new Map());
       }
     };
     
-    window.addEventListener('storage', handleStorageChange);
-    window.addEventListener('vocabUpdated', handleStorageChange);
+    window.addEventListener('storage', handleSentencesUpdate);
+    window.addEventListener('sentencesUpdated', handleSentencesUpdate);
     window.addEventListener('resetProgress', handleResetProgress);
     
     return () => {
-      window.removeEventListener('storage', handleStorageChange);
-      window.removeEventListener('vocabUpdated', handleStorageChange);
+      window.removeEventListener('storage', handleSentencesUpdate);
+      window.removeEventListener('sentencesUpdated', handleSentencesUpdate);
       window.removeEventListener('resetProgress', handleResetProgress);
     };
-  }, [level]);
+  }, [level, currentTopic]);
 
   const generateQuestion = () => {
-    const currentVocab = getVocabulariesForLevel(level);
-    if (currentVocab.length === 0) {
-      setVocabularies(currentVocab);
+    if (!currentTopic) return;
+    
+    const sentences = getSentencesForLevelAndTopic(level, currentTopic);
+    if (sentences.length === 0) {
+      setCurrentQuestion(null);
       return;
     }
 
-    const randomWord = currentVocab[Math.floor(Math.random() * currentVocab.length)];
+    const randomSentence = sentences[Math.floor(Math.random() * sentences.length)];
     const types: PracticeType[] = ['pinyin', 'writing', 'meaning'];
     const randomType = types[Math.floor(Math.random() * types.length)];
 
@@ -79,41 +84,41 @@ const RandomPractice: React.FC<RandomPracticeProps> = ({ level }) => {
     switch (randomType) {
       case 'pinyin':
         question = {
-          word: randomWord,
+          sentence: randomSentence,
           type: 'pinyin',
-          question: `Chữ "${randomWord.chinese}" có nghĩa là "${randomWord.vietnamese}". Nhập pinyin:`,
-          answer: randomWord.pinyin.toLowerCase().trim()
+          question: `Câu "${randomSentence.chinese}" có nghĩa là "${randomSentence.vietnamese}". Nhập pinyin:`,
+          answer: randomSentence.pinyin.toLowerCase().trim()
         };
         break;
       case 'writing':
         question = {
-          word: randomWord,
+          sentence: randomSentence,
           type: 'writing',
-          question: `Pinyin "${randomWord.pinyin}" có nghĩa là "${randomWord.vietnamese}". Nhập chữ Hán:`,
-          answer: randomWord.chinese
+          question: `Pinyin "${randomSentence.pinyin}" có nghĩa là "${randomSentence.vietnamese}". Nhập câu Hán:`,
+          answer: randomSentence.chinese
         };
         // Generate options for multiple choice
-        const wrongWords = currentVocab
-          .filter(w => w.chinese !== randomWord.chinese)
+        const wrongSentences = sentences
+          .filter(s => s.chinese !== randomSentence.chinese)
           .sort(() => Math.random() - 0.5)
           .slice(0, 3)
-          .map(w => w.chinese);
-        setOptions([randomWord.chinese, ...wrongWords].sort(() => Math.random() - 0.5));
+          .map(s => s.chinese);
+        setOptions([randomSentence.chinese, ...wrongSentences].sort(() => Math.random() - 0.5));
         break;
       case 'meaning':
         question = {
-          word: randomWord,
+          sentence: randomSentence,
           type: 'meaning',
-          question: `Chữ "${randomWord.chinese}" (${randomWord.pinyin}) có nghĩa là gì?`,
-          answer: randomWord.vietnamese.toLowerCase().trim()
+          question: `Câu "${randomSentence.chinese}" (${randomSentence.pinyin}) có nghĩa là gì?`,
+          answer: randomSentence.vietnamese.toLowerCase().trim()
         };
         // Generate options
-        const wrongMeanings = currentVocab
-          .filter(w => w.vietnamese !== randomWord.vietnamese)
+        const wrongMeanings = sentences
+          .filter(s => s.vietnamese !== randomSentence.vietnamese)
           .sort(() => Math.random() - 0.5)
           .slice(0, 3)
-          .map(w => w.vietnamese);
-        setOptions([randomWord.vietnamese, ...wrongMeanings].sort(() => Math.random() - 0.5));
+          .map(s => s.vietnamese);
+        setOptions([randomSentence.vietnamese, ...wrongMeanings].sort(() => Math.random() - 0.5));
         break;
       default:
         return;
@@ -148,24 +153,26 @@ const RandomPractice: React.FC<RandomPracticeProps> = ({ level }) => {
     setShowResult(true);
     if (answer) setUserAnswer(answer);
     
-    // Lưu kết quả cho từ vựng này (theo chinese để tránh trùng lặp)
-    const wordKey = currentQuestion.word.chinese;
-    setWordResults(prev => {
+    // Lưu kết quả cho câu này (theo chinese để tránh trùng lặp)
+    const sentenceKey = currentQuestion.sentence.chinese;
+    setSentenceResults(prev => {
       const newMap = new Map(prev);
-      // Nếu từ này chưa có kết quả, hoặc kết quả trước là sai và bây giờ đúng, thì cập nhật
-      if (!newMap.has(wordKey) || (!newMap.get(wordKey) && correct)) {
-        newMap.set(wordKey, correct);
+      // Nếu câu này chưa có kết quả, hoặc kết quả trước là sai và bây giờ đúng, thì cập nhật
+      if (!newMap.has(sentenceKey) || (!newMap.get(sentenceKey) && correct)) {
+        newMap.set(sentenceKey, correct);
       }
       return newMap;
     });
   };
 
-  // Tính điểm dựa trên tổng số từ vựng
+  // Tính điểm dựa trên tổng số câu
   const score = useMemo(() => {
-    const total = vocabularies.length;
-    const correct = Array.from(wordResults.values()).filter(r => r === true).length;
+    if (!currentTopic) return { correct: 0, total: 0 };
+    const sentences = getSentencesForLevelAndTopic(level, currentTopic);
+    const total = sentences.length;
+    const correct = Array.from(sentenceResults.values()).filter(r => r === true).length;
     return { correct, total };
-  }, [vocabularies.length, wordResults]);
+  }, [level, currentTopic, sentenceResults]);
 
   const handleNext = () => {
     generateQuestion();
@@ -177,12 +184,16 @@ const RandomPractice: React.FC<RandomPracticeProps> = ({ level }) => {
     }
   };
 
+  if (!currentTopic) {
+    return <div className="random-sentence-practice-empty">Vui lòng chọn chủ đề ở trên</div>;
+  }
+
   if (!currentQuestion) {
-    return <div className="random-practice-empty">Không có từ vựng cho cấp độ này</div>;
+    return <div className="random-sentence-practice-empty">Không có câu nào cho chủ đề này</div>;
   }
 
   return (
-    <div className="random-practice">
+    <div className="random-sentence-practice">
       <div className="practice-header">
         <div className="score-display">
           <span>Điểm: {score.correct}/{score.total}</span>
@@ -191,15 +202,15 @@ const RandomPractice: React.FC<RandomPracticeProps> = ({ level }) => {
               ({Math.round((score.correct / score.total) * 100)}%)
             </span>
           )}
-          {wordResults.size > 0 && (
+          {sentenceResults.size > 0 && (
             <span className="progress-info">
-              (Đã làm: {wordResults.size}/{score.total})
+              (Đã làm: {sentenceResults.size}/{score.total})
             </span>
           )}
         </div>
         <div className="question-type">
-          {currentQuestion.type === 'pinyin' && '📝 Kiểm tra Pinyin'}
-          {currentQuestion.type === 'writing' && '✍️ Kiểm tra Chữ Hán'}
+          {currentQuestion.type === 'pinyin' && '📝 Viết Pinyin'}
+          {currentQuestion.type === 'writing' && '✍️ Viết Hán Tự'}
           {currentQuestion.type === 'meaning' && '💭 Kiểm tra Nghĩa'}
         </div>
       </div>
@@ -252,21 +263,21 @@ const RandomPractice: React.FC<RandomPracticeProps> = ({ level }) => {
               Đáp án đúng: <strong>{currentQuestion.answer}</strong>
             </div>
             {currentQuestion.type === 'pinyin' && (
-              <div className="word-info">
-                Chữ: <strong>{currentQuestion.word.chinese}</strong> | 
-                Nghĩa: <strong>{currentQuestion.word.vietnamese}</strong>
+              <div className="sentence-info">
+                Câu: <strong>{currentQuestion.sentence.chinese}</strong> | 
+                Nghĩa: <strong>{currentQuestion.sentence.vietnamese}</strong>
               </div>
             )}
             {currentQuestion.type === 'writing' && (
-              <div className="word-info">
-                Pinyin: <strong>{currentQuestion.word.pinyin}</strong> | 
-                Nghĩa: <strong>{currentQuestion.word.vietnamese}</strong>
+              <div className="sentence-info">
+                Pinyin: <strong>{currentQuestion.sentence.pinyin}</strong> | 
+                Nghĩa: <strong>{currentQuestion.sentence.vietnamese}</strong>
               </div>
             )}
             {currentQuestion.type === 'meaning' && (
-              <div className="word-info">
-                Chữ: <strong>{currentQuestion.word.chinese}</strong> | 
-                Pinyin: <strong>{currentQuestion.word.pinyin}</strong>
+              <div className="sentence-info">
+                Câu: <strong>{currentQuestion.sentence.chinese}</strong> | 
+                Pinyin: <strong>{currentQuestion.sentence.pinyin}</strong>
               </div>
             )}
           </div>
@@ -279,4 +290,5 @@ const RandomPractice: React.FC<RandomPracticeProps> = ({ level }) => {
   );
 };
 
-export default RandomPractice;
+export default RandomSentencePractice;
+

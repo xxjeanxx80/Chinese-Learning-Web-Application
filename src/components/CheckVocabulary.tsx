@@ -12,7 +12,8 @@ const CheckVocabulary: React.FC<CheckVocabularyProps> = ({ level }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [userAnswer, setUserAnswer] = useState('');
   const [showResult, setShowResult] = useState(false);
-  const [score, setScore] = useState({ correct: 0, total: 0 });
+  // Lưu trạng thái đúng/sai cho từng từ vựng: Map<index, boolean>
+  const [wordResults, setWordResults] = useState<Map<number, boolean>>(new Map());
   const [isCorrect, setIsCorrect] = useState(false);
 
   // Memoize currentWord để tránh tính toán lại
@@ -39,7 +40,7 @@ const CheckVocabulary: React.FC<CheckVocabularyProps> = ({ level }) => {
     const handleResetProgress = (e: Event) => {
       const customEvent = e as CustomEvent;
       if (customEvent.detail?.type === 'scores' || customEvent.detail?.type === 'all') {
-        setScore({ correct: 0, total: 0 });
+        setWordResults(new Map());
       }
     };
     
@@ -67,11 +68,20 @@ const CheckVocabulary: React.FC<CheckVocabularyProps> = ({ level }) => {
     const correct = normalizedUser === normalizedCorrect;
     setIsCorrect(correct);
     setShowResult(true);
-    setScore(prev => ({
-      correct: prev.correct + (correct ? 1 : 0),
-      total: prev.total + 1
-    }));
-  }, [userAnswer, currentWord, normalizePinyin]);
+    // Lưu kết quả cho từ vựng này
+    setWordResults(prev => {
+      const newMap = new Map(prev);
+      newMap.set(currentIndex, correct);
+      return newMap;
+    });
+  }, [userAnswer, currentWord, currentIndex, normalizePinyin]);
+
+  // Tính điểm dựa trên tổng số từ vựng
+  const score = useMemo(() => {
+    const total = vocabularies.length;
+    const correct = Array.from(wordResults.values()).filter(r => r === true).length;
+    return { correct, total };
+  }, [vocabularies.length, wordResults]);
 
   const handleNext = useCallback(() => {
     if (vocabularies.length === 0) return;
@@ -102,6 +112,11 @@ const CheckVocabulary: React.FC<CheckVocabularyProps> = ({ level }) => {
         {score.total > 0 && (
           <span className="percentage">
             ({Math.round((score.correct / score.total) * 100)}%)
+          </span>
+        )}
+        {wordResults.size > 0 && (
+          <span className="progress-info">
+            (Đã làm: {wordResults.size}/{score.total})
           </span>
         )}
       </div>
