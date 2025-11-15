@@ -9,15 +9,6 @@ interface BottomNavBarProps {
 }
 
 const BottomNavBar: React.FC<BottomNavBarProps> = ({ currentFunction, onFunctionChange }) => {
-  // Xác định category hiện tại
-  const getCurrentCategory = () => {
-    if (currentFunction.startsWith('sentence-')) return 'sentence';
-    if (['vocabulary', 'flashcard', 'writing', 'meaning', 'random', 'manage'].includes(currentFunction)) return 'vocab';
-    return 'other';
-  };
-
-  const currentCategory = getCurrentCategory();
-
   const handleNavClick = (func: FunctionType) => {
     onFunctionChange(func);
     // Scroll to top
