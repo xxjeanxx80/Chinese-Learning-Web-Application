@@ -1,0 +1,128 @@
+/* Mobile Drawer - Chỉ hiện trên mobile */
+.mobile-drawer-overlay {
+  display: none; /* Mặc định ẩn */
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--overlay, rgba(0, 0, 0, 0.5));
+  z-index: 998;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  backdrop-filter: blur(4px);
+  pointer-events: none; /* Không chặn click khi opacity = 0 */
+}
+
+.mobile-drawer-overlay.active {
+  opacity: 1;
+  pointer-events: auto; /* Cho phép click khi active */
+}
+
+.mobile-drawer {
+  display: none; /* Mặc định ẩn */
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 85%;
+  max-width: 320px;
+  background: var(--bg-card, #ffffff);
+  z-index: 999;
+  transform: translateX(-100%);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 2px 0 20px var(--shadow, rgba(0, 0, 0, 0.15));
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  pointer-events: none; /* Không chặn click khi đóng */
+}
+
+.mobile-drawer.open {
+  transform: translateX(0);
+  pointer-events: auto; /* Cho phép click khi mở */
+}
+
+.mobile-drawer-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border-color, #e0e0e0);
+  background: linear-gradient(135deg, var(--accent-primary, #667eea) 0%, var(--accent-secondary, #764ba2) 100%);
+  color: white;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.mobile-drawer-header h2 {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+.mobile-drawer-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: none;
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  border-radius: 8px;
+  font-size: 1.5rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  padding: 0;
+  line-height: 1;
+}
+
+.mobile-drawer-close:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: scale(1.1);
+}
+
+.mobile-drawer-close:active {
+  transform: scale(0.95);
+}
+
+.mobile-drawer-content {
+  padding: 20px;
+  color: var(--text-primary, #333);
+}
+
+/* Styles cho menu trong drawer - sử dụng lại sidebar styles */
+.mobile-drawer-content .sidebar-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.mobile-drawer-content .menu-item {
+  min-height: 48px; /* Touch target */
+  padding: 14px 16px;
+  font-size: 1rem;
+}
+
+.mobile-drawer-content .menu-group-header {
+  min-height: 48px; /* Touch target */
+  padding: 14px 16px;
+}
+
+/* Chỉ hiện trên mobile - chỉ hiện khi có class active/open */
+@media (max-width: 768px) {
+  .mobile-drawer-overlay.active {
+    display: block;
+  }
+
+  .mobile-drawer.open {
+    display: block;
+  }
+  
+  /* Khi drawer đóng, vẫn cần hiện element nhưng ẩn về bên trái */
+  .mobile-drawer:not(.open) {
+    display: none;
+  }
+}
+

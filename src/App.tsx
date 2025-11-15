@@ -2,10 +2,11 @@ import { useState, lazy, Suspense, useMemo, useCallback, useEffect } from 'react
 import './App.css';
 import HSKLevelSelector from './components/HSKLevelSelector';
 import TopicSelector from './components/TopicSelector';
-import { resetScores, resetFlashcardProgress } from './utils/resetProgress';
 import { useTheme } from './contexts/ThemeContext';
 import KeyboardShortcutsModal from './components/KeyboardShortcutsModal';
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
+import MobileDrawer from './components/MobileDrawer';
+import BottomNavBar from './components/BottomNavBar';
 
 // Lazy load components để giảm bundle size ban đầu
 const CheckVocabulary = lazy(() => import('./components/CheckVocabulary'));
@@ -44,6 +45,7 @@ function App() {
   const [expandedMenu, setExpandedMenu] = useState<'vocab' | 'sentence' | null>('vocab');
   const [currentTopic, setCurrentTopic] = useState<string>('');
   const [showShortcutsModal, setShowShortcutsModal] = useState(false);
+  const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false);
 
   // Tự động chọn "Tất cả chủ đề" khi chuyển sang sentence mode
   useEffect(() => {
@@ -66,6 +68,8 @@ function App() {
     } else if (func === 'translate' || func === 'statistics' || func === 'srs') {
       setExpandedMenu(null);
     }
+    // Đóng drawer khi chọn function trên mobile
+    setIsMobileDrawerOpen(false);
   }, []);
 
   const renderFunction = useMemo(() => {
@@ -118,17 +122,6 @@ function App() {
           }
   }, [currentFunction, currentLevel, currentTopic]);
 
-  const handleResetScores = useCallback(() => {
-    if (window.confirm('Bạn có chắc muốn reset tất cả điểm số? Điểm sẽ về 0/0.')) {
-      resetScores();
-    }
-  }, []);
-
-  const handleResetFlashcard = useCallback(() => {
-    if (window.confirm('Bạn có chắc muốn reset tiến độ flashcard? Số từ đã học sẽ về 0.')) {
-      resetFlashcardProgress();
-    }
-  }, []);
 
   // Keyboard shortcuts
   useKeyboardShortcuts({
@@ -165,6 +158,14 @@ function App() {
       <header className="app-header">
         <div className="header-content">
           <div className="header-title">
+            <button 
+              className="mobile-menu-btn"
+              onClick={() => setIsMobileDrawerOpen(true)}
+              aria-label="Mở menu"
+              title="Menu"
+            >
+              ☰
+            </button>
             <h1>🦆 德爱芳</h1>
           </div>
           <div className="header-actions">
@@ -187,30 +188,165 @@ function App() {
             >
               {theme === 'light' ? '🌙' : '☀️'}
             </button>
-            <div className="reset-buttons-group">
-              <button 
-                onClick={handleResetScores}
-                className="btn-reset btn-reset-score"
-                title="Reset điểm số về 0/0"
-              >
-                <span className="reset-icon">📊</span>
-                <span className="reset-text">Reset Điểm</span>
-              </button>
-              <button 
-                onClick={handleResetFlashcard}
-                className="btn-reset btn-reset-flashcard"
-                title="Reset tiến độ flashcard đã học"
-              >
-                <span className="reset-icon">🃏</span>
-                <span className="reset-text">Reset Flash card</span>
-              </button>
-            </div>
           </div>
         </div>
       </header>
 
+      {/* Mobile Drawer */}
+      <MobileDrawer 
+        isOpen={isMobileDrawerOpen} 
+        onClose={() => setIsMobileDrawerOpen(false)}
+      >
+        <div className="sidebar-section">
+          <h3 className="sidebar-title">Chức năng</h3>
+          <nav className="sidebar-menu">
+              {/* Học từ */}
+              <div className="menu-group">
+                <button
+                  className="menu-group-header"
+                  onClick={() => setExpandedMenu(expandedMenu === 'vocab' ? null : 'vocab')}
+                >
+                  <span className="menu-icon">📚</span>
+                  <span className="menu-text">Học từ</span>
+                  <span className="menu-arrow">{expandedMenu === 'vocab' ? '▼' : '▶'}</span>
+                </button>
+                {expandedMenu === 'vocab' && (
+                  <div className="menu-submenu">
+                    <button 
+                      className={`menu-item ${currentFunction === 'vocabulary' ? 'active' : ''}`}
+                      onClick={() => handleFunctionChange('vocabulary')}
+                    >
+                      <span className="menu-icon">📝</span>
+                      <span className="menu-text">Viết Pinyin</span>
+                    </button>
+                    <button 
+                      className={`menu-item ${currentFunction === 'flashcard' ? 'active' : ''}`}
+                      onClick={() => handleFunctionChange('flashcard')}
+                    >
+                      <span className="menu-icon">🃏</span>
+                      <span className="menu-text">Flashcard</span>
+                    </button>
+                    <button 
+                      className={`menu-item ${currentFunction === 'writing' ? 'active' : ''}`}
+                      onClick={() => handleFunctionChange('writing')}
+                    >
+                      <span className="menu-icon">✍️</span>
+                      <span className="menu-text">Viết Hán Tự</span>
+                    </button>
+                    <button 
+                      className={`menu-item ${currentFunction === 'meaning' ? 'active' : ''}`}
+                      onClick={() => handleFunctionChange('meaning')}
+                    >
+                      <span className="menu-icon">💭</span>
+                      <span className="menu-text">Viết Nghĩa</span>
+                    </button>
+                    <button 
+                      className={`menu-item ${currentFunction === 'random' ? 'active' : ''}`}
+                      onClick={() => handleFunctionChange('random')}
+                    >
+                      <span className="menu-icon">🎲</span>
+                      <span className="menu-text">Luyện tập ngẫu nhiên</span>
+                    </button>
+                    <button 
+                      className={`menu-item ${currentFunction === 'manage' ? 'active' : ''}`}
+                      onClick={() => handleFunctionChange('manage')}
+                    >
+                      <span className="menu-icon">📝</span>
+                      <span className="menu-text">Quản lý từ vựng</span>
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {/* Học câu */}
+              <div className="menu-group">
+                <button
+                  className="menu-group-header"
+                  onClick={() => setExpandedMenu(expandedMenu === 'sentence' ? null : 'sentence')}
+                >
+                  <span className="menu-icon">💬</span>
+                  <span className="menu-text">Học câu</span>
+                  <span className="menu-arrow">{expandedMenu === 'sentence' ? '▼' : '▶'}</span>
+                </button>
+                {expandedMenu === 'sentence' && (
+                  <div className="menu-submenu">
+                    <button 
+                      className={`menu-item ${currentFunction === 'sentence-pinyin' ? 'active' : ''}`}
+                      onClick={() => handleFunctionChange('sentence-pinyin')}
+                    >
+                      <span className="menu-icon">📝</span>
+                      <span className="menu-text">Viết Pinyin</span>
+                    </button>
+                    <button 
+                      className={`menu-item ${currentFunction === 'sentence-flashcard' ? 'active' : ''}`}
+                      onClick={() => handleFunctionChange('sentence-flashcard')}
+                    >
+                      <span className="menu-icon">🃏</span>
+                      <span className="menu-text">Flashcard</span>
+                    </button>
+                    <button 
+                      className={`menu-item ${currentFunction === 'sentence-writing' ? 'active' : ''}`}
+                      onClick={() => handleFunctionChange('sentence-writing')}
+                    >
+                      <span className="menu-icon">✍️</span>
+                      <span className="menu-text">Viết Hán Tự</span>
+                    </button>
+                    <button 
+                      className={`menu-item ${currentFunction === 'sentence-meaning' ? 'active' : ''}`}
+                      onClick={() => handleFunctionChange('sentence-meaning')}
+                    >
+                      <span className="menu-icon">💭</span>
+                      <span className="menu-text">Viết Nghĩa</span>
+                    </button>
+                    <button 
+                      className={`menu-item ${currentFunction === 'sentence-random' ? 'active' : ''}`}
+                      onClick={() => handleFunctionChange('sentence-random')}
+                    >
+                      <span className="menu-icon">🎲</span>
+                      <span className="menu-text">Luyện tập ngẫu nhiên</span>
+                    </button>
+                    <button 
+                      className={`menu-item ${currentFunction === 'sentence-manage' ? 'active' : ''}`}
+                      onClick={() => handleFunctionChange('sentence-manage')}
+                    >
+                      <span className="menu-icon">📝</span>
+                      <span className="menu-text">Quản lý câu</span>
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {/* Dịch thuật & Tiện ích */}
+              <div className="menu-group">
+                <button
+                  className={`menu-item menu-item-standalone ${currentFunction === 'translate' ? 'active' : ''}`}
+                  onClick={() => handleFunctionChange('translate')}
+                >
+                  <span className="menu-icon">🌐</span>
+                  <span className="menu-text">Dịch thuật</span>
+                </button>
+                <button
+                  className={`menu-item menu-item-standalone ${currentFunction === 'statistics' ? 'active' : ''}`}
+                  onClick={() => handleFunctionChange('statistics')}
+                >
+                  <span className="menu-icon">📊</span>
+                  <span className="menu-text">Thống kê</span>
+                </button>
+                <button
+                  className={`menu-item menu-item-standalone ${currentFunction === 'srs' ? 'active' : ''}`}
+                  onClick={() => handleFunctionChange('srs')}
+                >
+                  <span className="menu-icon">🔄</span>
+                  <span className="menu-text">SRS Review</span>
+                </button>
+              </div>
+            </nav>
+          </div>
+      </MobileDrawer>
+
       <div className="app-layout">
-        <aside className="sidebar">
+        {/* Desktop Sidebar - Ẩn trên mobile */}
+        <aside className="sidebar desktop-sidebar">
           <div className="sidebar-section">
             <h3 className="sidebar-title">Chức năng</h3>
             <nav className="sidebar-menu">
@@ -364,6 +500,13 @@ function App() {
           </Suspense>
         </main>
       </div>
+
+      {/* Bottom Navigation Bar - Chỉ hiện trên mobile */}
+      <BottomNavBar 
+        currentFunction={currentFunction}
+        onFunctionChange={handleFunctionChange}
+      />
+
       <KeyboardShortcutsModal 
         isOpen={showShortcutsModal} 
         onClose={() => setShowShortcutsModal(false)} 

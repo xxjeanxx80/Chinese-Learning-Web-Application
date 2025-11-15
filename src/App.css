@@ -197,6 +197,35 @@
   transition: background 0.3s ease, color 0.3s ease;
 }
 
+/* Mobile Menu Button - Chỉ hiện trên mobile */
+.mobile-menu-btn {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  margin-right: 12px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.15);
+  color: white;
+  font-size: 1.5rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+  padding: 0;
+  line-height: 1;
+}
+
+.mobile-menu-btn:hover {
+  background: rgba(255, 255, 255, 0.25);
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+.mobile-menu-btn:active {
+  transform: scale(0.95);
+}
+
 .sidebar-section {
   margin-bottom: 30px;
 }
@@ -337,7 +366,34 @@
 }
 
 /* Mobile responsive */
-@media (max-width: 1024px) {
+@media (max-width: 768px) {
+  /* Mobile Menu Button */
+  .mobile-menu-btn {
+    display: flex;
+  }
+
+  /* Ẩn desktop sidebar trên mobile */
+  .desktop-sidebar {
+    display: none;
+  }
+
+  /* Header adjustments */
+  .header-title {
+    display: flex;
+    align-items: center;
+  }
+
+  .header-title h1 {
+    margin: 0;
+  }
+
+  /* App layout adjustments */
+  .app-layout {
+    padding-bottom: 80px; /* Space for bottom nav */
+  }
+}
+
+@media (max-width: 1024px) and (min-width: 769px) {
   .app-layout {
     flex-direction: column;
   }

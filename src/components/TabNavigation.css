@@ -16,6 +16,11 @@
   transition: all 0.3s ease;
   text-align: left;
   width: 100%;
+  position: relative;
+}
+
+.tab-label-short {
+  display: none;
 }
 
 .tab-button:hover {
@@ -38,11 +43,60 @@
 
 @media (max-width: 768px) {
   .tab-navigation {
-    grid-template-columns: repeat(2, 1fr);
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 6px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE/Edge */
+    padding-bottom: 4px;
+  }
+
+  .tab-navigation::-webkit-scrollbar {
+    display: none; /* Chrome/Safari */
   }
   
   .tab-button {
-    padding: 10px 12px;
+    padding: 8px 14px;
     font-size: 0.85rem;
+    min-width: fit-content;
+    flex-shrink: 0;
+    width: auto;
+    min-height: 36px;
+    text-align: center;
+    white-space: nowrap;
+  }
+
+  /* Ẩn label đầy đủ, hiện label ngắn trên mobile */
+  .tab-label-full {
+    display: none;
+  }
+
+  .tab-label-short {
+    display: inline;
+  }
+
+  .tab-button:hover {
+    transform: translateY(-1px);
+  }
+
+  .tab-button.active {
+    transform: translateY(-1px);
+  }
+}
+
+@media (max-width: 480px) {
+  .tab-navigation {
+    gap: 4px;
+  }
+
+  .tab-button {
+    padding: 6px 12px;
+    font-size: 0.8rem;
+    min-height: 32px;
+    border-radius: 6px;
+    border-width: 1.5px;
   }
 }

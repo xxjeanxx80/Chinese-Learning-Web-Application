@@ -8,11 +8,11 @@ interface TabNavigationProps {
 
 const TabNavigation: React.FC<TabNavigationProps> = ({ currentLevel, onLevelChange }) => {
   const levels = [
-    { id: 'hsk1', label: 'HSK 1', color: '#4CAF50' },
-    { id: 'hsk2', label: 'HSK 2', color: '#2196F3' },
-    { id: 'hsk3', label: 'HSK 3', color: '#FF9800' },
-    { id: 'hsk4', label: 'HSK 4', color: '#F44336' },
-    { id: 'hsk5', label: 'HSK 5', color: '#9C27B0' }
+    { id: 'hsk1', label: 'HSK 1', shortLabel: '1', color: '#4CAF50' },
+    { id: 'hsk2', label: 'HSK 2', shortLabel: '2', color: '#2196F3' },
+    { id: 'hsk3', label: 'HSK 3', shortLabel: '3', color: '#FF9800' },
+    { id: 'hsk4', label: 'HSK 4', shortLabel: '4', color: '#F44336' },
+    { id: 'hsk5', label: 'HSK 5', shortLabel: '5', color: '#9C27B0' }
   ];
 
   return (
@@ -27,8 +27,10 @@ const TabNavigation: React.FC<TabNavigationProps> = ({ currentLevel, onLevelChan
             backgroundColor: currentLevel === level.id ? level.color : 'transparent',
             color: currentLevel === level.id ? 'white' : level.color
           }}
+          title={level.label} /* Tooltip với full label trên mobile */
         >
-          {level.label}
+          <span className="tab-label-full">{level.label}</span>
+          <span className="tab-label-short">{level.shortLabel}</span>
         </button>
       ))}
     </div>
