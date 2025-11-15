@@ -1,6 +1,7 @@
 .app {
   min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--bg-primary);
+  transition: background 0.3s ease;
 }
 
 .app-header {
@@ -42,6 +43,51 @@
   gap: 10px;
   flex-wrap: wrap;
   align-items: center;
+}
+
+.btn-theme-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  font-size: 1.5rem;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.15);
+  color: white;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  backdrop-filter: blur(10px);
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-theme-toggle::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s;
+}
+
+.btn-theme-toggle:hover::before {
+  left: 100%;
+}
+
+.btn-theme-toggle:hover {
+  background: rgba(255, 255, 255, 0.25);
+  border-color: rgba(255, 255, 255, 0.5);
+  transform: translateY(-2px) rotate(15deg);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+}
+
+.btn-theme-toggle:active {
+  transform: translateY(0) rotate(0deg);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
 .reset-buttons-group {
@@ -140,13 +186,15 @@
 .sidebar {
   width: 260px;
   flex-shrink: 0;
-  background: white;
+  background: var(--bg-card, #ffffff);
   border-radius: 15px;
   padding: 20px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 20px var(--shadow, rgba(0, 0, 0, 0.1));
   height: fit-content;
   position: sticky;
   top: 20px;
+  color: var(--text-primary, #333);
+  transition: background 0.3s ease, color 0.3s ease;
 }
 
 .sidebar-section {
@@ -160,12 +208,13 @@
 .sidebar-title {
   font-size: 0.9rem;
   font-weight: 700;
-  color: #667eea;
+  color: var(--accent-primary, #667eea);
   text-transform: uppercase;
   letter-spacing: 1px;
   margin: 0 0 15px 0;
   padding-bottom: 10px;
-  border-bottom: 2px solid #f0f0f0;
+  border-bottom: 2px solid var(--border-color, #e0e0e0);
+  transition: color 0.3s ease, border-color 0.3s ease;
 }
 
 .sidebar-menu {
@@ -238,7 +287,7 @@
   border: none;
   border-radius: 8px;
   background: transparent;
-  color: #333;
+  color: var(--text-primary, #333);
   cursor: pointer;
   transition: all 0.3s ease;
   text-align: left;
@@ -248,12 +297,12 @@
 }
 
 .menu-item:hover {
-  background: #f5f7fa;
+  background: var(--bg-tertiary, #f5f7fa);
   transform: translateX(5px);
 }
 
 .menu-item.active {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, var(--accent-primary, #667eea) 0%, var(--accent-secondary, #764ba2) 100%);
   color: white;
   box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
 }
@@ -261,7 +310,7 @@
 .menu-item-standalone {
   margin-left: 0 !important;
   margin-top: 10px;
-  border-top: 1px solid #e0e0e0;
+  border-top: 1px solid var(--border-color, #e0e0e0);
   padding-top: 15px;
 }
 
@@ -278,11 +327,13 @@
 
 .app-main {
   flex: 1;
-  background: white;
+  background: var(--bg-card, #ffffff);
   border-radius: 15px;
   padding: 30px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 20px var(--shadow, rgba(0, 0, 0, 0.1));
   min-height: 500px;
+  color: var(--text-primary, #333);
+  transition: background 0.3s ease, color 0.3s ease;
 }
 
 /* Mobile responsive */

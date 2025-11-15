@@ -1,12 +1,13 @@
 .sentence-practice {
   text-align: center;
+  color: var(--text-primary, #333);
 }
 
 .score-display {
   margin-bottom: 20px;
   font-size: 1.1rem;
   font-weight: 600;
-  color: #667eea;
+  color: var(--accent-primary, #667eea);
   display: flex;
   justify-content: center;
   gap: 10px;
@@ -15,26 +16,26 @@
 
 .percentage {
   font-size: 0.9rem;
-  color: #666;
+  color: var(--text-secondary, #666);
 }
 
 .progress-info {
   font-size: 0.85rem;
-  color: #999;
+  color: var(--text-tertiary, #999);
   font-weight: 500;
 }
 
 .sentence-display {
   margin: 25px 0;
   padding: 25px;
-  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  background: var(--bg-tertiary, linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%));
   border-radius: 15px;
 }
 
 .sentence-chinese h2 {
   font-size: 3rem;
   margin-bottom: 15px;
-  color: #333;
+  color: var(--text-primary, #333);
   font-weight: 700;
 }
 
@@ -42,7 +43,7 @@
 .sentence-vietnamese-hint {
   margin-top: 15px;
   font-size: 1.3rem;
-  color: #555;
+  color: var(--text-secondary, #555);
   font-weight: 500;
 }
 
@@ -60,7 +61,7 @@
   margin-bottom: 10px;
   font-size: 1.1rem;
   font-weight: 600;
-  color: #333;
+  color: var(--text-primary, #333);
 }
 
 .input-section input {
@@ -68,21 +69,24 @@
   max-width: 400px;
   padding: 12px 18px;
   font-size: 1.1rem;
-  border: 2px solid #ddd;
+  border: 2px solid var(--border-color, #ddd);
   border-radius: 10px;
   margin-bottom: 15px;
   text-align: center;
   transition: border-color 0.3s;
+  background: var(--bg-secondary, #ffffff);
+  color: var(--text-primary, #333);
 }
 
 .input-section input:focus {
   outline: none;
-  border-color: #667eea;
+  border-color: var(--accent-primary, #667eea);
 }
 
 .input-section input:disabled {
-  background-color: #f5f5f5;
+  background-color: var(--bg-tertiary, #f5f5f5);
   cursor: not-allowed;
+  color: var(--text-secondary, #666);
 }
 
 
@@ -119,23 +123,23 @@
 }
 
 .result.correct {
-  color: #4CAF50;
-  background-color: #e8f5e9;
+  color: var(--success, #4CAF50);
+  background-color: rgba(76, 175, 80, 0.1);
 }
 
 .result.incorrect {
-  color: #f44336;
-  background-color: #ffebee;
+  color: var(--error, #f44336);
+  background-color: rgba(244, 67, 54, 0.1);
 }
 
 .correct-answer {
   margin: 15px 0;
   font-size: 1.1rem;
-  color: #666;
+  color: var(--text-secondary, #666);
 }
 
 .correct-answer strong {
-  color: #667eea;
+  color: var(--accent-primary, #667eea);
   font-size: 1.3rem;
 }
 
@@ -237,29 +241,29 @@
   padding: 10px 20px;
   font-size: 1rem;
   font-weight: 600;
-  border: 2px solid #667eea;
+  border: 2px solid var(--accent-primary, #667eea);
   border-radius: 25px;
-  background: white;
-  color: #667eea;
+  background: var(--bg-card, #ffffff);
+  color: var(--accent-primary, #667eea);
   cursor: pointer;
   transition: all 0.3s ease;
 }
 
 .control-button:hover {
-  background: #667eea;
+  background: var(--accent-primary, #667eea);
   color: white;
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
 }
 
 .flip-button {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, var(--accent-primary, #667eea) 0%, var(--accent-secondary, #764ba2) 100%);
   color: white;
   border: none;
 }
 
 .flip-button:hover {
-  background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+  background: linear-gradient(135deg, var(--accent-secondary, #764ba2) 0%, var(--accent-primary, #667eea) 100%);
 }
 
 .flashcard-list {
@@ -270,7 +274,7 @@
 .flashcard-list h3 {
   font-size: 1.1rem;
   font-weight: 600;
-  color: #333;
+  color: var(--text-primary, #333);
   margin-bottom: 15px;
   text-align: center;
 }
@@ -284,8 +288,8 @@
 }
 
 .sentence-practice .card-item {
-  background: white;
-  border: 2px solid #e0e0e0;
+  background: var(--bg-card, #ffffff);
+  border: 2px solid var(--border-color, #e0e0e0);
   border-radius: 10px;
   padding: 12px;
   cursor: pointer;
@@ -296,10 +300,11 @@
   gap: 8px;
   min-height: 80px;
   justify-content: center;
+  color: var(--text-primary, #333);
 }
 
 .sentence-practice .card-item:hover {
-  border-color: #667eea;
+  border-color: var(--accent-primary, #667eea);
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
 }
@@ -354,23 +359,23 @@
   padding: 10px 20px;
   font-size: 1rem;
   font-weight: 600;
-  border: 2px solid #ddd;
+  border: 2px solid var(--border-color, #ddd);
   border-radius: 25px;
-  background: white;
-  color: #333;
+  background: var(--bg-card, #ffffff);
+  color: var(--text-primary, #333);
   cursor: pointer;
   transition: all 0.3s ease;
 }
 
 .practice-mode-selector button:hover {
-  border-color: #667eea;
-  background: #f0f4ff;
+  border-color: var(--accent-primary, #667eea);
+  background: var(--bg-tertiary, #f0f4ff);
 }
 
 .practice-mode-selector button.active {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, var(--accent-primary, #667eea) 0%, var(--accent-secondary, #764ba2) 100%);
   color: white;
-  border-color: #667eea;
+  border-color: var(--accent-primary, #667eea);
   box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
 }
 
@@ -381,20 +386,20 @@
 .pinyin-display h2 {
   font-size: 2.5rem;
   margin-bottom: 20px;
-  color: #333;
+  color: var(--text-primary, #333);
   font-weight: 700;
 }
 
 .meaning-display p {
   font-size: 1.5rem;
-  color: #555;
+  color: var(--text-secondary, #555);
   font-weight: 500;
   margin-bottom: 20px;
 }
 
 .instruction {
   font-size: 1.1rem;
-  color: #666;
+  color: var(--text-secondary, #666);
   margin-bottom: 20px;
   font-weight: 600;
 }
@@ -415,34 +420,35 @@
   padding: 15px 20px;
   font-size: 1.2rem;
   font-weight: 600;
-  border: 2px solid #ddd;
+  border: 2px solid var(--border-color, #ddd);
   border-radius: 10px;
-  background: white;
-  color: #333;
+  background: var(--bg-card, #ffffff);
+  color: var(--text-primary, #333);
   cursor: pointer;
   transition: all 0.3s ease;
 }
 
 .option-button:hover:not(:disabled) {
-  border-color: #667eea;
-  background: #f0f4ff;
+  border-color: var(--accent-primary, #667eea);
+  background: var(--bg-tertiary, #f0f4ff);
   transform: translateY(-2px);
 }
 
 .option-button:disabled {
   cursor: not-allowed;
+  opacity: 0.6;
 }
 
 .option-button.correct-option {
-  background: #e8f5e9;
-  border-color: #4CAF50;
-  color: #4CAF50;
+  background: var(--success, #e8f5e9);
+  border-color: var(--success, #4CAF50);
+  color: var(--success, #4CAF50);
 }
 
 .option-button.wrong-option {
-  background: #ffebee;
-  border-color: #f44336;
-  color: #f44336;
+  background: rgba(244, 67, 54, 0.1);
+  border-color: var(--error, #f44336);
+  color: var(--error, #f44336);
 }
 
 .answer-details {
@@ -452,26 +458,28 @@
 .full-sentence {
   margin-top: 25px;
   padding: 20px;
-  background: #f9f9f9;
+  background: var(--bg-tertiary, #f9f9f9);
   border-radius: 10px;
   line-height: 1.8;
+  color: var(--text-primary, #333);
 }
 
 .full-sentence p {
   margin: 10px 0;
   font-size: 1.1rem;
+  color: var(--text-primary, #333);
 }
 
 .full-sentence p:first-child {
   font-size: 1.5rem;
   font-weight: 600;
-  color: #333;
+  color: var(--text-primary, #333);
 }
 
 .sentence-info {
   margin-top: 15px;
   font-size: 0.85rem;
-  color: #999;
+  color: var(--text-tertiary, #999);
   text-align: center;
 }
 

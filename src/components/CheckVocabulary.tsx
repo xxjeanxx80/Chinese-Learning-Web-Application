@@ -1,6 +1,10 @@
 import React, { useState, useEffect, useMemo, useCallback, memo } from 'react';
 import { Vocabulary } from '../data/vocabulary';
 import { getVocabulariesForLevel } from '../utils/vocabularyStorage';
+import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
+import { addWrongAnswer, markCorrect } from '../utils/wrongAnswersStorage';
+import { markVocabularyLearned } from '../utils/learnedItemsStorage';
+import { addStudySession } from '../utils/statisticsStorage';
 import './CheckVocabulary.css';
 
 interface CheckVocabularyProps {
@@ -59,6 +63,8 @@ const CheckVocabulary: React.FC<CheckVocabularyProps> = ({ level }) => {
     return pinyin.toLowerCase().trim().replace(/\s+/g, ' ');
   }, []);
 
+  const sessionStartTime = React.useRef<number>(Date.now());
+
   const handleCheck = useCallback(() => {
     if (!userAnswer.trim() || !currentWord) return;
     
@@ -68,13 +74,29 @@ const CheckVocabulary: React.FC<CheckVocabularyProps> = ({ level }) => {
     const correct = normalizedUser === normalizedCorrect;
     setIsCorrect(correct);
     setShowResult(true);
+    
     // Lưu kết quả cho từ vựng này
     setWordResults(prev => {
       const newMap = new Map(prev);
       newMap.set(currentIndex, correct);
       return newMap;
     });
-  }, [userAnswer, currentWord, currentIndex, normalizePinyin]);
+    
+    // Lưu vào wrong answers nếu sai, hoặc đánh dấu đúng nếu đúng
+    if (correct) {
+      markCorrect(level, currentWord);
+    } else {
+      addWrongAnswer(level, currentWord);
+    }
+
+    // Đánh dấu từ vựng đã học (test pinyin)
+    markVocabularyLearned(level, currentWord, 'pinyin', correct);
+
+    // Statistics tracking
+    const duration = Math.floor((Date.now() - sessionStartTime.current) / 1000);
+    addStudySession(level, correct ? 1 : 0, 1, duration, 'vocabulary-check');
+    sessionStartTime.current = Date.now();
+  }, [userAnswer, currentWord, currentIndex, level, normalizePinyin]);
 
   // Tính điểm dựa trên tổng số từ vựng
   const score = useMemo(() => {
@@ -100,6 +122,23 @@ const CheckVocabulary: React.FC<CheckVocabularyProps> = ({ level }) => {
       }
     }
   };
+
+  // Keyboard shortcuts
+  useKeyboardShortcuts({
+    onEnter: () => {
+      if (showResult) {
+        handleNext();
+      } else {
+        handleCheck();
+      }
+    },
+    onArrowRight: () => {
+      if (showResult) {
+        handleNext();
+      }
+    },
+    enabled: !showResult || true, // Always enabled
+  });
 
   if (!currentWord) {
     return <div className="check-vocab-empty">Không có từ vựng cho cấp độ này</div>;

@@ -1,6 +1,8 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { Vocabulary } from '../data/vocabulary';
 import { getVocabulariesForLevel } from '../utils/vocabularyStorage';
+import { markVocabularyLearned } from '../utils/learnedItemsStorage';
+import { addStudySession } from '../utils/statisticsStorage';
 import './PracticeMeaning.css';
 
 interface PracticeMeaningProps {
@@ -73,7 +75,10 @@ const PracticeMeaning: React.FC<PracticeMeaningProps> = ({ level }) => {
     return answer.toLowerCase().trim().replace(/\s+/g, ' ');
   };
 
+  const sessionStartTime = useRef<number>(Date.now());
+
   const handleCheck = (answer: string) => {
+    if (!currentWord) return;
     const correct = normalizeAnswer(answer) === normalizeAnswer(currentWord.vietnamese);
     
     setIsCorrect(correct);
@@ -85,10 +90,18 @@ const PracticeMeaning: React.FC<PracticeMeaningProps> = ({ level }) => {
       newMap.set(currentIndex, correct);
       return newMap;
     });
+
+    // Đánh dấu từ vựng đã học (test meaning)
+    markVocabularyLearned(level, currentWord, 'meaning', correct);
+
+    // Statistics tracking
+    const duration = Math.floor((Date.now() - sessionStartTime.current) / 1000);
+    addStudySession(level, correct ? 1 : 0, 1, duration, 'vocabulary-meaning');
+    sessionStartTime.current = Date.now();
   };
 
   const handleTypeCheck = () => {
-    if (!userAnswer.trim()) return;
+    if (!userAnswer.trim() || !currentWord) return;
     const correct = normalizeAnswer(userAnswer) === normalizeAnswer(currentWord.vietnamese);
     
     setIsCorrect(correct);
@@ -99,6 +112,14 @@ const PracticeMeaning: React.FC<PracticeMeaningProps> = ({ level }) => {
       newMap.set(currentIndex, correct);
       return newMap;
     });
+
+    // Đánh dấu từ vựng đã học (test meaning)
+    markVocabularyLearned(level, currentWord, 'meaning', correct);
+
+    // Statistics tracking
+    const duration = Math.floor((Date.now() - sessionStartTime.current) / 1000);
+    addStudySession(level, correct ? 1 : 0, 1, duration, 'vocabulary-meaning');
+    sessionStartTime.current = Date.now();
   };
 
   // Tính điểm dựa trên tổng số từ vựng

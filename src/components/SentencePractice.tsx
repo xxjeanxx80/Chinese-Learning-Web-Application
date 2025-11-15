@@ -1,6 +1,12 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import type React from 'react';
 import { getSentencesForLevelAndTopic, getSentencesForLevel } from '../utils/sentenceStorage';
+import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
+import { addStudySession } from '../utils/statisticsStorage';
+import { addToSRS, reviewSRSItem } from '../utils/srsStorage';
+import { addWrongSentence, markSentenceCorrect } from '../utils/sentenceWrongAnswersStorage';
+import { markSentenceLearned } from '../utils/learnedItemsStorage';
+import { Sentence } from '../data/sentences';
 import './SentencePractice.css';
 
 interface SentencePracticeProps {
@@ -142,7 +148,7 @@ const SentencePractice: React.FC<SentencePracticeProps> = ({ level, currentTopic
     setOptions(allOptions);
   };
 
-  const handleNext = () => {
+  const handleNext = useCallback(() => {
     if (practiceMode === 'flashcard') {
       // Navigate sequentially in flashcard mode
       if (currentIndex < sentences.length - 1) {
@@ -151,30 +157,35 @@ const SentencePractice: React.FC<SentencePracticeProps> = ({ level, currentTopic
         setCurrentIndex(0);
       }
       setIsFlipped(false);
+      sessionStartTime.current = Date.now(); // Reset timer
     } else {
       // Random navigation for other modes
-      if (currentTopic) {
-        const updatedSentences = getSentencesForLevelAndTopic(level, currentTopic);
-        if (updatedSentences.length > 0) {
-          const randomIndex = Math.floor(Math.random() * updatedSentences.length);
-          setCurrentIndex(randomIndex);
-          setIsFlipped(false);
-          setUserAnswer('');
-          setShowResult(false);
-          if (practiceMode === 'writing') {
-            generateOptions(randomIndex, updatedSentences);
-          }
+      const updatedSentences = currentTopic 
+        ? getSentencesForLevelAndTopic(level, currentTopic)
+        : getSentencesForLevel(level);
+      
+      if (updatedSentences.length > 0) {
+        const randomIndex = Math.floor(Math.random() * updatedSentences.length);
+        setCurrentIndex(randomIndex);
+        setIsFlipped(false);
+        setUserAnswer('');
+        setShowResult(false);
+        sessionStartTime.current = Date.now(); // Reset timer
+        if (practiceMode === 'writing') {
+          generateOptions(randomIndex, updatedSentences);
         }
       }
     }
-  };
+  }, [practiceMode, currentIndex, sentences.length, currentTopic, level]);
 
 
   const normalizeAnswer = (answer: string): string => {
     return answer.toLowerCase().trim().replace(/\s+/g, ' ');
   };
 
-  const handleCheck = (answer?: string) => {
+  const sessionStartTime = useRef<number>(Date.now());
+
+  const handleCheck = useCallback((answer?: string) => {
     if (!currentSentence) return;
 
     let correct = false;
@@ -194,13 +205,42 @@ const SentencePractice: React.FC<SentencePracticeProps> = ({ level, currentTopic
     setIsCorrect(correct);
     setShowResult(true);
     if (answer) setUserAnswer(answer);
+    
     // Lưu kết quả cho câu này
     setSentenceResults(prev => {
       const newMap = new Map(prev);
       newMap.set(currentIndex, correct);
       return newMap;
     });
-  };
+
+    // Tích hợp Statistics và Wrong Answers
+    const duration = Math.floor((Date.now() - sessionStartTime.current) / 1000);
+    
+    // Statistics: Track session
+    addStudySession(
+      level,
+      correct ? 1 : 0,
+      1,
+      duration,
+      `sentence-${practiceMode}`
+    );
+
+           // Wrong Answers: Track sentences
+           const sentenceTopic = currentSentence.category || currentTopic || 'daily';
+           if (correct) {
+             // Mark correct in wrong answers (if exists)
+             markSentenceCorrect(level, sentenceTopic, currentSentence);
+           } else {
+             // Add to wrong answers
+             addWrongSentence(level, sentenceTopic, currentSentence);
+           }
+
+           // Đánh dấu câu đã học (test type từ practiceMode)
+           markSentenceLearned(level, sentenceTopic, currentSentence, practiceMode as 'pinyin' | 'writing' | 'meaning', correct);
+
+           // Reset session timer
+           sessionStartTime.current = Date.now();
+  }, [currentSentence, userAnswer, practiceMode, currentIndex, level, currentTopic, normalizeAnswer]);
 
   const handleTypeCheck = () => {
     if (practiceMode === 'writing' && !userAnswer.trim()) return;
@@ -216,6 +256,45 @@ const SentencePractice: React.FC<SentencePracticeProps> = ({ level, currentTopic
       }
     }
   };
+
+  // Keyboard shortcuts - chỉ hoạt động khi không focus input
+  useKeyboardShortcuts({
+    onEnter: () => {
+      if (showResult) {
+        // Khi đã show result, Enter để next
+        handleNext();
+      } else if (practiceMode === 'flashcard') {
+        handleFlip();
+      } else {
+        // Khi chưa show result, Enter để check
+        if (practiceMode === 'writing' && !showOptions) {
+          handleTypeCheck();
+        } else if (practiceMode !== 'writing') {
+          handleCheck();
+        }
+      }
+    },
+    onSpace: () => {
+      if (practiceMode === 'flashcard' && !showResult) {
+        handleFlip();
+      } else if (showResult) {
+        handleNext();
+      }
+    },
+    onArrowLeft: () => {
+      if (practiceMode === 'flashcard') {
+        handlePrevious();
+      }
+    },
+    onArrowRight: () => {
+      if (showResult) {
+        handleNext();
+      } else if (practiceMode === 'flashcard') {
+        handleNext();
+      }
+    },
+    enabled: true,
+  });
 
   // Tính điểm dựa trên tổng số câu
   const score = useMemo(() => {

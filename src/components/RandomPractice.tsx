@@ -1,6 +1,8 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { Vocabulary } from '../data/vocabulary';
 import { getVocabulariesForLevel } from '../utils/vocabularyStorage';
+import { markVocabularyLearned } from '../utils/learnedItemsStorage';
+import { addStudySession } from '../utils/statisticsStorage';
 import './RandomPractice.css';
 
 interface RandomPracticeProps {
@@ -26,6 +28,7 @@ const RandomPractice: React.FC<RandomPracticeProps> = ({ level }) => {
   // Mỗi từ vựng chỉ được tính 1 lần (đúng nếu có ít nhất 1 câu đúng)
   const [wordResults, setWordResults] = useState<Map<string, boolean>>(new Map());
   const [options, setOptions] = useState<string[]>([]);
+  const sessionStartTime = useRef<number>(Date.now());
 
   useEffect(() => {
     const updatedVocab = getVocabulariesForLevel(level);
@@ -158,6 +161,14 @@ const RandomPractice: React.FC<RandomPracticeProps> = ({ level }) => {
       }
       return newMap;
     });
+
+    // Đánh dấu từ vựng đã học (test type từ currentQuestion.type)
+    markVocabularyLearned(level, currentQuestion.word, currentQuestion.type, correct);
+
+    // Statistics tracking
+    const duration = Math.floor((Date.now() - sessionStartTime.current) / 1000);
+    addStudySession(level, correct ? 1 : 0, 1, duration, `vocabulary-random-${currentQuestion.type}`);
+    sessionStartTime.current = Date.now();
   };
 
   // Tính điểm dựa trên tổng số từ vựng

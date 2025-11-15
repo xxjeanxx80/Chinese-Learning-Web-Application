@@ -3,6 +3,9 @@ import './App.css';
 import HSKLevelSelector from './components/HSKLevelSelector';
 import TopicSelector from './components/TopicSelector';
 import { resetScores, resetFlashcardProgress } from './utils/resetProgress';
+import { useTheme } from './contexts/ThemeContext';
+import KeyboardShortcutsModal from './components/KeyboardShortcutsModal';
+import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
 
 // Lazy load components để giảm bundle size ban đầu
 const CheckVocabulary = lazy(() => import('./components/CheckVocabulary'));
@@ -15,6 +18,8 @@ const SentencePractice = lazy(() => import('./components/SentencePractice'));
 const SentenceManager = lazy(() => import('./components/SentenceManager'));
 const RandomSentencePractice = lazy(() => import('./components/RandomSentencePractice'));
 const Translate = lazy(() => import('./components/Translate'));
+const StatisticsDashboard = lazy(() => import('./components/StatisticsDashboard'));
+const SRSReview = lazy(() => import('./components/SRSReview'));
 
 // Loading component đơn giản
 const ComponentLoader = () => (
@@ -30,13 +35,15 @@ const ComponentLoader = () => (
   </div>
 );
 
-type FunctionType = 'vocabulary' | 'flashcard' | 'writing' | 'meaning' | 'random' | 'manage' | 'sentence-pinyin' | 'sentence-flashcard' | 'sentence-writing' | 'sentence-meaning' | 'sentence-random' | 'sentence-manage' | 'translate';
+type FunctionType = 'vocabulary' | 'flashcard' | 'writing' | 'meaning' | 'random' | 'manage' | 'sentence-pinyin' | 'sentence-flashcard' | 'sentence-writing' | 'sentence-meaning' | 'sentence-random' | 'sentence-manage' | 'translate' | 'statistics' | 'srs';
 
 function App() {
+  const { theme, toggleTheme } = useTheme();
   const [currentLevel, setCurrentLevel] = useState<string>('hsk1');
   const [currentFunction, setCurrentFunction] = useState<FunctionType>('vocabulary');
   const [expandedMenu, setExpandedMenu] = useState<'vocab' | 'sentence' | null>('vocab');
   const [currentTopic, setCurrentTopic] = useState<string>('');
+  const [showShortcutsModal, setShowShortcutsModal] = useState(false);
 
   // Tự động chọn "Tất cả chủ đề" khi chuyển sang sentence mode
   useEffect(() => {
@@ -56,7 +63,7 @@ function App() {
       setExpandedMenu('vocab');
     } else if (func === 'sentence-pinyin' || func === 'sentence-flashcard' || func === 'sentence-writing' || func === 'sentence-meaning' || func === 'sentence-random' || func === 'sentence-manage') {
       setExpandedMenu('sentence');
-    } else if (func === 'translate') {
+    } else if (func === 'translate' || func === 'statistics' || func === 'srs') {
       setExpandedMenu(null);
     }
   }, []);
@@ -100,11 +107,15 @@ function App() {
         return <RandomSentencePractice {...sentenceProps} />;
       case 'sentence-manage':
         return <SentenceManager {...sentenceManagerProps} />;
-      case 'translate':
-        return <Translate currentLevel={currentLevel} />;
-      default:
-        return <CheckVocabulary {...props} />;
-    }
+            case 'translate':
+              return <Translate currentLevel={currentLevel} />;
+            case 'statistics':
+              return <StatisticsDashboard currentLevel={currentLevel} />;
+            case 'srs':
+              return <SRSReview level={currentLevel} />;
+            default:
+              return <CheckVocabulary {...props} />;
+          }
   }, [currentFunction, currentLevel, currentTopic]);
 
   const handleResetScores = useCallback(() => {
@@ -119,12 +130,42 @@ function App() {
     }
   }, []);
 
+  // Keyboard shortcuts
+  useKeyboardShortcuts({
+    onCtrlK: () => {
+      // Focus vào search box nếu có
+      const searchInput = document.querySelector('.search-input') as HTMLInputElement;
+      if (searchInput) {
+        searchInput.focus();
+      }
+    },
+    onEscape: () => {
+      if (showShortcutsModal) {
+        setShowShortcutsModal(false);
+      }
+    },
+  });
+
+  // Ctrl+/ or Cmd+/ để mở shortcuts modal
+  useEffect(() => {
+    const handleShortcutsModal = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === '/') {
+        e.preventDefault();
+        setShowShortcutsModal(prev => !prev);
+      }
+    };
+    document.addEventListener('keydown', handleShortcutsModal);
+    return () => {
+      document.removeEventListener('keydown', handleShortcutsModal);
+    };
+  }, []);
+
   return (
     <div className="app">
       <header className="app-header">
         <div className="header-content">
           <div className="header-title">
-            <h1>🦆 Tiếng Trung dễ với DUCK</h1>
+            <h1>🦆 德爱芳</h1>
           </div>
           <div className="header-actions">
             <HSKLevelSelector 
@@ -138,6 +179,14 @@ function App() {
                 onTopicChange={setCurrentTopic}
               />
             )}
+            <button
+              onClick={toggleTheme}
+              className="btn-theme-toggle"
+              title={theme === 'light' ? 'Chuyển sang Dark Mode' : 'Chuyển sang Light Mode'}
+              aria-label="Toggle theme"
+            >
+              {theme === 'light' ? '🌙' : '☀️'}
+            </button>
             <div className="reset-buttons-group">
               <button 
                 onClick={handleResetScores}
@@ -281,7 +330,7 @@ function App() {
                 )}
               </div>
 
-              {/* Dịch thuật */}
+              {/* Dịch thuật & Tiện ích */}
               <div className="menu-group">
                 <button
                   className={`menu-item menu-item-standalone ${currentFunction === 'translate' ? 'active' : ''}`}
@@ -289,6 +338,20 @@ function App() {
                 >
                   <span className="menu-icon">🌐</span>
                   <span className="menu-text">Dịch thuật</span>
+                </button>
+                <button
+                  className={`menu-item menu-item-standalone ${currentFunction === 'statistics' ? 'active' : ''}`}
+                  onClick={() => handleFunctionChange('statistics')}
+                >
+                  <span className="menu-icon">📊</span>
+                  <span className="menu-text">Thống kê</span>
+                </button>
+                <button
+                  className={`menu-item menu-item-standalone ${currentFunction === 'srs' ? 'active' : ''}`}
+                  onClick={() => handleFunctionChange('srs')}
+                >
+                  <span className="menu-icon">🔄</span>
+                  <span className="menu-text">SRS Review</span>
                 </button>
               </div>
             </nav>
@@ -301,6 +364,10 @@ function App() {
           </Suspense>
         </main>
       </div>
+      <KeyboardShortcutsModal 
+        isOpen={showShortcutsModal} 
+        onClose={() => setShowShortcutsModal(false)} 
+      />
     </div>
   );
 }

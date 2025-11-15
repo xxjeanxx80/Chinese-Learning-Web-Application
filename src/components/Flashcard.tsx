@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Vocabulary } from '../data/vocabulary';
 import { getVocabulariesForLevel } from '../utils/vocabularyStorage';
+import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
 import './Flashcard.css';
 
 interface FlashcardProps {
@@ -82,6 +83,19 @@ const Flashcard: React.FC<FlashcardProps> = ({ level }) => {
     setCurrentIndex(index);
     setIsFlipped(false);
   };
+
+  // Keyboard shortcuts
+  useKeyboardShortcuts({
+    onSpace: () => {
+      handleFlip();
+    },
+    onArrowLeft: () => {
+      handlePrevious();
+    },
+    onArrowRight: () => {
+      handleNext();
+    },
+  });
 
   if (!currentWord) {
     return <div className="flashcard-empty">Không có từ vựng cho cấp độ này</div>;

@@ -1,6 +1,8 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { Sentence } from '../data/sentences';
 import { getSentencesForLevelAndTopic } from '../utils/sentenceStorage';
+import { markSentenceLearned } from '../utils/learnedItemsStorage';
+import { addStudySession } from '../utils/statisticsStorage';
 import './RandomSentencePractice.css';
 
 interface RandomSentencePracticeProps {
@@ -27,6 +29,7 @@ const RandomSentencePractice: React.FC<RandomSentencePracticeProps> = ({ level, 
   // Mỗi câu chỉ được tính 1 lần (đúng nếu có ít nhất 1 câu đúng)
   const [sentenceResults, setSentenceResults] = useState<Map<string, boolean>>(new Map());
   const [options, setOptions] = useState<string[]>([]);
+  const sessionStartTime = useRef<number>(Date.now());
 
   useEffect(() => {
     if (currentTopic) {
@@ -163,6 +166,16 @@ const RandomSentencePractice: React.FC<RandomSentencePracticeProps> = ({ level, 
       }
       return newMap;
     });
+
+    // Đánh dấu câu đã học (test type từ currentQuestion.type)
+    if (currentTopic) {
+      markSentenceLearned(level, currentTopic, currentQuestion.sentence, currentQuestion.type, correct);
+    }
+
+    // Statistics tracking
+    const duration = Math.floor((Date.now() - sessionStartTime.current) / 1000);
+    addStudySession(level, correct ? 1 : 0, 1, duration, `sentence-random-${currentQuestion.type}`);
+    sessionStartTime.current = Date.now();
   };
 
   // Tính điểm dựa trên tổng số câu

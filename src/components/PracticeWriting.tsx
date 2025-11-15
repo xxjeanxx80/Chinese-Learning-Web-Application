@@ -1,6 +1,8 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { Vocabulary } from '../data/vocabulary';
 import { getVocabulariesForLevel } from '../utils/vocabularyStorage';
+import { markVocabularyLearned } from '../utils/learnedItemsStorage';
+import { addStudySession } from '../utils/statisticsStorage';
 import './PracticeWriting.css';
 
 interface PracticeWritingProps {
@@ -69,7 +71,10 @@ const PracticeWriting: React.FC<PracticeWritingProps> = ({ level }) => {
     setOptions(allOptions);
   };
 
+  const sessionStartTime = useRef<number>(Date.now());
+
   const handleCheck = (answer: string) => {
+    if (!currentWord) return;
     const correct = answer === currentWord.chinese;
     setIsCorrect(correct);
     setUserAnswer(answer);
@@ -80,10 +85,18 @@ const PracticeWriting: React.FC<PracticeWritingProps> = ({ level }) => {
       newMap.set(currentIndex, correct);
       return newMap;
     });
+
+    // Đánh dấu từ vựng đã học (test writing)
+    markVocabularyLearned(level, currentWord, 'writing', correct);
+
+    // Statistics tracking
+    const duration = Math.floor((Date.now() - sessionStartTime.current) / 1000);
+    addStudySession(level, correct ? 1 : 0, 1, duration, 'vocabulary-writing');
+    sessionStartTime.current = Date.now();
   };
 
   const handleTypeCheck = () => {
-    if (!userAnswer.trim()) return;
+    if (!userAnswer.trim() || !currentWord) return;
     const correct = userAnswer.trim() === currentWord.chinese;
     setIsCorrect(correct);
     setShowResult(true);
@@ -93,6 +106,14 @@ const PracticeWriting: React.FC<PracticeWritingProps> = ({ level }) => {
       newMap.set(currentIndex, correct);
       return newMap;
     });
+
+    // Đánh dấu từ vựng đã học (test writing)
+    markVocabularyLearned(level, currentWord, 'writing', correct);
+
+    // Statistics tracking
+    const duration = Math.floor((Date.now() - sessionStartTime.current) / 1000);
+    addStudySession(level, correct ? 1 : 0, 1, duration, 'vocabulary-writing');
+    sessionStartTime.current = Date.now();
   };
 
   // Tính điểm dựa trên tổng số từ vựng

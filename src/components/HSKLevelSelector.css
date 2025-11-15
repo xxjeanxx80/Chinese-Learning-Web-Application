@@ -44,12 +44,13 @@
   position: absolute;
   top: calc(100% + 10px);
   right: 0;
-  background: white;
+  background: var(--bg-card, #ffffff);
   border-radius: 15px;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 10px 40px var(--shadow, rgba(0, 0, 0, 0.2));
   min-width: 300px;
   overflow: hidden;
   animation: slideDown 0.3s ease;
+  color: var(--text-primary, #333);
 }
 
 @keyframes slideDown {
