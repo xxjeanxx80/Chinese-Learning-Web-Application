@@ -92,9 +92,14 @@ export const useKeyboardShortcuts = (config: KeyboardShortcutsConfig) => {
   useEffect(() => {
     const element = target || document;
     if (enabled) {
-      element.addEventListener('keydown', handleKeyDown);
+      const listener = (event: Event) => {
+        if (event instanceof KeyboardEvent) {
+          handleKeyDown(event);
+        }
+      };
+      element.addEventListener('keydown', listener);
       return () => {
-        element.removeEventListener('keydown', handleKeyDown);
+        element.removeEventListener('keydown', listener);
       };
     }
   }, [enabled, handleKeyDown, target]);

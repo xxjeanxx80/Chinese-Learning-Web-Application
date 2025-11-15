@@ -132,49 +132,48 @@ const Translate: React.FC<TranslateProps> = ({ currentLevel = 'hsk1' }) => {
     
     try {
       // Sử dụng thư viện pinyin-pro đã cài đặt
-      // pinyin-pro với type: 'all' sẽ trả về string có cả chữ Hán và pinyin
-      // Chúng ta cần extract chỉ phần pinyin
-      
-      // Thử với type: 'tone' trước (chỉ trả về pinyin, không có chữ Hán)
-      let pinyinResult = pinyin(chinese, {
+      // pinyin-pro với type: 'all' sẽ trả về AllData[] (mảng chứa object với origin, pinyin, etc.)
+      const pinyinResult = pinyin(chinese, {
         toneType: 'symbol', // Có dấu thanh điệu: nǐ hǎo
-        type: 'tone', // Chỉ trả về pinyin
-        multiple: false,
-      });
-
-      console.log('pinyin-pro result (type: tone):', pinyinResult);
-
-      if (pinyinResult && typeof pinyinResult === 'string' && pinyinResult.trim()) {
-        const cleanPinyin = pinyinResult.trim();
-        if (cleanPinyin && /[a-zāáǎàēéěèīíǐìōóǒòūúǔùǖǘǚǜ]/.test(cleanPinyin)) {
-          setIsLoadingPinyin(false);
-          console.log('Pinyin result (tone):', cleanPinyin);
-          return cleanPinyin;
-        }
-      }
-
-      // Nếu type: 'tone' không hoạt động, thử với type: 'all'
-      pinyinResult = pinyin(chinese, {
-        toneType: 'symbol',
-        type: 'all', // Trả về tất cả
+        type: 'all', // Trả về AllData[]
         multiple: false,
       });
 
       console.log('pinyin-pro result (type: all):', pinyinResult);
 
-      if (pinyinResult && typeof pinyinResult === 'string') {
-        // Loại bỏ chữ Hán và chỉ giữ lại pinyin
-        let cleanPinyin = pinyinResult
+      // Xử lý kết quả: pinyinResult có thể là AllData[] hoặc string
+      let cleanPinyin = '';
+      
+      if (Array.isArray(pinyinResult)) {
+        // Nếu là mảng AllData[], extract pinyin từ mỗi item
+        cleanPinyin = pinyinResult
+          .map((item: any) => {
+            // item có thể là AllData object hoặc string
+            if (typeof item === 'string') {
+              // Nếu là string, loại bỏ chữ Hán
+              return item.replace(/[\u4e00-\u9fff]/g, '').trim();
+            } else if (item && typeof item === 'object' && item.pinyin) {
+              // Nếu là AllData object, lấy property pinyin
+              return item.pinyin || '';
+            }
+            return '';
+          })
+          .filter((p: string) => p && /[a-zāáǎàēéěèīíǐìōóǒòūúǔùǖǘǚǜ]/.test(p))
+          .join(' ')
+          .trim();
+      } else if (typeof pinyinResult === 'string') {
+        // Nếu là string, loại bỏ chữ Hán
+        cleanPinyin = pinyinResult
           .replace(/[\u4e00-\u9fff]/g, '') // Loại bỏ chữ Hán
           .replace(/[^\w\sāáǎàēéěèīíǐìōóǒòūúǔùǖǘǚǜ]/g, ' ') // Loại bỏ ký tự đặc biệt
           .replace(/\s+/g, ' ') // Chuẩn hóa khoảng trắng
           .trim();
-        
-        if (cleanPinyin && /[a-zāáǎàēéěèīíǐìōóǒòūúǔùǖǘǚǜ]/.test(cleanPinyin)) {
-          setIsLoadingPinyin(false);
-          console.log('Pinyin result (all):', cleanPinyin);
-          return cleanPinyin;
-        }
+      }
+      
+      if (cleanPinyin && /[a-zāáǎàēéěèīíǐìōóǒòūúǔùǖǘǚǜ]/.test(cleanPinyin)) {
+        setIsLoadingPinyin(false);
+        console.log('Pinyin result:', cleanPinyin);
+        return cleanPinyin;
       }
     } catch (err) {
       console.log('Lỗi khi lấy pinyin từ pinyin-pro:', err);
