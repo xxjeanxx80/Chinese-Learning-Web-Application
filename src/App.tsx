@@ -8,6 +8,7 @@ import SupportModal from './components/SupportModal';
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
 import MobileDrawer from './components/MobileDrawer';
 import BottomNavBar from './components/BottomNavBar';
+import { Analytics } from '@vercel/analytics/react';
 
 // Lazy load components để giảm bundle size ban đầu
 const CheckVocabulary = lazy(() => import('./components/CheckVocabulary'));
@@ -527,6 +528,8 @@ function App() {
       {showSupportModal && (
         <SupportModal onClose={() => setShowSupportModal(false)} />
       )}
+
+      <Analytics />
     </div>
   );
 }
