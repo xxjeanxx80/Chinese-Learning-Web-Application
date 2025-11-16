@@ -1,6 +1,10 @@
 .statistics-dashboard {
   padding: 20px;
   color: var(--text-primary, #333);
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+  box-sizing: border-box;
 }
 
 .stats-header {
@@ -10,6 +14,10 @@
   margin-bottom: 30px;
   padding-bottom: 15px;
   border-bottom: 2px solid var(--border-color, #e0e0e0);
+  flex-wrap: wrap;
+  gap: 15px;
+  width: 100%;
+  max-width: 100%;
 }
 
 .stats-header h2 {
@@ -100,6 +108,9 @@
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 20px;
   margin-bottom: 30px;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 .stat-card {
@@ -150,6 +161,9 @@
   display: flex;
   flex-direction: column;
   gap: 30px;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
 }
 
 .stats-period-selector {
@@ -311,6 +325,9 @@
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
   gap: 20px;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 .level-stat-card {
@@ -387,31 +404,188 @@
 }
 
 @media (max-width: 768px) {
-  .stats-overview {
-    grid-template-columns: repeat(2, 1fr);
+  .statistics-dashboard {
+    padding: 15px 10px;
   }
 
   .stats-header {
     flex-direction: column;
     align-items: flex-start;
-    gap: 16px;
+    gap: 12px;
+    margin-bottom: 20px;
+    padding-bottom: 12px;
+  }
+
+  .stats-header h2 {
+    font-size: 1.4rem;
+    width: 100%;
+  }
+
+  .btn-reset-stats {
+    padding: 8px 16px;
+    font-size: 0.85rem;
+    width: 100%;
+  }
+
+  .stats-overview {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+
+  .stat-card {
+    padding: 15px;
+    gap: 12px;
+    min-width: 0;
+  }
+
+  .stat-icon {
+    font-size: 2rem;
+    flex-shrink: 0;
+  }
+
+  .stat-value {
+    font-size: 1.6rem;
+  }
+
+  .stat-label {
+    font-size: 0.8rem;
+  }
+
+  .stat-sublabel {
+    font-size: 0.7rem;
+  }
+
+  .stats-details {
+    gap: 20px;
+  }
+
+  .stats-by-level,
+  .stats-daily {
+    padding: 15px;
+  }
+
+  .stats-by-level h3,
+  .stats-daily h3 {
+    font-size: 1.1rem;
+    margin-bottom: 15px;
+  }
+
+  .stats-period-selector {
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 15px;
+  }
+
+  .stats-period-selector button {
+    padding: 8px 16px;
+    font-size: 0.85rem;
+    flex: 1;
+    min-width: 90px;
+  }
+
+  .level-stats-grid {
+    grid-template-columns: 1fr;
+    gap: 15px;
+  }
+
+  .level-stat-card {
+    padding: 15px;
+    min-width: 0;
+  }
+
+  .level-stat-header h4 {
+    font-size: 1rem;
+  }
+
+  .level-stat-value {
+    font-size: 1.1rem;
+  }
+
+  .level-stat-label {
+    font-size: 0.85rem;
+  }
+
+  .level-accuracy-details {
+    font-size: 0.75rem;
   }
 
   .daily-stat-item {
     flex-direction: column;
     align-items: flex-start;
+    padding: 12px;
+    gap: 12px;
+  }
+
+  .daily-date {
+    min-width: auto;
+    width: 100%;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border-color, #e0e0e0);
+  }
+
+  .daily-stats {
+    width: 100%;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+
+  .daily-stat {
+    gap: 2px;
+  }
+
+  .daily-stat-label {
+    font-size: 0.75rem;
+  }
+
+  .daily-stat-value {
+    font-size: 1rem;
   }
 
   .accuracy-item {
     flex-direction: column;
     align-items: flex-start;
+    width: 100%;
   }
 
   .accuracy-bar-container {
     width: 100%;
   }
+}
 
-  .level-stats-grid {
+@media (max-width: 480px) {
+  .statistics-dashboard {
+    padding: 10px 8px;
+  }
+
+  .stats-header h2 {
+    font-size: 1.2rem;
+  }
+
+  .stats-overview {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .stat-card {
+    padding: 12px;
+  }
+
+  .stat-icon {
+    font-size: 1.8rem;
+  }
+
+  .stat-value {
+    font-size: 1.4rem;
+  }
+
+  .stats-period-selector button {
+    padding: 7px 12px;
+    font-size: 0.75rem;
+    min-width: 70px;
+  }
+
+  .daily-stats {
     grid-template-columns: 1fr;
   }
 }
