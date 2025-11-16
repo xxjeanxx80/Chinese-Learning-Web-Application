@@ -4,6 +4,7 @@ import HSKLevelSelector from './components/HSKLevelSelector';
 import TopicSelector from './components/TopicSelector';
 import { useTheme } from './contexts/ThemeContext';
 import KeyboardShortcutsModal from './components/KeyboardShortcutsModal';
+import SupportModal from './components/SupportModal';
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
 import MobileDrawer from './components/MobileDrawer';
 import BottomNavBar from './components/BottomNavBar';
@@ -45,6 +46,7 @@ function App() {
   const [expandedMenu, setExpandedMenu] = useState<'vocab' | 'sentence' | null>('vocab');
   const [currentTopic, setCurrentTopic] = useState<string>('');
   const [showShortcutsModal, setShowShortcutsModal] = useState(false);
+  const [showSupportModal, setShowSupportModal] = useState(false);
   const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false);
 
   // Tự động chọn "Tất cả chủ đề" khi chuyển sang sentence mode
@@ -169,6 +171,15 @@ function App() {
             <h1>🦆 德爱芳</h1>
           </div>
           <div className="header-actions">
+            <button
+              onClick={() => setShowSupportModal(true)}
+              className="btn-support-header"
+              title="Ủng hộ dự án"
+            >
+              <span>☕</span>
+              <span className="support-text">Mời tôi một cốc cà phê</span>
+              <span>❤️</span>
+            </button>
             <HSKLevelSelector 
               currentLevel={currentLevel}
               onLevelChange={setCurrentLevel}
@@ -490,6 +501,7 @@ function App() {
                   <span className="menu-text">SRS Review</span>
                 </button>
               </div>
+
             </nav>
           </div>
         </aside>
@@ -511,6 +523,10 @@ function App() {
         isOpen={showShortcutsModal} 
         onClose={() => setShowShortcutsModal(false)} 
       />
+
+      {showSupportModal && (
+        <SupportModal onClose={() => setShowSupportModal(false)} />
+      )}
     </div>
   );
 }

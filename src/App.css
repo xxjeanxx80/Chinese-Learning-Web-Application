@@ -354,6 +354,62 @@
   flex: 1;
 }
 
+.btn-support-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.15);
+  color: white;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  backdrop-filter: blur(10px);
+  font-size: 0.85rem;
+  font-weight: 600;
+  white-space: nowrap;
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-support-header::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s;
+}
+
+.btn-support-header:hover::before {
+  left: 100%;
+}
+
+.btn-support-header:hover {
+  background: rgba(255, 255, 255, 0.25);
+  border-color: rgba(255, 255, 255, 0.5);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+}
+
+.btn-support-header:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.btn-support-header .support-text {
+  display: inline-block;
+}
+
+.btn-support-header span:first-child,
+.btn-support-header span:last-child {
+  font-size: 1rem;
+}
+
 .app-main {
   flex: 1;
   background: var(--bg-card, #ffffff);
@@ -389,6 +445,26 @@
 
   .header-title h1 {
     margin: 0;
+  }
+
+  .header-actions {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .btn-support-header {
+    padding: 6px 12px;
+    font-size: 0.75rem;
+    gap: 4px;
+  }
+
+  .btn-support-header .support-text {
+    display: inline-block;
+  }
+
+  .btn-support-header span:first-child,
+  .btn-support-header span:last-child {
+    font-size: 0.9rem;
   }
 
   /* App layout adjustments */

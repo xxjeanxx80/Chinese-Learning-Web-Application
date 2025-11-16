@@ -301,6 +301,9 @@ const SentenceManager: React.FC<SentenceManagerProps> = ({ currentLevel, current
 
       <div className="add-sentence-form">
         <h3>{editingIndex !== null ? '✏️ Sửa câu' : '➕ Thêm câu mới'}</h3>
+        <div className="form-hint">
+          💡 Gợi ý: Bạn có thể thêm câu tự động bằng cách sử dụng mục <strong>Dịch thuật</strong> ở menu bên trái. Sau khi dịch, click nút "💬 Thêm vào câu" để thêm nhanh.
+        </div>
         <form onSubmit={handleSubmit}>
           <div className="form-row">
             <div className="form-group">

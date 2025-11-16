@@ -64,9 +64,25 @@
 }
 
 .add-vocab-form h3 {
-  margin: 0 0 20px 0;
+  margin: 0 0 15px 0;
   color: var(--text-primary, #333);
   font-size: 1.4rem;
+}
+
+.form-hint {
+  background: rgba(102, 126, 234, 0.1);
+  border-left: 4px solid var(--accent-primary, #667eea);
+  padding: 12px 15px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: var(--text-secondary, #666);
+}
+
+.form-hint strong {
+  color: var(--accent-primary, #667eea);
+  font-weight: 600;
 }
 
 .form-row {
