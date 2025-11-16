@@ -50,6 +50,32 @@ function App() {
   const [showSupportModal, setShowSupportModal] = useState(false);
   const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false);
 
+  // Xóa tất cả dữ liệu localStorage khi app load
+  useEffect(() => {
+    // Xóa tất cả keys liên quan đến từ vựng, câu và dịch thuật
+    const keysToRemove = [
+      'hsk_custom_vocabularies',
+      'hsk_vocabulary_overrides',
+      'hsk_custom_sentences',
+      'translationCache',
+      'hsk_learned_vocabularies',
+      'hsk_learned_sentences',
+      'hsk_wrong_answers',
+      'hsk_statistics',
+      'hsk_srs_data'
+    ];
+    
+    keysToRemove.forEach(key => {
+      try {
+        localStorage.removeItem(key);
+      } catch (error) {
+        console.error(`Error removing ${key}:`, error);
+      }
+    });
+    
+    console.log('✅ Đã xóa tất cả dữ liệu localStorage');
+  }, []);
+
   // Tự động chọn "Tất cả chủ đề" khi chuyển sang sentence mode
   useEffect(() => {
     const isSentenceMode = currentFunction.startsWith('sentence-');

@@ -75,7 +75,6 @@ npm run import:csv data/your-file.csv
 npm run import:json data/your-file.json
 ```
 
-**📖 Xem hướng dẫn chi tiết:** [README-IMPORT.md](./README-IMPORT.md)
 
 **Nguồn dữ liệu gợi ý:**
 - Copy từ bảng Excel/Google Sheets

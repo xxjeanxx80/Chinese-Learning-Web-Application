@@ -6,7 +6,8 @@ import {
   removeVocabulary,
   updateVocabulary,
   clearAllCustomVocabularies,
-  exportCustomVocabularies,
+  clearAllVocabularies,
+  exportVocabulariesForLevel,
   importCustomVocabulariesFromExcel,
   getVocabulariesForLevel
 } from '../utils/vocabularyStorage';
@@ -43,6 +44,19 @@ const VocabularyManager: React.FC<VocabularyManagerProps> = ({ currentLevel }) =
     setAllVocab(allVocabMemo);
     setCurrentPage(1); // Reset về trang 1 khi danh sách thay đổi
   }, [allVocabMemo]);
+
+  // Listen for vocabulary updates
+  useEffect(() => {
+    const handleVocabUpdate = () => {
+      setCustomVocab(getCustomVocabularies());
+    };
+    
+    window.addEventListener('vocabUpdated', handleVocabUpdate);
+    
+    return () => {
+      window.removeEventListener('vocabUpdated', handleVocabUpdate);
+    };
+  }, []);
 
   const handleInputChange = useCallback((field: keyof Vocabulary, value: string) => {
     setFormData(prev => ({
@@ -106,10 +120,38 @@ const VocabularyManager: React.FC<VocabularyManagerProps> = ({ currentLevel }) =
     }
   };
 
+  const handleClearAll = () => {
+    if (window.confirm('Bạn có chắc muốn xóa TẤT CẢ từ vựng tự thêm và từ đã chỉnh sửa?\n\nLưu ý: Từ mặc định (trong code) không thể xóa, chỉ có thể xóa:\n- Từ vựng tự thêm\n- Từ mặc định đã chỉnh sửa (sẽ trở về bản gốc)\n\nHành động này không thể hoàn tác!')) {
+      try {
+        clearAllVocabularies();
+        const newCustomVocab = getCustomVocabularies();
+        setCustomVocab(newCustomVocab);
+        setEditingIndex(null);
+        setFormData({ chinese: '', pinyin: '', vietnamese: '' });
+        // Force re-render by dispatching event
+        window.dispatchEvent(new Event('vocabUpdated'));
+        // Force component update
+        setTimeout(() => {
+          setCustomVocab(getCustomVocabularies());
+          alert('Đã xóa tất cả từ vựng tự thêm và từ đã chỉnh sửa!\n\nTừ mặc định vẫn hiển thị vì chúng được lưu trong code.');
+        }, 100);
+      } catch (error) {
+        console.error('Error clearing all vocabularies:', error);
+        alert('Lỗi khi xóa từ vựng! Vui lòng thử lại.');
+      }
+    }
+  };
+
   const [importMode, setImportMode] = useState<'merge' | 'replace'>('merge');
 
   const handleExport = () => {
-    exportCustomVocabularies();
+    // Export chỉ từ tự thêm của level hiện tại
+    exportVocabulariesForLevel(currentLevel, false);
+  };
+  
+  const handleExportAll = () => {
+    // Export tất cả (default + custom) của level hiện tại
+    exportVocabulariesForLevel(currentLevel, true);
   };
 
   const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -172,9 +214,16 @@ const VocabularyManager: React.FC<VocabularyManagerProps> = ({ currentLevel }) =
             <button 
               onClick={handleExport} 
               className="btn-export-compact"
-              title="Format: A1=Chữ Hán, B1=Pinyin, C1=Nghĩa tiếng Việt"
+              title="Sao lưu chỉ từ vựng tự thêm (Format: A1=Chữ Hán, B1=Pinyin, C1=Nghĩa tiếng Việt)"
             >
-              📥 Sao lưu Excel
+              📥 Sao lưu (tự thêm)
+            </button>
+            <button 
+              onClick={handleExportAll} 
+              className="btn-export-compact"
+              title="Sao lưu tất cả từ vựng (bao gồm từ mặc định và đã chỉnh sửa)"
+            >
+              📥 Sao lưu tất cả
             </button>
             <div className="import-compact-wrapper">
               <label className="btn-import-compact">
@@ -302,11 +351,23 @@ const VocabularyManager: React.FC<VocabularyManagerProps> = ({ currentLevel }) =
                 </button>
               )}
             </div>
-            {customVocabList.length > 0 && (
-              <button onClick={handleClear} className="btn-danger">
-                🗑️ Xóa tất cả từ tự thêm
+            <div className="list-header-buttons">
+              {customVocabList.length > 0 && (
+                <button onClick={handleClear} className="btn-danger">
+                  🗑️ Xóa tất cả từ tự thêm
+                </button>
+              )}
+              <button 
+                onClick={(e) => {
+                  e.preventDefault();
+                  handleClearAll();
+                }}
+                className="btn-danger"
+                title="Xóa tất cả từ vựng tự thêm và từ đã chỉnh sửa (từ mặc định trong code không thể xóa)"
+              >
+                🗑️ Xóa tất cả từ tự thêm và đã chỉnh sửa
               </button>
-            )}
+            </div>
           </div>
         </div>
 

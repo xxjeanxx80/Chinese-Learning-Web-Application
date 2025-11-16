@@ -174,10 +174,13 @@ export function exportCustomSentences(includeDefault: boolean = false, level?: s
     
     // Tạo sheet tổng hợp
     const allData = [
-      ['Chữ Hán', 'Pinyin', 'Nghĩa tiếng Việt', 'Category'] // Header row
+      ['HSK Level', 'Chữ Hán', 'Pinyin', 'Nghĩa tiếng Việt', 'Category'] // Header row
     ];
     
     levels.forEach((lvl) => {
+      // Extract level number (e.g., "hsk1" -> "1")
+      const levelNum = lvl.replace(/hsk/i, '');
+      
       // Export câu mặc định nếu được yêu cầu
       if (includeDefault) {
         const allTopics = getTopicsForLevel(lvl);
@@ -186,6 +189,7 @@ export function exportCustomSentences(includeDefault: boolean = false, level?: s
           const defaultSentences = getSentencesByLevel(lvl).filter(s => s.category === topic);
           defaultSentences.forEach(sentence => {
             allData.push([
+              levelNum,
               sentence.chinese || '',
               sentence.pinyin || '',
               sentence.vietnamese || '',
@@ -200,6 +204,7 @@ export function exportCustomSentences(includeDefault: boolean = false, level?: s
       Object.entries(levelData).forEach(([topic, sentences]) => {
         sentences.forEach(sentence => {
           allData.push([
+            levelNum,
             sentence.chinese || '',
             sentence.pinyin || '',
             sentence.vietnamese || '',
@@ -212,6 +217,7 @@ export function exportCustomSentences(includeDefault: boolean = false, level?: s
     // Luôn tạo worksheet
     const worksheet = XLSX.utils.aoa_to_sheet(allData);
     worksheet['!cols'] = [
+      { wch: 10 },  // HSK Level
       { wch: 30 },  // Chữ Hán
       { wch: 30 },  // Pinyin
       { wch: 40 },  // Nghĩa tiếng Việt
@@ -230,9 +236,11 @@ export function exportCustomSentences(includeDefault: boolean = false, level?: s
 
 /**
  * Import câu custom từ Excel (merge hoặc replace)
- * Format: A1=Chữ Hán, B1=Pinyin, C1=Nghĩa tiếng Việt, D1=Category
+ * Format hỗ trợ 2 cách:
+ * 1. Format mới: A1=HSK Level, B1=Chữ Hán, C1=Pinyin, D1=Nghĩa tiếng Việt, E1=Category (tự động phân loại theo HSK Level)
+ * 2. Format cũ: A1=Chữ Hán, B1=Pinyin, C1=Nghĩa tiếng Việt, D1=Category (import vào level chỉ định)
  * @param file Excel file
- * @param level Level HSK để import vào
+ * @param level Level HSK để import vào (nếu file không có cột HSK Level)
  * @param merge true = merge với dữ liệu hiện có, false = thay thế hoàn toàn
  */
 export function importCustomSentencesFromExcel(file: File, level: string, merge: boolean = true): Promise<{ success: boolean; message: string; added: number; errors: number }> {
@@ -261,6 +269,35 @@ export function importCustomSentencesFromExcel(file: File, level: string, merge:
           return;
         }
 
+        // Phân tích header để xác định vị trí cột (hỗ trợ nhiều format)
+        const headerRow = jsonData[0];
+        const header = headerRow.map((h: any) => String(h || '').toLowerCase().trim());
+        
+        // Tìm vị trí các cột
+        const levelIndex = header.findIndex(h => 
+          (h.includes('hsk') && (h.includes('level') || h.includes('cấp'))) || 
+          h === 'level' || h === 'hsk_level' || h === 'hsk'
+        );
+        const chineseIndex = header.findIndex(h => 
+          h.includes('chữ hán') || h.includes('chinese') || h.includes('hanzi') || 
+          h.includes('汉字') || h.includes('từ') || h === 'char' || h === 'character'
+        );
+        const pinyinIndex = header.findIndex(h => 
+          h.includes('pinyin') || h.includes('拼音')
+        );
+        const vietnameseIndex = header.findIndex(h => 
+          h.includes('tiếng việt') || h.includes('vietnamese') || h.includes('nghĩa') || 
+          h.includes('meaning') || h.includes('translation') || h === 'vietnamese'
+        );
+        const categoryIndex = header.findIndex(h => 
+          h.includes('category') || h.includes('chủ đề') || h.includes('topic') || 
+          h.includes('loại') || h === 'category'
+        );
+        
+        // Fallback: nếu không tìm thấy header, sử dụng vị trí mặc định
+        const hasHeader = header.some(h => h.includes('hsk') || h.includes('level') || h.includes('chữ') || h.includes('category'));
+        const startRow = hasHeader ? 1 : 0;
+
         const currentCustom = getCustomSentences();
         const result: CustomSentences = merge ? { ...currentCustom } : {
           hsk1: {},
@@ -282,24 +319,47 @@ export function importCustomSentencesFromExcel(file: File, level: string, merge:
           });
           return;
         }
-        
-        if (!result[targetLevel]) {
-          result[targetLevel] = {};
-        }
 
         let totalAdded = 0;
         let totalErrors = 0;
         const topicStats: Record<string, number> = {};
 
-        // Bỏ qua dòng header (dòng đầu tiên)
-        for (let i = 1; i < jsonData.length; i++) {
+        // Bỏ qua dòng header (nếu có)
+        for (let i = startRow; i < jsonData.length; i++) {
           const row = jsonData[i];
           
-          // Format: A=Chữ Hán, B=Pinyin, C=Nghĩa tiếng Việt, D=Category
-          const chinese = String(row[0] || '').trim();
-          const pinyin = String(row[1] || '').trim();
-          const vietnamese = String(row[2] || '').trim();
-          const category = String(row[3] || '').trim().toLowerCase();
+          // Lấy dữ liệu từ các cột (theo index hoặc vị trí mặc định)
+          let hskLevelRaw = '';
+          let chinese = '';
+          let pinyin = '';
+          let vietnamese = '';
+          let category = '';
+          
+          if (hasHeader && header.length > 0) {
+            // Sử dụng header để xác định vị trí cột
+            hskLevelRaw = levelIndex >= 0 ? String(row[levelIndex] || '').trim() : '';
+            chinese = chineseIndex >= 0 ? String(row[chineseIndex] || '').trim() : String(row[0] || '').trim();
+            pinyin = pinyinIndex >= 0 ? String(row[pinyinIndex] || '').trim() : String(row[1] || '').trim();
+            vietnamese = vietnameseIndex >= 0 ? String(row[vietnameseIndex] || '').trim() : String(row[2] || '').trim();
+            category = categoryIndex >= 0 ? String(row[categoryIndex] || '').trim().toLowerCase() : String(row[3] || '').trim().toLowerCase();
+          } else {
+            // Format mặc định: A=HSK Level (optional), B=Chữ Hán, C=Pinyin, D=Nghĩa tiếng Việt, E=Category
+            hskLevelRaw = String(row[0] || '').trim();
+            // Nếu cột đầu tiên là số (HSK level), thì shift sang phải
+            const isLevelCol = /^\d+$/.test(hskLevelRaw);
+            if (isLevelCol) {
+              chinese = String(row[1] || '').trim();
+              pinyin = String(row[2] || '').trim();
+              vietnamese = String(row[3] || '').trim();
+              category = String(row[4] || '').trim().toLowerCase();
+            } else {
+              // Format cũ: A=Chữ Hán, B=Pinyin, C=Nghĩa tiếng Việt, D=Category
+              chinese = String(row[0] || '').trim();
+              pinyin = String(row[1] || '').trim();
+              vietnamese = String(row[2] || '').trim();
+              category = String(row[3] || '').trim().toLowerCase();
+            }
+          }
           
           // Bỏ qua dòng trống
           if (!chinese && !pinyin && !vietnamese) {
@@ -313,6 +373,33 @@ export function importCustomSentencesFromExcel(file: File, level: string, merge:
             continue;
           }
 
+          // Xác định HSK level từ cột hoặc từ targetLevel
+          let actualLevel = targetLevel;
+          if (hskLevelRaw) {
+            // Extract số từ level (ví dụ: "1", "HSK1", "hsk1", "HSK 1")
+            const levelMatch = hskLevelRaw.toString().match(/\d+/);
+            if (levelMatch) {
+              const levelNum = parseInt(levelMatch[0]);
+              if (levelNum >= 1 && levelNum <= 5) {
+                actualLevel = `hsk${levelNum}`;
+              }
+            }
+          }
+
+          // Nếu level khác targetLevel, cần xử lý đúng level
+          if (actualLevel !== targetLevel) {
+            // Đảm bảo level này tồn tại trong result
+            if (!result[actualLevel]) {
+              result[actualLevel] = {};
+            }
+          }
+          
+          // Đảm bảo targetLevel hoặc actualLevel tồn tại
+          const finalLevel = actualLevel !== targetLevel ? actualLevel : targetLevel;
+          if (!result[finalLevel]) {
+            result[finalLevel] = {};
+          }
+
           // Nếu không có category, mặc định là 'daily'
           const topic = category || 'daily';
           
@@ -324,8 +411,8 @@ export function importCustomSentencesFromExcel(file: File, level: string, merge:
             continue;
           }
           
-          if (!result[targetLevel][topic]) {
-            result[targetLevel][topic] = [];
+          if (!result[finalLevel][topic]) {
+            result[finalLevel][topic] = [];
           }
 
           const sentence: Sentence = {
@@ -335,12 +422,12 @@ export function importCustomSentencesFromExcel(file: File, level: string, merge:
             category: topic
           };
 
-          // Check duplicate - chỉ check chữ Hán (A1)
-          const existingChinese = new Set(result[targetLevel][topic].map(s => s.chinese));
+          // Check duplicate - chỉ check chữ Hán trong cùng level và topic
+          const existingChinese = new Set(result[finalLevel][topic].map(s => s.chinese));
           const isDuplicate = existingChinese.has(sentence.chinese);
 
           if (!isDuplicate) {
-            result[targetLevel][topic].push(sentence);
+            result[finalLevel][topic].push(sentence);
             existingChinese.add(sentence.chinese);
             totalAdded++;
             topicStats[topic] = (topicStats[topic] || 0) + 1;
@@ -350,8 +437,12 @@ export function importCustomSentencesFromExcel(file: File, level: string, merge:
         // Save result
         saveCustomSentences(result);
 
+        // Nếu có HSK level trong file, có thể import vào nhiều level khác nhau
+        const levelMsg = hasHeader && levelIndex >= 0 
+          ? 'các level' 
+          : targetLevel.toUpperCase();
         const topicList = Object.keys(topicStats).join(', ');
-        const message = `Import thành công! Đã thêm ${totalAdded} câu vào ${targetLevel.toUpperCase()}${topicList ? ` (${topicList})` : ''}${totalErrors > 0 ? `, ${totalErrors} lỗi đã bỏ qua.` : '.'}`;
+        const message = `Import thành công! Đã thêm ${totalAdded} câu vào ${levelMsg}${topicList ? ` (${topicList})` : ''}${totalErrors > 0 ? `, ${totalErrors} lỗi đã bỏ qua.` : '.'}`;
         resolve({ success: true, message, added: totalAdded, errors: totalErrors });
       } catch (error) {
         console.error('Error importing sentences from Excel:', error);

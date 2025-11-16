@@ -7,7 +7,9 @@
     "build": "tsc && vite build",
     "preview": "vite preview",
     "import:csv": "tsx scripts/import-csv.ts",
-    "import:json": "tsx scripts/import-json.ts"
+    "import:json": "tsx scripts/import-json.ts",
+    "import:excel": "tsx scripts/import-from-excel.ts",
+    "import:ngongu": "tsx scripts/import-ngongu-excel.ts"
   },
   "dependencies": {
     "@vercel/analytics": "^1.5.0",
