@@ -731,7 +731,6 @@ const Translate: React.FC<TranslateProps> = ({ currentLevel = 'hsk1' }) => {
                     onChange={(e) => setPinyinInput(e.target.value)}
                     placeholder="VD: nǐ hǎo"
                     className="modal-input"
-                    autoFocus
                   />
                 )}
               </div>

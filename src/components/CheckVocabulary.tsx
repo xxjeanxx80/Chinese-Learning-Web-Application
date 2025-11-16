@@ -178,7 +178,6 @@ const CheckVocabulary: React.FC<CheckVocabularyProps> = ({ level }) => {
           onKeyPress={handleKeyPress}
           placeholder="Ví dụ: nǐ hǎo"
           disabled={showResult}
-          autoFocus
         />
         
         {!showResult && (

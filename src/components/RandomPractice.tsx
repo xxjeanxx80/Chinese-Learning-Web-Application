@@ -243,7 +243,6 @@ const RandomPractice: React.FC<RandomPracticeProps> = ({ level }) => {
             onKeyPress={handleKeyPress}
             placeholder="Nhập đáp án..."
             disabled={showResult}
-            autoFocus
           />
           {!showResult && (
             <button className="check-button" onClick={() => handleCheck()}>

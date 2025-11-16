@@ -221,7 +221,6 @@ const PracticeMeaning: React.FC<PracticeMeaningProps> = ({ level }) => {
             onKeyPress={handleKeyPress}
             placeholder="Nhập nghĩa tiếng Việt..."
             disabled={showResult}
-            autoFocus
           />
           {!showResult && (
             <button className="check-button" onClick={handleTypeCheck}>

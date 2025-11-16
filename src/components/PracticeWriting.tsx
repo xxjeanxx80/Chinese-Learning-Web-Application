@@ -210,7 +210,6 @@ const PracticeWriting: React.FC<PracticeWritingProps> = ({ level }) => {
             onKeyPress={handleKeyPress}
             placeholder="Nhập chữ Hán..."
             disabled={showResult}
-            autoFocus
           />
           {!showResult && (
             <button className="check-button" onClick={handleTypeCheck}>

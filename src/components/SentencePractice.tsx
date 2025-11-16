@@ -436,7 +436,6 @@ const SentencePractice: React.FC<SentencePracticeProps> = ({ level, currentTopic
                     onKeyPress={handleKeyPress}
                     placeholder="Nhập câu Hán..."
                     disabled={showResult}
-                    autoFocus
                   />
                   {!showResult && (
                     <button className="check-button" onClick={handleTypeCheck}>
@@ -490,7 +489,6 @@ const SentencePractice: React.FC<SentencePracticeProps> = ({ level, currentTopic
                 onKeyPress={handleKeyPress}
                 placeholder={practiceMode === 'pinyin' ? 'Ví dụ: nǐ hǎo' : 'Nhập nghĩa...'}
                 disabled={showResult}
-                autoFocus
               />
               
               {!showResult && (
