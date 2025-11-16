@@ -12,7 +12,6 @@ import { Analytics } from '@vercel/analytics/react';
 
 // Lazy load components để giảm bundle size ban đầu
 const CheckVocabulary = lazy(() => import('./components/CheckVocabulary'));
-const Flashcard = lazy(() => import('./components/Flashcard'));
 const PracticeWriting = lazy(() => import('./components/PracticeWriting'));
 const PracticeMeaning = lazy(() => import('./components/PracticeMeaning'));
 const RandomPractice = lazy(() => import('./components/RandomPractice'));
@@ -38,7 +37,7 @@ const ComponentLoader = () => (
   </div>
 );
 
-type FunctionType = 'vocabulary' | 'flashcard' | 'writing' | 'meaning' | 'random' | 'manage' | 'sentence-pinyin' | 'sentence-flashcard' | 'sentence-writing' | 'sentence-meaning' | 'sentence-random' | 'sentence-manage' | 'translate' | 'statistics' | 'srs';
+type FunctionType = 'vocabulary' | 'writing' | 'meaning' | 'random' | 'manage' | 'sentence-pinyin' | 'sentence-writing' | 'sentence-meaning' | 'sentence-random' | 'sentence-manage' | 'translate' | 'statistics' | 'srs';
 
 function App() {
   const { theme, toggleTheme } = useTheme();
@@ -90,9 +89,9 @@ function App() {
   const handleFunctionChange = useCallback((func: FunctionType) => {
     setCurrentFunction(func);
     // Tự động mở menu tương ứng
-    if (func === 'vocabulary' || func === 'flashcard' || func === 'writing' || func === 'meaning' || func === 'random' || func === 'manage') {
+    if (func === 'vocabulary' || func === 'writing' || func === 'meaning' || func === 'random' || func === 'manage') {
       setExpandedMenu('vocab');
-    } else if (func === 'sentence-pinyin' || func === 'sentence-flashcard' || func === 'sentence-writing' || func === 'sentence-meaning' || func === 'sentence-random' || func === 'sentence-manage') {
+    } else if (func === 'sentence-pinyin' || func === 'sentence-writing' || func === 'sentence-meaning' || func === 'sentence-random' || func === 'sentence-manage') {
       setExpandedMenu('sentence');
     } else if (func === 'translate' || func === 'statistics' || func === 'srs') {
       setExpandedMenu(null);
@@ -118,8 +117,6 @@ function App() {
     switch (currentFunction) {
       case 'vocabulary':
         return <CheckVocabulary {...props} />;
-      case 'flashcard':
-        return <Flashcard {...props} />;
       case 'writing':
         return <PracticeWriting {...props} />;
       case 'meaning':
@@ -130,8 +127,6 @@ function App() {
         return <VocabularyManager {...managerProps} />;
       case 'sentence-pinyin':
         return <SentencePractice {...sentenceProps} initialMode="pinyin" />;
-      case 'sentence-flashcard':
-        return <SentencePractice {...sentenceProps} initialMode="flashcard" />;
       case 'sentence-writing':
         return <SentencePractice {...sentenceProps} initialMode="writing" />;
       case 'sentence-meaning':
@@ -258,13 +253,6 @@ function App() {
                       <span className="menu-text">Viết Pinyin</span>
                     </button>
                     <button 
-                      className={`menu-item ${currentFunction === 'flashcard' ? 'active' : ''}`}
-                      onClick={() => handleFunctionChange('flashcard')}
-                    >
-                      <span className="menu-icon">🃏</span>
-                      <span className="menu-text">Flashcard</span>
-                    </button>
-                    <button 
                       className={`menu-item ${currentFunction === 'writing' ? 'active' : ''}`}
                       onClick={() => handleFunctionChange('writing')}
                     >
@@ -314,13 +302,6 @@ function App() {
                     >
                       <span className="menu-icon">📝</span>
                       <span className="menu-text">Viết Pinyin</span>
-                    </button>
-                    <button 
-                      className={`menu-item ${currentFunction === 'sentence-flashcard' ? 'active' : ''}`}
-                      onClick={() => handleFunctionChange('sentence-flashcard')}
-                    >
-                      <span className="menu-icon">🃏</span>
-                      <span className="menu-text">Flashcard</span>
                     </button>
                     <button 
                       className={`menu-item ${currentFunction === 'sentence-writing' ? 'active' : ''}`}
@@ -408,13 +389,6 @@ function App() {
                       <span className="menu-text">Viết Pinyin</span>
                     </button>
                     <button 
-                      className={`menu-item ${currentFunction === 'flashcard' ? 'active' : ''}`}
-                      onClick={() => handleFunctionChange('flashcard')}
-                    >
-                      <span className="menu-icon">🃏</span>
-                      <span className="menu-text">Flashcard</span>
-                    </button>
-                    <button 
                       className={`menu-item ${currentFunction === 'writing' ? 'active' : ''}`}
                       onClick={() => handleFunctionChange('writing')}
                     >
@@ -464,13 +438,6 @@ function App() {
                     >
                       <span className="menu-icon">📝</span>
                       <span className="menu-text">Viết Pinyin</span>
-                    </button>
-                    <button 
-                      className={`menu-item ${currentFunction === 'sentence-flashcard' ? 'active' : ''}`}
-                      onClick={() => handleFunctionChange('sentence-flashcard')}
-                    >
-                      <span className="menu-icon">🃏</span>
-                      <span className="menu-text">Flashcard</span>
                     </button>
                     <button 
                       className={`menu-item ${currentFunction === 'sentence-writing' ? 'active' : ''}`}

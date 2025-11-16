@@ -1,7 +1,7 @@
 import React from 'react';
 import './BottomNavBar.css';
 
-type FunctionType = 'vocabulary' | 'flashcard' | 'writing' | 'meaning' | 'random' | 'manage' | 'sentence-pinyin' | 'sentence-flashcard' | 'sentence-writing' | 'sentence-meaning' | 'sentence-random' | 'sentence-manage' | 'translate' | 'statistics' | 'srs';
+type FunctionType = 'vocabulary' | 'writing' | 'meaning' | 'random' | 'manage' | 'sentence-pinyin' | 'sentence-writing' | 'sentence-meaning' | 'sentence-random' | 'sentence-manage' | 'translate' | 'statistics' | 'srs';
 
 interface BottomNavBarProps {
   currentFunction: FunctionType;

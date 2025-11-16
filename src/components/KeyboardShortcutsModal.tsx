@@ -25,7 +25,6 @@ const KeyboardShortcutsModal: React.FC<KeyboardShortcutsModalProps> = ({ isOpen,
 
   const shortcuts = [
     { key: 'Enter', description: 'Kiểm tra đáp án / Câu tiếp theo' },
-    { key: 'Space', description: 'Lật flashcard' },
     { key: '← →', description: 'Trước / Sau (Previous / Next)' },
     { key: 'Esc', description: 'Đóng modal / Hủy' },
     { key: 'Ctrl/Cmd + K', description: 'Focus vào ô tìm kiếm' },
