@@ -5,6 +5,13 @@ import { addSentence } from '../utils/sentenceStorage';
 import { Vocabulary } from '../data/vocabulary';
 import { Sentence } from '../data/sentences';
 import { pinyin } from 'pinyin-pro';
+import {
+  LIBRETRANSLATE_URL,
+  LIBRE_LANG_MAP,
+  TRANSLATION_PROVIDER_KEY,
+  TRANSLATION_PROVIDERS,
+  type TranslationProvider
+} from '../config/translation';
 
 type Language = 'zh' | 'vi' | 'en';
 
@@ -49,8 +56,23 @@ const Translate: React.FC<TranslateProps> = ({ currentLevel = 'hsk1' }) => {
   const [isLoadingPinyin, setIsLoadingPinyin] = useState(false);
   const [autoPinyin, setAutoPinyin] = useState<string>('');
   const [pendingChinese, setPendingChinese] = useState<string>('');
+  const [translationProvider, setTranslationProvider] = useState<TranslationProvider>(() => {
+    try {
+      const saved = localStorage.getItem(TRANSLATION_PROVIDER_KEY);
+      if (saved && ['auto', 'libre', 'google', 'mymemory'].includes(saved)) {
+        return saved as TranslationProvider;
+      }
+    } catch (_) {}
+    return 'auto';
+  });
 
-  // Hàm lấy cache
+  useEffect(() => {
+    try {
+      localStorage.setItem(TRANSLATION_PROVIDER_KEY, translationProvider);
+    } catch (_) {}
+  }, [translationProvider]);
+
+  // Ham lay cache
   const getCache = useCallback((): Record<string, string> => {
     try {
       const cached = localStorage.getItem('translationCache');
@@ -273,54 +295,97 @@ const Translate: React.FC<TranslateProps> = ({ currentLevel = 'hsk1' }) => {
     }
 
     try {
-      // Tạo các promise cho các API dịch - chỉ dùng các API đáng tin cậy
-      const translationPromises = [];
+      const translationPromises: Promise<string | null>[] = [];
+      const provider = translationProvider;
+      const isZhViPair =
+        (sourceLangCode === 'zh' && targetLangCode === 'vi') ||
+        (sourceLangCode === 'vi' && targetLangCode === 'zh');
 
-      // Tạo promise cho Google Translate (ưu tiên vì nhanh và chính xác)
-      translationPromises.push(
-        fetch(
-          `https://translate.googleapis.com/translate_a/single?client=gtx&sl=${sourceLangCode}&tl=${targetLangCode}&dt=t&q=${encodeURIComponent(sourceText)}`,
-          {
-            method: 'GET',
-            mode: 'cors',
-          }
-        ).then(async (response) => {
-          if (response.ok) {
-            const data = await response.json();
-            if (data && data[0] && Array.isArray(data[0])) {
-              const translated = data[0]
-                .map((item: any[]) => item && item[0] ? item[0] : '')
-                .filter((text: string) => text)
-                .join('');
-              if (translated && translated.trim()) {
-                return translated.trim();
+      const addLibre = () => {
+        const libreSource = LIBRE_LANG_MAP[sourceLangCode] || sourceLangCode;
+        const libreTarget = LIBRE_LANG_MAP[targetLangCode] || targetLangCode;
+        translationPromises.push(
+          fetch(LIBRETRANSLATE_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              q: sourceText.trim(),
+              source: libreSource,
+              target: libreTarget,
+              format: 'text'
+            })
+          })
+            .then(async (res) => {
+              if (res.ok) {
+                const data = await res.json();
+                const translated = data?.translatedText?.trim();
+                if (translated && translated !== sourceText.trim()) return translated;
               }
-            }
-          }
-          throw new Error('Invalid response');
-        }).catch(() => null)
-      );
+              throw new Error('Invalid response');
+            })
+            .catch(() => null)
+        );
+      };
 
-      // Tạo promise cho MyMemory (fallback)
-      translationPromises.push(
-        fetch(
-          `https://api.mymemory.translated.net/get?q=${encodeURIComponent(sourceText)}&langpair=${sourceLangCode}|${targetLangCode}`
-        ).then(async (response) => {
-          if (response.ok) {
-            const data = await response.json();
-            if (data.responseStatus === 200 && data.responseData) {
-              const translated = data.responseData.translatedText;
-              if (translated && translated.trim() && 
-                  translated.toLowerCase().trim() !== sourceText.toLowerCase().trim()) {
-                return translated.trim();
+      const addGoogle = () => {
+        translationPromises.push(
+          fetch(
+            `https://translate.googleapis.com/translate_a/single?client=gtx&sl=${sourceLangCode}&tl=${targetLangCode}&dt=t&q=${encodeURIComponent(sourceText)}`,
+            { method: 'GET', mode: 'cors' }
+          )
+            .then(async (response) => {
+              if (response.ok) {
+                const data = await response.json();
+                if (data && data[0] && Array.isArray(data[0])) {
+                  const translated = data[0]
+                    .map((item: any[]) => (item && item[0] ? item[0] : ''))
+                    .filter((text: string) => text)
+                    .join('');
+                  if (translated && translated.trim()) return translated.trim();
+                }
               }
-            }
-          }
-          throw new Error('Invalid response');
-        }).catch(() => null)
-      );
+              throw new Error('Invalid response');
+            })
+            .catch(() => null)
+        );
+      };
 
-      // Thử tất cả API song song và lấy kết quả đầu tiên
+      const addMyMemory = () => {
+        translationPromises.push(
+          fetch(
+            `https://api.mymemory.translated.net/get?q=${encodeURIComponent(sourceText)}&langpair=${sourceLangCode}|${targetLangCode}`
+          )
+            .then(async (response) => {
+              if (response.ok) {
+                const data = await response.json();
+                if (data.responseStatus === 200 && data.responseData) {
+                  const translated = data.responseData.translatedText;
+                  if (
+                    translated &&
+                    translated.trim() &&
+                    translated.toLowerCase().trim() !== sourceText.toLowerCase().trim()
+                  )
+                    return translated.trim();
+                }
+              }
+              throw new Error('Invalid response');
+            })
+            .catch(() => null)
+        );
+      };
+
+      if (provider === 'auto') {
+        if (isZhViPair) addLibre();
+        addGoogle();
+        addMyMemory();
+      } else if (provider === 'libre') {
+        addLibre();
+      } else if (provider === 'google') {
+        addGoogle();
+      } else if (provider === 'mymemory') {
+        addMyMemory();
+      }
+
       const allPromises = translationPromises;
       const results = await Promise.allSettled(allPromises);
       
@@ -360,7 +425,7 @@ const Translate: React.FC<TranslateProps> = ({ currentLevel = 'hsk1' }) => {
     } finally {
       setIsTranslating(false);
     }
-  }, [sourceText, sourceLang, targetLang]);
+  }, [sourceText, sourceLang, targetLang, translationProvider]);
 
   const handleSwapLanguages = () => {
     setSourceLang(targetLang);
@@ -596,6 +661,22 @@ const Translate: React.FC<TranslateProps> = ({ currentLevel = 'hsk1' }) => {
               ))}
             </select>
           </div>
+        </div>
+
+        <div className="provider-selector-row">
+          <label className="provider-label">Nguồn dịch:</label>
+          <select
+            value={translationProvider}
+            onChange={(e) => setTranslationProvider(e.target.value as TranslationProvider)}
+            className="provider-select"
+            title="Chọn API dịch thuật"
+          >
+            {TRANSLATION_PROVIDERS.map((p) => (
+              <option key={p.id} value={p.id}>
+                {p.label}
+              </option>
+            ))}
+          </select>
         </div>
 
         <div className="translate-boxes">
