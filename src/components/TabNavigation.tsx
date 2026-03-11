@@ -12,7 +12,8 @@ const TabNavigation: React.FC<TabNavigationProps> = ({ currentLevel, onLevelChan
     { id: 'hsk2', label: 'HSK 2', shortLabel: '2', color: '#2196F3' },
     { id: 'hsk3', label: 'HSK 3', shortLabel: '3', color: '#FF9800' },
     { id: 'hsk4', label: 'HSK 4', shortLabel: '4', color: '#F44336' },
-    { id: 'hsk5', label: 'HSK 5', shortLabel: '5', color: '#9C27B0' }
+    { id: 'hsk5', label: 'HSK 5', shortLabel: '5', color: '#9C27B0' },
+    { id: 'tuluyen', label: 'Tu Luyen', shortLabel: 'TL', color: '#607D8B' }
   ];
 
   return (

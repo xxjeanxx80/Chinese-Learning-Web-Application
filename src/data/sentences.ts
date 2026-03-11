@@ -142,6 +142,9 @@ export const hsk5Sentences: Record<string, Sentence[]> = {
   ]
 };
 
+/** Tu Luyen: cap do tu luyen, khong chua cau mac dinh */
+export const tuluyenSentences: Record<string, Sentence[]> = {};
+
 // Helper function to flatten sentences by level
 export function getSentencesByLevel(level: string): Sentence[] {
   const levelData: Record<string, Record<string, Sentence[]>> = {
@@ -149,7 +152,8 @@ export function getSentencesByLevel(level: string): Sentence[] {
     hsk2: hsk2Sentences,
     hsk3: hsk3Sentences,
     hsk4: hsk4Sentences,
-    hsk5: hsk5Sentences
+    hsk5: hsk5Sentences,
+    tuluyen: tuluyenSentences
   };
   
   const sentences: Sentence[] = [];
@@ -165,5 +169,6 @@ export const hskSentences: Record<string, Sentence[]> = {
   hsk2: getSentencesByLevel('hsk2'),
   hsk3: getSentencesByLevel('hsk3'),
   hsk4: getSentencesByLevel('hsk4'),
-  hsk5: getSentencesByLevel('hsk5')
+  hsk5: getSentencesByLevel('hsk5'),
+  tuluyen: getSentencesByLevel('tuluyen')
 };

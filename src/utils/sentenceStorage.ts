@@ -27,7 +27,8 @@ export function getCustomSentences(): CustomSentences {
     hsk2: {},
     hsk3: {},
     hsk4: {},
-    hsk5: {}
+    hsk5: {},
+    tuluyen: {}
   };
 }
 
@@ -170,7 +171,7 @@ export function exportCustomSentences(includeDefault: boolean = false, level?: s
     // Tạo workbook
     const workbook = XLSX.utils.book_new();
     
-    const levels = level ? [level] : ['hsk1', 'hsk2', 'hsk3', 'hsk4', 'hsk5'];
+    const levels = level ? [level] : ['hsk1', 'hsk2', 'hsk3', 'hsk4', 'hsk5', 'tuluyen'];
     
     // Tạo sheet tổng hợp
     const allData = [
@@ -304,11 +305,12 @@ export function importCustomSentencesFromExcel(file: File, level: string, merge:
           hsk2: {},
           hsk3: {},
           hsk4: {},
-          hsk5: {}
+          hsk5: {},
+          tuluyen: {}
         };
 
         const targetLevel = level.toLowerCase();
-        const validLevels = ['hsk1', 'hsk2', 'hsk3', 'hsk4', 'hsk5'];
+        const validLevels = ['hsk1', 'hsk2', 'hsk3', 'hsk4', 'hsk5', 'tuluyen'];
         
         if (!validLevels.includes(targetLevel)) {
           resolve({ 

@@ -160,7 +160,7 @@ const StatisticsDashboard: React.FC<StatisticsDashboardProps> = ({ currentLevel:
         <div className="stats-by-level">
           <h3>Thống Kê Theo HSK Level</h3>
           <div className="level-stats-grid">
-            {['hsk1', 'hsk2', 'hsk3', 'hsk4', 'hsk5'].map((level) => {
+            {['hsk1', 'hsk2', 'hsk3', 'hsk4', 'hsk5', 'tuluyen'].map((level) => {
               const wordsCount = stats.wordsByLevel?.[level] || 0;
               const sentencesCount = stats.sentencesByLevel?.[level] || 0;
               

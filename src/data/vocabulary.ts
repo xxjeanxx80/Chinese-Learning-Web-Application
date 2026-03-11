@@ -4335,10 +4335,14 @@ export const hsk5: Vocabulary[] = [
   { chinese: "遵守", pinyin: "zūn shǒu", vietnamese: "Tuân thủ, tôn trọng" },
 ];
 
+/** Tu Luyen: cap do tu luyen, khong chua tu vung mac dinh */
+export const tuluyen: Vocabulary[] = [];
+
 export const hskVocabulary: Record<string, Vocabulary[]> = {
   hsk1,
   hsk2,
   hsk3,
   hsk4,
   hsk5,
+  tuluyen
 };

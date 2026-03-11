@@ -26,7 +26,8 @@ export function getCustomVocabularies(): CustomVocabularies {
     hsk2: [],
     hsk3: [],
     hsk4: [],
-    hsk5: []
+    hsk5: [],
+    tuluyen: []
   };
 }
 
@@ -101,7 +102,8 @@ export function getVocabularyOverrides(): CustomVocabularies {
     hsk2: [],
     hsk3: [],
     hsk4: [],
-    hsk5: []
+    hsk5: [],
+    tuluyen: []
   };
 }
 
@@ -171,7 +173,7 @@ export function clearAllVocabularies(): void {
  */
 export function exportVocabulariesForLevel(level: string, includeCustom: boolean = false): void {
   try {
-    const validLevels = ['hsk1', 'hsk2', 'hsk3', 'hsk4', 'hsk5'];
+    const validLevels = ['hsk1', 'hsk2', 'hsk3', 'hsk4', 'hsk5', 'tuluyen'];
     const targetLevel = level.toLowerCase();
     
     if (!validLevels.includes(targetLevel)) {
@@ -253,7 +255,7 @@ export function exportCustomVocabularies(): void {
       ['HSK Level', 'Chữ Hán', 'Pinyin', 'Nghĩa tiếng Việt'] // Header row
     ];
     
-    const levels = ['hsk1', 'hsk2', 'hsk3', 'hsk4', 'hsk5'];
+    const levels = ['hsk1', 'hsk2', 'hsk3', 'hsk4', 'hsk5', 'tuluyen'];
     let hasData = false;
     
     levels.forEach((level) => {
@@ -303,7 +305,8 @@ export function exportAllVocabularies(): string {
     hsk2: getVocabulariesForLevel('hsk2'),
     hsk3: getVocabulariesForLevel('hsk3'),
     hsk4: getVocabulariesForLevel('hsk4'),
-    hsk5: getVocabulariesForLevel('hsk5')
+    hsk5: getVocabulariesForLevel('hsk5'),
+    tuluyen: getVocabulariesForLevel('tuluyen')
   };
   return JSON.stringify(allVocab, null, 2);
 }
@@ -318,7 +321,7 @@ export function exportToExcelCustom(): void {
   const workbook = XLSX.utils.book_new();
   
   // Tạo sheet cho mỗi level có dữ liệu
-  const levels = ['hsk1', 'hsk2', 'hsk3', 'hsk4', 'hsk5'];
+  const levels = ['hsk1', 'hsk2', 'hsk3', 'hsk4', 'hsk5', 'tuluyen'];
   levels.forEach((level) => {
     if (custom[level] && custom[level].length > 0) {
       // Tạo worksheet data
@@ -391,7 +394,7 @@ export function exportToExcelAll(): void {
   const workbook = XLSX.utils.book_new();
   
   // Tạo sheet cho mỗi level
-  const levels = ['hsk1', 'hsk2', 'hsk3', 'hsk4', 'hsk5'];
+  const levels = ['hsk1', 'hsk2', 'hsk3', 'hsk4', 'hsk5', 'tuluyen'];
   levels.forEach((level) => {
     const vocabularies = getVocabulariesForLevel(level);
     
@@ -542,7 +545,8 @@ export function importCustomVocabulariesFromExcel(file: File, level: string, mer
           hsk2: [],
           hsk3: [],
           hsk4: [],
-          hsk5: []
+          hsk5: [],
+          tuluyen: []
         };
         
         const resultOverrides: CustomVocabularies = merge ? { ...currentOverrides } : {
@@ -550,11 +554,12 @@ export function importCustomVocabulariesFromExcel(file: File, level: string, mer
           hsk2: [],
           hsk3: [],
           hsk4: [],
-          hsk5: []
+          hsk5: [],
+          tuluyen: []
         };
 
         const targetLevel = level.toLowerCase();
-        const validLevels = ['hsk1', 'hsk2', 'hsk3', 'hsk4', 'hsk5'];
+        const validLevels = ['hsk1', 'hsk2', 'hsk3', 'hsk4', 'hsk5', 'tuluyen'];
         
         if (!validLevels.includes(targetLevel)) {
           resolve({ 

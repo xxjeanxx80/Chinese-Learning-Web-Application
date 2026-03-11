@@ -16,7 +16,8 @@ const HSKLevelSelector: React.FC<HSKLevelSelectorProps> = ({ currentLevel, onLev
     { id: 'hsk2', label: 'HSK 2', color: '#2196F3', icon: '🔵' },
     { id: 'hsk3', label: 'HSK 3', color: '#FF9800', icon: '🟠' },
     { id: 'hsk4', label: 'HSK 4', color: '#F44336', icon: '🔴' },
-    { id: 'hsk5', label: 'HSK 5', color: '#9C27B0', icon: '🟣' }
+    { id: 'hsk5', label: 'HSK 5', color: '#9C27B0', icon: '🟣' },
+    { id: 'tuluyen', label: 'Tu Luyen', color: '#607D8B', icon: '●' }
   ];
 
   const currentLevelData = levels.find(l => l.id === currentLevel) || levels[0];
