@@ -6,8 +6,9 @@ import { Vocabulary } from '../data/vocabulary';
 import { Sentence } from '../data/sentences';
 import { pinyin } from 'pinyin-pro';
 import {
-  LIBRETRANSLATE_URL,
-  LIBRE_LANG_MAP,
+  DEEPL_API_URL,
+  DEEPL_LANG_MAP,
+  getDeepLApiKey,
   TRANSLATION_PROVIDER_KEY,
   TRANSLATION_PROVIDERS,
   type TranslationProvider
@@ -59,7 +60,8 @@ const Translate: React.FC<TranslateProps> = ({ currentLevel = 'hsk1' }) => {
   const [translationProvider, setTranslationProvider] = useState<TranslationProvider>(() => {
     try {
       const saved = localStorage.getItem(TRANSLATION_PROVIDER_KEY);
-      if (saved && ['auto', 'libre', 'google', 'mymemory'].includes(saved)) {
+      if (saved === 'libre') return 'deepl';
+      if (saved && ['auto', 'deepl', 'google', 'mymemory'].includes(saved)) {
         return saved as TranslationProvider;
       }
     } catch (_) {}
@@ -297,28 +299,29 @@ const Translate: React.FC<TranslateProps> = ({ currentLevel = 'hsk1' }) => {
     try {
       const translationPromises: Promise<string | null>[] = [];
       const provider = translationProvider;
-      const isZhViPair =
-        (sourceLangCode === 'zh' && targetLangCode === 'vi') ||
-        (sourceLangCode === 'vi' && targetLangCode === 'zh');
 
-      const addLibre = () => {
-        const libreSource = LIBRE_LANG_MAP[sourceLangCode] || sourceLangCode;
-        const libreTarget = LIBRE_LANG_MAP[targetLangCode] || targetLangCode;
+      const addDeepL = () => {
+        const apiKey = getDeepLApiKey();
+        if (!apiKey) return;
+        const deeplSource = DEEPL_LANG_MAP[sourceLangCode] || sourceLangCode.toUpperCase();
+        const deeplTarget = DEEPL_LANG_MAP[targetLangCode] || targetLangCode.toUpperCase();
         translationPromises.push(
-          fetch(LIBRETRANSLATE_URL, {
+          fetch(DEEPL_API_URL, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `DeepL-Auth-Key ${apiKey}`
+            },
             body: JSON.stringify({
-              q: sourceText.trim(),
-              source: libreSource,
-              target: libreTarget,
-              format: 'text'
+              text: [sourceText.trim()],
+              source_lang: deeplSource,
+              target_lang: deeplTarget
             })
           })
             .then(async (res) => {
               if (res.ok) {
                 const data = await res.json();
-                const translated = data?.translatedText?.trim();
+                const translated = data?.translations?.[0]?.text?.trim();
                 if (translated && translated !== sourceText.trim()) return translated;
               }
               throw new Error('Invalid response');
@@ -375,15 +378,21 @@ const Translate: React.FC<TranslateProps> = ({ currentLevel = 'hsk1' }) => {
       };
 
       if (provider === 'auto') {
-        if (isZhViPair) addLibre();
+        addDeepL();
         addGoogle();
         addMyMemory();
-      } else if (provider === 'libre') {
-        addLibre();
+      } else if (provider === 'deepl') {
+        addDeepL();
+        addGoogle();
+        addMyMemory();
       } else if (provider === 'google') {
         addGoogle();
+        addDeepL();
+        addMyMemory();
       } else if (provider === 'mymemory') {
         addMyMemory();
+        addGoogle();
+        addDeepL();
       }
 
       const allPromises = translationPromises;

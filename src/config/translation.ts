@@ -3,26 +3,31 @@
  * Gom URL, tham so va thu tu uu tien cho tung cap ngon ngu
  */
 
-/** Base URL cua LibreTranslate (API open source, dich Trung-Viet chuan) */
-export const LIBRETRANSLATE_URL = 'https://libretranslate.com/translate';
+/** Base URL DeepL API - :fx = free key dung api-free */
+export const DEEPL_API_URL = 'https://api-free.deepl.com/v2/translate';
 
-/** Map ma ngon ngu noi bo sang ma LibreTranslate (zh-Hans = Han gian the) */
-export const LIBRE_LANG_MAP: Record<string, string> = {
-  zh: 'zh-Hans',
-  vi: 'vi',
-  en: 'en'
+/** Lay DeepL API key tu bien moi truong (dat trong .env.local) */
+export const getDeepLApiKey = (): string => {
+  return import.meta.env.VITE_DEEPL_API_KEY || '';
+};
+
+/** Map ma ngon ngu noi bo sang ma DeepL (Viet hoa) */
+export const DEEPL_LANG_MAP: Record<string, string> = {
+  zh: 'ZH',
+  vi: 'VI',
+  en: 'EN'
 };
 
 /** Key luu lua chon nguon dich trong localStorage */
 export const TRANSLATION_PROVIDER_KEY = 'translation_provider';
 
 /** Cac nguon dich co the chon */
-export type TranslationProvider = 'auto' | 'libre' | 'google' | 'mymemory';
+export type TranslationProvider = 'auto' | 'deepl' | 'google' | 'mymemory';
 
 /** Danh sach nguon dich hien thi tren GUI */
 export const TRANSLATION_PROVIDERS: { id: TranslationProvider; label: string }[] = [
   { id: 'auto', label: 'Tự động (thử lần lượt)' },
-  { id: 'libre', label: 'LibreTranslate (Trung-Việt chuẩn)' },
+  { id: 'deepl', label: 'DeepL (chất lượng cao)' },
   { id: 'google', label: 'Google Translate' },
   { id: 'mymemory', label: 'MyMemory' }
 ];
