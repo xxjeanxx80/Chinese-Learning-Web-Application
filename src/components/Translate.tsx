@@ -6,9 +6,8 @@ import { Vocabulary } from '../data/vocabulary';
 import { Sentence } from '../data/sentences';
 import { pinyin } from 'pinyin-pro';
 import {
-  DEEPL_API_URL,
+  DEEPL_PROXY_URL,
   DEEPL_LANG_MAP,
-  getDeepLApiKey,
   TRANSLATION_PROVIDER_KEY,
   TRANSLATION_PROVIDERS,
   type TranslationProvider
@@ -301,19 +300,14 @@ const Translate: React.FC<TranslateProps> = ({ currentLevel = 'hsk1' }) => {
       const provider = translationProvider;
 
       const addDeepL = () => {
-        const apiKey = getDeepLApiKey();
-        if (!apiKey) return;
         const deeplSource = DEEPL_LANG_MAP[sourceLangCode] || sourceLangCode.toUpperCase();
         const deeplTarget = DEEPL_LANG_MAP[targetLangCode] || targetLangCode.toUpperCase();
         translationPromises.push(
-          fetch(DEEPL_API_URL, {
+          fetch(DEEPL_PROXY_URL, {
             method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              Authorization: `DeepL-Auth-Key ${apiKey}`
-            },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-              text: [sourceText.trim()],
+              text: sourceText.trim(),
               source_lang: deeplSource,
               target_lang: deeplTarget
             })

@@ -3,13 +3,11 @@
  * Gom URL, tham so va thu tu uu tien cho tung cap ngon ngu
  */
 
-/** Base URL DeepL API - :fx = free key dung api-free */
-export const DEEPL_API_URL = 'https://api-free.deepl.com/v2/translate';
-
-/** Lay DeepL API key tu bien moi truong (dat trong .env.local) */
-export const getDeepLApiKey = (): string => {
-  return import.meta.env.VITE_DEEPL_API_KEY || '';
-};
+/**
+ * URL proxy DeepL - goi qua backend vi DeepL chan CORS tu browser.
+ * Dat DEEPL_API_KEY trong Vercel Environment Variables.
+ */
+export const DEEPL_PROXY_URL = '/api/deepl-translate';
 
 /** Map ma ngon ngu noi bo sang ma DeepL (Viet hoa) */
 export const DEEPL_LANG_MAP: Record<string, string> = {

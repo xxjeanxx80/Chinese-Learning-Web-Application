@@ -49,6 +49,13 @@ npm run build
 npm run preview
 ```
 
+### Cấu hình DeepL (Dịch thuật)
+
+DeepL chặn gọi trực tiếp từ browser (CORS), nên cần dùng proxy backend:
+
+1. **Deploy lên Vercel**: Vào Project > Settings > Environment Variables, thêm biến `DEEPL_API_KEY` với API key của bạn (key `:fx` = free).
+2. **Chạy local với DeepL**: Dùng `vercel dev` thay cho `npm run dev`, và tạo file `.env.local` với `DEEPL_API_KEY=...`.
+
 ## Import Từ Vựng
 
 Thay vì nhập tay, bạn có thể import từ vựng từ CSV hoặc JSON:
