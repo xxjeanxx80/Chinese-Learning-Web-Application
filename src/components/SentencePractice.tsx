@@ -5,7 +5,9 @@ import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
 import { addStudySession } from '../utils/statisticsStorage';
 import { addWrongSentence, markSentenceCorrect } from '../utils/sentenceWrongAnswersStorage';
 import { markSentenceLearned } from '../utils/learnedItemsStorage';
+import { speakChinese } from '../utils/speakChinese';
 import './SentencePractice.css';
+import './SpeakButton.css';
 
 interface SentencePracticeProps {
   level: string;
@@ -343,6 +345,13 @@ const SentencePractice: React.FC<SentencePracticeProps> = ({ level, currentTopic
               onClick={handleFlip}
             >
               <div className="flashcard-front">
+                <button
+                  className="speak-button"
+                  onClick={(e) => { e.stopPropagation(); speakChinese(currentSentence.chinese); }}
+                  title="Phát âm"
+                >
+                  🔊
+                </button>
                 <div className="sentence-chinese">
                   <h2>{currentSentence.chinese}</h2>
                 </div>
@@ -414,6 +423,13 @@ const SentencePractice: React.FC<SentencePracticeProps> = ({ level, currentTopic
             </div>
 
             <div className="question-display">
+              <button
+                className="speak-button"
+                onClick={() => speakChinese(currentSentence.chinese)}
+                title="Phát âm"
+              >
+                🔊
+              </button>
               <div className="meaning-display-primary">
                 <h2>{currentSentence.vietnamese}</h2>
               </div>
@@ -483,6 +499,13 @@ const SentencePractice: React.FC<SentencePracticeProps> = ({ level, currentTopic
         ) : (
           <div className="practice-container">
             <div className="sentence-display">
+              <button
+                className="speak-button"
+                onClick={() => speakChinese(currentSentence.chinese)}
+                title="Phát âm"
+              >
+                🔊
+              </button>
               <div className="sentence-chinese">
                 <h2>{currentSentence.chinese}</h2>
               </div>

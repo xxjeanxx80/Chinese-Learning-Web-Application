@@ -3,7 +3,9 @@ import { Vocabulary } from '../data/vocabulary';
 import { getVocabulariesForLevel } from '../utils/vocabularyStorage';
 import { markVocabularyLearned } from '../utils/learnedItemsStorage';
 import { addStudySession } from '../utils/statisticsStorage';
+import { speakChinese } from '../utils/speakChinese';
 import './RandomPractice.css';
+import './SpeakButton.css';
 
 interface RandomPracticeProps {
   level: string;
@@ -283,6 +285,13 @@ const RandomPractice: React.FC<RandomPracticeProps> = ({ level }) => {
       </div>
 
       <div className="question-display">
+        <button
+          className="speak-button"
+          onClick={() => speakChinese(currentQuestion.word.chinese)}
+          title="Phát âm"
+        >
+          🔊
+        </button>
         <p className="question-text">{currentQuestion.question}</p>
       </div>
 

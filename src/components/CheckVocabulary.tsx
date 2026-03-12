@@ -5,7 +5,9 @@ import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
 import { addWrongAnswer, markCorrect } from '../utils/wrongAnswersStorage';
 import { markVocabularyLearned } from '../utils/learnedItemsStorage';
 import { addStudySession } from '../utils/statisticsStorage';
+import { speakChinese } from '../utils/speakChinese';
 import './CheckVocabulary.css';
+import './SpeakButton.css';
 
 interface CheckVocabularyProps {
   level: string;
@@ -161,6 +163,13 @@ const CheckVocabulary: React.FC<CheckVocabularyProps> = ({ level }) => {
       </div>
 
       <div className="word-display">
+        <button
+          className="speak-button"
+          onClick={() => speakChinese(currentWord.chinese)}
+          title="Phát âm"
+        >
+          🔊
+        </button>
         <div className="chinese-char">
           <h2>{currentWord.chinese}</h2>
         </div>

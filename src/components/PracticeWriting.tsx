@@ -3,7 +3,9 @@ import { Vocabulary } from '../data/vocabulary';
 import { getVocabulariesForLevel } from '../utils/vocabularyStorage';
 import { markVocabularyLearned } from '../utils/learnedItemsStorage';
 import { addStudySession } from '../utils/statisticsStorage';
+import { speakChinese } from '../utils/speakChinese';
 import './PracticeWriting.css';
+import './SpeakButton.css';
 
 interface PracticeWritingProps {
   level: string;
@@ -190,6 +192,13 @@ const PracticeWriting: React.FC<PracticeWritingProps> = ({ level }) => {
       </div>
 
       <div className="question-display">
+        <button
+          className="speak-button"
+          onClick={() => speakChinese(currentWord.chinese)}
+          title="Phát âm"
+        >
+          🔊
+        </button>
         <div className="meaning-display-primary">
           <h2>{currentWord.vietnamese}</h2>
         </div>
