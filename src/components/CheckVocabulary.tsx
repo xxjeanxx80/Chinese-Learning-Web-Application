@@ -187,12 +187,16 @@ const CheckVocabulary: React.FC<CheckVocabularyProps> = ({ level }) => {
         )}
 
         {showResult && (
-          <div className="result-section">
-            <div className={`result ${isCorrect ? 'correct' : 'incorrect'}`}>
-              {isCorrect ? '✓ Đúng rồi!' : '✗ Sai rồi!'}
-            </div>
+          <div className={`result-section ${isCorrect ? 'is-correct' : 'is-incorrect'}`}>
             <div className="correct-answer">
-              Đáp án đúng: <strong>{currentWord.pinyin}</strong>
+              {!isCorrect && (
+                <div className="user-wrong">
+                  Của bạn: <strong>{userAnswer}</strong>
+                </div>
+              )}
+              <div className="actual-correct">
+                Đáp án đúng: <strong>{currentWord.pinyin}</strong>
+              </div>
             </div>
             <button className="next-button" onClick={handleNext} autoFocus>
               Từ tiếp theo

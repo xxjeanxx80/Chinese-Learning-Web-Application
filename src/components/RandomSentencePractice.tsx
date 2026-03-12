@@ -333,32 +333,23 @@ const RandomSentencePractice: React.FC<RandomSentencePracticeProps> = ({ level, 
       )}
 
       {showResult && (
-        <div className="result-section">
-          <div className={`result ${isCorrect ? 'correct' : 'incorrect'}`}>
-            {isCorrect ? '✓ Đúng rồi!' : '✗ Sai rồi!'}
-          </div>
-          <div className="answer-details">
-            <div className="correct-answer">
-              Đáp án đúng: <strong>{currentQuestion.answer}</strong>
+        <div className={`result-section ${isCorrect ? 'is-correct' : 'is-incorrect'}`}>
+          <div className="correct-answer">
+            {!isCorrect && (
+              <div className="user-wrong">
+                Của bạn: <strong>{userAnswer}</strong>
+              </div>
+            )}
+            <div className="actual-correct">
+              Đáp án đúng:{' '}
+              {currentQuestion.type === 'meaning' ? (
+                <strong>{currentQuestion.sentence.vietnamese}</strong>
+              ) : (
+                <strong>
+                  {currentQuestion.sentence.chinese} ({currentQuestion.sentence.pinyin})
+                </strong>
+              )}
             </div>
-            {currentQuestion.type === 'pinyin' && (
-              <div className="sentence-info">
-                Câu: <strong>{currentQuestion.sentence.chinese}</strong> | 
-                Nghĩa: <strong>{currentQuestion.sentence.vietnamese}</strong>
-              </div>
-            )}
-            {currentQuestion.type === 'writing' && (
-              <div className="sentence-info">
-                Pinyin: <strong>{currentQuestion.sentence.pinyin}</strong> | 
-                Nghĩa: <strong>{currentQuestion.sentence.vietnamese}</strong>
-              </div>
-            )}
-            {currentQuestion.type === 'meaning' && (
-              <div className="sentence-info">
-                Câu: <strong>{currentQuestion.sentence.chinese}</strong> | 
-                Pinyin: <strong>{currentQuestion.sentence.pinyin}</strong>
-              </div>
-            )}
           </div>
           <button className="next-button" onClick={handleNext} autoFocus>
             Câu tiếp theo

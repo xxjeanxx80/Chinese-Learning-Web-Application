@@ -14,9 +14,10 @@
 
 .srs-header h2 {
   margin: 0;
-  font-size: 1.8rem;
+  font-size: 1.5rem;
   color: var(--text-primary, #333);
   font-weight: 700;
+  letter-spacing: 0.3px;
 }
 
 .srs-progress {

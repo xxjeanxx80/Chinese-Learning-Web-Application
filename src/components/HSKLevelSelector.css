@@ -15,14 +15,14 @@
   border-right: 1px solid var(--glass-border-dark) !important;
   border-bottom: 1px solid var(--glass-border-dark) !important;
   border-radius: 25px;
-  background: var(--glass-bg) !important;
+  background: var(--bg-primary) !important; /* Làm đục 100% trên mọi kích thước */
   color: var(--text-primary) !important;
   cursor: pointer;
   transition: all 0.3s ease;
-  backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: none; /* Bỏ trong suốt */
+  -webkit-backdrop-filter: none;
   white-space: nowrap;
-  box-shadow: var(--glass-shadow);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15); /* Nổi 3D dễ nhìn */
 }
 
 .hsk-level-button:hover {
@@ -49,9 +49,9 @@
   position: absolute;
   top: calc(100% + 10px);
   right: 0;
-  background: var(--glass-bg);
-  backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
+  background: var(--bg-primary); /* Đục 100% menu xổ xuống */
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
   border-top: 1px solid var(--glass-border-light);
   border-left: 1px solid var(--glass-border-light);
   border-right: 1px solid var(--glass-border-dark);
@@ -107,7 +107,7 @@
   border-right: 1px solid var(--glass-border-light) !important;
   border-bottom: 1px solid var(--glass-border-light) !important;
   border-radius: 12px;
-  background: rgba(255, 255, 255, 0.05) !important;
+  background: var(--bg-primary) !important; /* Từng mục con đục cứng, không trong suốt */
   color: var(--text-primary) !important;
   cursor: pointer;
   transition: all 0.3s ease;
@@ -163,6 +163,10 @@
   .hsk-level-button {
     padding: 8px 12px;
     font-size: 0.85rem;
+    background: var(--bg-primary) !important; /* Đục 100% bằng màu nền app */
+    backdrop-filter: none; /* Tắt blur thừa vì đã đục 100% */
+    -webkit-backdrop-filter: none;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15); /* Viền nổi bồng bềnh 3D */
   }
 
   .hsk-level-label {

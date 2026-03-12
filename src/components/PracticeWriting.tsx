@@ -190,14 +190,14 @@ const PracticeWriting: React.FC<PracticeWritingProps> = ({ level }) => {
       </div>
 
       <div className="question-display">
+        <div className="meaning-display-primary">
+          <h2>{currentWord.vietnamese}</h2>
+        </div>
         {showPinyin && (
-          <div className="pinyin-display">
-            <h2>{currentWord.pinyin}</h2>
+          <div className="pinyin-display-secondary">
+            <p>{currentWord.pinyin}</p>
           </div>
         )}
-        <div className="meaning-display">
-          <p>{currentWord.vietnamese}</p>
-        </div>
         <div className="instruction">
           {showOptions ? 'Chọn chữ Hán đúng:' : 'Nhập chữ Hán:'}
         </div>
@@ -237,12 +237,16 @@ const PracticeWriting: React.FC<PracticeWritingProps> = ({ level }) => {
       )}
 
       {showResult && (
-        <div className="result-section">
-          <div className={`result ${isCorrect ? 'correct' : 'incorrect'}`}>
-            {isCorrect ? '✓ Đúng rồi!' : '✗ Sai rồi!'}
-          </div>
+        <div className={`result-section ${isCorrect ? 'is-correct' : 'is-incorrect'}`}>
           <div className="correct-answer">
-            Đáp án đúng: <strong>{currentWord.chinese}</strong>
+            {!isCorrect && (
+              <div className="user-wrong">
+                Của bạn: <strong>{userAnswer}</strong>
+              </div>
+            )}
+            <div className="actual-correct">
+              Đáp án đúng: <strong>{currentWord.chinese}</strong>
+            </div>
           </div>
           <button className="next-button" onClick={handleNext} autoFocus>
             Từ tiếp theo

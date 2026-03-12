@@ -248,12 +248,16 @@ const PracticeMeaning: React.FC<PracticeMeaningProps> = ({ level }) => {
       )}
 
       {showResult && (
-        <div className="result-section">
-          <div className={`result ${isCorrect ? 'correct' : 'incorrect'}`}>
-            {isCorrect ? '✓ Đúng rồi!' : '✗ Sai rồi!'}
-          </div>
+        <div className={`result-section ${isCorrect ? 'is-correct' : 'is-incorrect'}`}>
           <div className="correct-answer">
-            Đáp án đúng: <strong>{currentWord.vietnamese}</strong>
+            {!isCorrect && (
+              <div className="user-wrong">
+                Của bạn: <strong>{userAnswer}</strong>
+              </div>
+            )}
+            <div className="actual-correct">
+              Đáp án đúng: <strong>{currentWord.vietnamese}</strong>
+            </div>
           </div>
           <div className="word-info">
             Chữ: <strong>{currentWord.chinese}</strong> | 

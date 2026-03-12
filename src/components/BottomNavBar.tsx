@@ -1,7 +1,7 @@
 import React from 'react';
 import './BottomNavBar.css';
 
-type FunctionType = 'vocabulary' | 'writing' | 'meaning' | 'random' | 'manage' | 'sentence-pinyin' | 'sentence-writing' | 'sentence-meaning' | 'sentence-random' | 'sentence-manage' | 'translate' | 'statistics' | 'srs';
+type FunctionType = 'vocabulary' | 'writing' | 'meaning' | 'random' | 'manage' | 'sentence-pinyin' | 'sentence-writing' | 'sentence-meaning' | 'sentence-random' | 'sentence-manage' | 'translate' | 'statistics';
 
 interface BottomNavBarProps {
   currentFunction: FunctionType;
@@ -53,14 +53,6 @@ const BottomNavBar: React.FC<BottomNavBarProps> = ({ currentFunction, onFunction
         <span className="bottom-nav-label">Thống kê</span>
       </button>
 
-      <button
-        className={`bottom-nav-item ${currentFunction === 'srs' ? 'active' : ''}`}
-        onClick={() => handleNavClick('srs')}
-        title="SRS Review"
-      >
-        <span className="bottom-nav-icon">🔄</span>
-        <span className="bottom-nav-label">SRS</span>
-      </button>
     </nav>
   );
 };

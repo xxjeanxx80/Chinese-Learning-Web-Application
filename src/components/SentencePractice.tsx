@@ -414,14 +414,14 @@ const SentencePractice: React.FC<SentencePracticeProps> = ({ level, currentTopic
             </div>
 
             <div className="question-display">
+              <div className="meaning-display-primary">
+                <h2>{currentSentence.vietnamese}</h2>
+              </div>
               {showPinyin && (
-                <div className="pinyin-display">
-                  <h2>{currentSentence.pinyin}</h2>
+                <div className="pinyin-display-secondary">
+                  <p>{currentSentence.pinyin}</p>
                 </div>
               )}
-              <div className="meaning-display">
-                <p>{currentSentence.vietnamese}</p>
-              </div>
               <div className="instruction">
                 {showOptions ? 'Chọn câu Hán đúng:' : 'Nhập câu Hán:'}
               </div>
@@ -463,12 +463,16 @@ const SentencePractice: React.FC<SentencePracticeProps> = ({ level, currentTopic
             )}
 
             {showResult && (
-              <div className="result-section">
-                <div className={`result ${isCorrect ? 'correct' : 'incorrect'}`}>
-                  {isCorrect ? '✓ Đúng rồi!' : '✗ Sai rồi!'}
-                </div>
+              <div className={`result-section ${isCorrect ? 'is-correct' : 'is-incorrect'}`}>
                 <div className="correct-answer">
-                  Đáp án đúng: <strong>{currentSentence.chinese}</strong>
+                  {!isCorrect && (
+                    <div className="user-wrong">
+                      Của bạn: <strong>{userAnswer}</strong>
+                    </div>
+                  )}
+                  <div className="actual-correct">
+                    Đáp án đúng: <strong>{currentSentence.chinese}</strong>
+                  </div>
                 </div>
                 <button className="next-button" onClick={handleNext} autoFocus>
                   Câu tiếp theo
@@ -525,21 +529,25 @@ const SentencePractice: React.FC<SentencePracticeProps> = ({ level, currentTopic
               )}
 
               {showResult && (
-                <div className="result-section">
-                  <div className={`result ${isCorrect ? 'correct' : 'incorrect'}`}>
-                    {isCorrect ? '✓ Đúng rồi!' : '✗ Sai rồi!'}
-                  </div>
+                <div className={`result-section ${isCorrect ? 'is-correct' : 'is-incorrect'}`}>
                   <div className="answer-details">
                     <div className="correct-answer">
-                      {practiceMode === 'pinyin' ? (
-                        <>
-                          Pinyin đúng: <strong>{currentSentence.pinyin}</strong>
-                        </>
-                      ) : (
-                        <>
-                          Nghĩa đúng: <strong>{currentSentence.vietnamese}</strong>
-                        </>
+                      {!isCorrect && (
+                        <div className="user-wrong">
+                          Của bạn: <strong>{userAnswer}</strong>
+                        </div>
                       )}
+                      <div className="actual-correct">
+                        {practiceMode === 'pinyin' ? (
+                          <>
+                            Pinyin đúng: <strong>{currentSentence.pinyin}</strong>
+                          </>
+                        ) : (
+                          <>
+                            Nghĩa đúng: <strong>{currentSentence.vietnamese}</strong>
+                          </>
+                        )}
+                      </div>
                     </div>
                     <div className="full-sentence">
                       <p><strong>{currentSentence.chinese}</strong></p>

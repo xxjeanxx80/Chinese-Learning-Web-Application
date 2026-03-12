@@ -320,13 +320,17 @@ const RandomPractice: React.FC<RandomPracticeProps> = ({ level }) => {
       )}
 
       {showResult && (
-        <div className="result-section">
-          <div className={`result ${isCorrect ? 'correct' : 'incorrect'}`}>
-            {isCorrect ? '✓ Đúng rồi!' : '✗ Sai rồi!'}
-          </div>
+        <div className={`result-section ${isCorrect ? 'is-correct' : 'is-incorrect'}`}>
           <div className="answer-details">
             <div className="correct-answer">
-              Đáp án đúng: <strong>{currentQuestion.answer}</strong>
+              {!isCorrect && (
+                <div className="user-wrong">
+                  Của bạn: <strong>{userAnswer}</strong>
+                </div>
+              )}
+              <div className="actual-correct">
+                Đáp án đúng: <strong>{currentQuestion.answer}</strong>
+              </div>
             </div>
             {currentQuestion.type === 'pinyin' && (
               <div className="word-info">

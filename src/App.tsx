@@ -21,7 +21,6 @@ const SentenceManager = lazy(() => import('./components/SentenceManager'));
 const RandomSentencePractice = lazy(() => import('./components/RandomSentencePractice'));
 const Translate = lazy(() => import('./components/Translate'));
 const StatisticsDashboard = lazy(() => import('./components/StatisticsDashboard'));
-const SRSReview = lazy(() => import('./components/SRSReview'));
 
 // Loading component đơn giản
 const ComponentLoader = () => (
@@ -37,7 +36,7 @@ const ComponentLoader = () => (
   </div>
 );
 
-type FunctionType = 'vocabulary' | 'writing' | 'meaning' | 'random' | 'manage' | 'sentence-pinyin' | 'sentence-writing' | 'sentence-meaning' | 'sentence-random' | 'sentence-manage' | 'translate' | 'statistics' | 'srs';
+type FunctionType = 'vocabulary' | 'writing' | 'meaning' | 'random' | 'manage' | 'sentence-pinyin' | 'sentence-writing' | 'sentence-meaning' | 'sentence-random' | 'sentence-manage' | 'translate' | 'statistics';
 
 function App() {
   const { theme, toggleTheme } = useTheme();
@@ -143,7 +142,7 @@ function App() {
       setExpandedMenu('vocab');
     } else if (func === 'sentence-pinyin' || func === 'sentence-writing' || func === 'sentence-meaning' || func === 'sentence-random' || func === 'sentence-manage') {
       setExpandedMenu('sentence');
-    } else if (func === 'translate' || func === 'statistics' || func === 'srs') {
+    } else if (func === 'translate' || func === 'statistics') {
       setExpandedMenu(null);
     }
     // Đóng drawer khi chọn function trên mobile
@@ -189,8 +188,6 @@ function App() {
               return <Translate currentLevel={currentLevel} />;
             case 'statistics':
               return <StatisticsDashboard currentLevel={currentLevel} />;
-            case 'srs':
-              return <SRSReview level={currentLevel} />;
             default:
               return <CheckVocabulary {...props} />;
           }
@@ -308,7 +305,7 @@ function App() {
         onClose={() => setIsMobileDrawerOpen(false)}
       >
         <div className="sidebar-section">
-          <h3 className="sidebar-title">Chức năng</h3>
+          <h3 className="sidebar-title">Tùy chọn bài học</h3>
           <nav className="sidebar-menu">
               {/* Học từ */}
               <div className="menu-group">
@@ -320,10 +317,9 @@ function App() {
                   <span className="menu-text">Học từ</span>
                   <span className="menu-arrow">{expandedMenu === 'vocab' ? '▼' : '▶'}</span>
                 </button>
-                {expandedMenu === 'vocab' && (
-                  <div className="menu-submenu">
-                    <button 
-                      className={`menu-item ${currentFunction === 'vocabulary' ? 'active' : ''}`}
+                <div className={`menu-submenu ${expandedMenu === 'vocab' ? 'expanded' : 'collapsed'}`}>
+                  <button 
+                    className={`menu-item ${currentFunction === 'vocabulary' ? 'active' : ''}`}
                       onClick={() => handleFunctionChange('vocabulary')}
                     >
                       <span className="menu-icon">📝</span>
@@ -358,7 +354,6 @@ function App() {
                       <span className="menu-text">Quản lý từ vựng</span>
                     </button>
                   </div>
-                )}
               </div>
 
               {/* Học câu */}
@@ -371,10 +366,9 @@ function App() {
                   <span className="menu-text">Học câu</span>
                   <span className="menu-arrow">{expandedMenu === 'sentence' ? '▼' : '▶'}</span>
                 </button>
-                {expandedMenu === 'sentence' && (
-                  <div className="menu-submenu">
-                    <button 
-                      className={`menu-item ${currentFunction === 'sentence-pinyin' ? 'active' : ''}`}
+                <div className={`menu-submenu ${expandedMenu === 'sentence' ? 'expanded' : 'collapsed'}`}>
+                  <button 
+                    className={`menu-item ${currentFunction === 'sentence-pinyin' ? 'active' : ''}`}
                       onClick={() => handleFunctionChange('sentence-pinyin')}
                     >
                       <span className="menu-icon">📝</span>
@@ -409,33 +403,8 @@ function App() {
                       <span className="menu-text">Quản lý câu</span>
                     </button>
                   </div>
-                )}
               </div>
 
-              {/* Dịch thuật & Tiện ích */}
-              <div className="menu-group">
-                <button
-                  className={`menu-item menu-item-standalone ${currentFunction === 'translate' ? 'active' : ''}`}
-                  onClick={() => handleFunctionChange('translate')}
-                >
-                  <span className="menu-icon">🌐</span>
-                  <span className="menu-text">Dịch thuật</span>
-                </button>
-                <button
-                  className={`menu-item menu-item-standalone ${currentFunction === 'statistics' ? 'active' : ''}`}
-                  onClick={() => handleFunctionChange('statistics')}
-                >
-                  <span className="menu-icon">📊</span>
-                  <span className="menu-text">Thống kê</span>
-                </button>
-                <button
-                  className={`menu-item menu-item-standalone ${currentFunction === 'srs' ? 'active' : ''}`}
-                  onClick={() => handleFunctionChange('srs')}
-                >
-                  <span className="menu-icon">🔄</span>
-                  <span className="menu-text">SRS Review</span>
-                </button>
-              </div>
             </nav>
           </div>
       </MobileDrawer>
@@ -563,13 +532,6 @@ function App() {
                 >
                   <span className="menu-icon">📊</span>
                   <span className="menu-text">Thống kê</span>
-                </button>
-                <button
-                  className={`menu-item menu-item-standalone ${currentFunction === 'srs' ? 'active' : ''}`}
-                  onClick={() => handleFunctionChange('srs')}
-                >
-                  <span className="menu-icon">🔄</span>
-                  <span className="menu-text">SRS Review</span>
                 </button>
               </div>
 

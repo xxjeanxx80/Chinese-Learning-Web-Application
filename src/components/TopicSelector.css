@@ -12,14 +12,14 @@
   font-weight: 600;
   border: var(--glass-border-light);
   border-radius: var(--apple-radius-pill);
-  background: var(--glass-bg);
+  background: var(--bg-primary) !important; /* Đục 100% */
   color: var(--text-primary);
   cursor: pointer;
   transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-  backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: none; /* Tắt kính mờ */
+  -webkit-backdrop-filter: none;
   white-space: nowrap;
-  box-shadow: var(--glass-inner-light);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15); /* Nổi 3D */
 }
 
 .topic-selector-button:hover {
@@ -47,9 +47,9 @@
   top: calc(100% + 12px);
   left: 0;
   min-width: 220px;
-  background: var(--glass-bg);
-  backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
+  background: var(--bg-primary); /* Menu dọc đục 100% */
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
   border: var(--glass-border-light);
   border-radius: var(--apple-radius-lg);
   box-shadow: var(--glass-shadow-hover), var(--glass-inner-light);
@@ -80,7 +80,7 @@
   font-weight: 500;
   border: none !important; /* Xoá toàn bộ khung viền lạ bao quanh mục con */
   border-bottom: 1px solid rgba(0,0,0,0.03) !important; /* Chỉ giữ phân cách nhạt bên dưới */
-  background: transparent;
+  background: var(--bg-primary) !important; /* Đục 100% mục con */
   color: var(--text-primary);
   border-radius: var(--apple-radius-md);
   cursor: pointer;
@@ -123,6 +123,10 @@
   .topic-selector-button {
     padding: 6px 12px;
     font-size: 0.85rem;
+    background: var(--bg-primary) !important; /* Đục 100% bằng màu nền app */
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15); /* Viền nổi bồng bềnh 3D */
   }
 
   .topic-dropdown-menu {

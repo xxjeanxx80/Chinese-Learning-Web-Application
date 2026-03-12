@@ -106,14 +106,15 @@
 }
 
 .question-display {
-  margin: 40px 0;
+  text-align: center;
+  margin: 30px 0;
   padding: 30px;
   background: var(--glass-bg);
   backdrop-filter: var(--glass-blur);
   -webkit-backdrop-filter: var(--glass-blur);
-  border: var(--glass-border-light);
   border-radius: var(--apple-radius-lg);
   box-shadow: var(--glass-shadow), var(--glass-inner-light);
+  border: var(--glass-border-light);
   position: relative;
   overflow: hidden;
   transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
@@ -130,17 +131,17 @@
   pointer-events: none;
 }
 
-.pinyin-display h2 {
-  font-size: 3rem;
-  margin-bottom: 15px;
-  color: var(--text-primary, #333);
+.meaning-display-primary h2 {
+  font-size: 2.2rem;
+  color: var(--text-primary);
+  margin-bottom: 10px;
   font-weight: 700;
-  letter-spacing: 3px;
+  letter-spacing: 0.5px;
 }
 
-.meaning-display p {
-  font-size: 1.5rem;
-  color: var(--text-secondary, #555);
+.pinyin-display-secondary p {
+  font-size: 1.3rem;
+  color: var(--text-secondary);
   font-weight: 500;
   margin-bottom: 15px;
 }
@@ -295,31 +296,48 @@
 
 .result-section {
   margin-top: 30px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 15px;
+  animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.result {
-  font-size: 1.5rem;
-  font-weight: 700;
-  margin-bottom: 15px;
-  padding: 16px 24px;
-  border-radius: var(--apple-radius-md);
+.correct-answer {
+  font-size: 1.2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 5px;
+}
+
+.user-wrong {
+  color: var(--error);
+}
+
+.actual-correct {
+  color: var(--success);
+}
+
+.correct-answer strong {
+  font-size: 1.4rem;
+}
+
+.next-button {
+  width: 100%;
+  max-width: 400px;
+  background: var(--glass-bg) !important;
   backdrop-filter: var(--glass-blur);
   -webkit-backdrop-filter: var(--glass-blur);
-  box-shadow: var(--glass-shadow-hover), var(--glass-inner-light);
-  border: var(--glass-border-light);
-  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  border: var(--glass-border-light) !important;
+  box-shadow: var(--glass-shadow-hover), var(--glass-inner-light) !important;
+  color: var(--accent-primary) !important;
+  border-radius: var(--apple-radius-pill) !important;
 }
 
-.result.correct {
-  color: var(--success);
-  background-color: rgba(52, 199, 89, 0.15);
-  border: 1px solid rgba(52, 199, 89, 0.3);
-}
-
-.result.incorrect {
-  color: var(--error);
-  background-color: rgba(255, 59, 48, 0.15);
-  border: 1px solid rgba(255, 59, 48, 0.3);
+.next-button:hover {
+  background: rgba(255, 255, 255, 0.3) !important;
+  transform: scale(0.98);
 }
 
 .correct-answer {
