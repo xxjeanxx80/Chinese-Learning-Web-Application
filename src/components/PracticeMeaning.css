@@ -54,6 +54,27 @@
   border-color: transparent;
 }
 
+.pinyin-toggle {
+  margin-left: 10px;
+  background: var(--bg-card, #ffffff) !important;
+  color: var(--accent-primary, #667eea) !important;
+  border: 2px solid var(--accent-primary, #667eea) !important;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.pinyin-toggle.off {
+  opacity: 0.6;
+  border-color: var(--border-color, #ddd) !important;
+  color: var(--text-tertiary, #999) !important;
+}
+
+.pinyin-toggle:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+}
+
 .question-display {
   margin: 40px 0;
   padding: 30px;

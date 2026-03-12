@@ -428,6 +428,39 @@
   box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
 }
 
+.pinyin-toggle {
+  margin-left: 10px;
+  background: var(--bg-card, #ffffff) !important;
+  color: var(--accent-primary, #667eea) !important;
+  border: 2px solid var(--accent-primary, #667eea) !important;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  border-radius: 20px;
+  padding: 8px 16px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.pinyin-toggle.off {
+  opacity: 0.6;
+  border-color: var(--border-color, #ddd) !important;
+  color: var(--text-tertiary, #999) !important;
+}
+
+.pinyin-toggle:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+}
+
+.pinyin-toggle-container {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 15px;
+}
+
 .question-display {
   margin: 30px 0;
 }

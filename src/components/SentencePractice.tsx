@@ -27,7 +27,10 @@ const SentencePractice: React.FC<SentencePracticeProps> = ({ level, currentTopic
   const [seenSentences, setSeenSentences] = useState<Set<number>>(new Set());
   const [showOptions, setShowOptions] = useState(false);
   const [options, setOptions] = useState<string[]>([]);
-
+  const [showPinyin, setShowPinyin] = useState(() => {
+    const saved = localStorage.getItem('showPinyinSentence');
+    return saved !== null ? JSON.parse(saved) : true;
+  });
 
   const sentences = useMemo(() => {
     if (currentTopic) {
@@ -37,6 +40,10 @@ const SentencePractice: React.FC<SentencePracticeProps> = ({ level, currentTopic
       return getSentencesForLevel(level);
     }
   }, [level, currentTopic]);
+
+  useEffect(() => {
+    localStorage.setItem('showPinyinSentence', JSON.stringify(showPinyin));
+  }, [showPinyin]);
   
   const currentSentence = sentences.length > 0 ? sentences[currentIndex] : null;
 
@@ -397,12 +404,21 @@ const SentencePractice: React.FC<SentencePracticeProps> = ({ level, currentTopic
               >
                 🎯 Chọn đáp án
               </button>
+              <button
+                className={`pinyin-toggle ${!showPinyin ? 'off' : ''}`}
+                onClick={() => setShowPinyin(!showPinyin)}
+                title={showPinyin ? "Ẩn Pinyin" : "Hiện Pinyin"}
+              >
+                {showPinyin ? '👁️ Pinyin' : '🙈 Pinyin'}
+              </button>
             </div>
 
             <div className="question-display">
-              <div className="pinyin-display">
-                <h2>{currentSentence.pinyin}</h2>
-              </div>
+              {showPinyin && (
+                <div className="pinyin-display">
+                  <h2>{currentSentence.pinyin}</h2>
+                </div>
+              )}
               <div className="meaning-display">
                 <p>{currentSentence.vietnamese}</p>
               </div>
@@ -471,7 +487,7 @@ const SentencePractice: React.FC<SentencePracticeProps> = ({ level, currentTopic
                   <p>Nghĩa: {currentSentence.vietnamese}</p>
                 </div>
               )}
-              {practiceMode === 'meaning' && (
+              {practiceMode === 'meaning' && showPinyin && (
                 <div className="sentence-pinyin-hint">
                   <p>Pinyin: {currentSentence.pinyin}</p>
                 </div>
@@ -479,6 +495,17 @@ const SentencePractice: React.FC<SentencePracticeProps> = ({ level, currentTopic
             </div>
 
             <div className="input-section">
+              {practiceMode === 'meaning' && (
+                <div className="pinyin-toggle-container">
+                  <button
+                    className={`pinyin-toggle ${!showPinyin ? 'off' : ''}`}
+                    onClick={() => setShowPinyin(!showPinyin)}
+                    title={showPinyin ? "Ẩn Pinyin" : "Hiện Pinyin"}
+                  >
+                    {showPinyin ? '👁️ Pinyin' : '🙈 Pinyin'}
+                  </button>
+                </div>
+              )}
               <label>
                 {practiceMode === 'pinyin' ? 'Nhập pinyin:' : 'Nhập nghĩa tiếng Việt:'}
               </label>

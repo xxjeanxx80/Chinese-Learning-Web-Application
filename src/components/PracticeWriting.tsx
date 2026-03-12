@@ -19,8 +19,16 @@ const PracticeWriting: React.FC<PracticeWritingProps> = ({ level }) => {
   const [wordResults, setWordResults] = useState<Map<number, boolean>>(new Map());
   const [showOptions, setShowOptions] = useState(false);
   const [options, setOptions] = useState<string[]>([]);
+  const [showPinyin, setShowPinyin] = useState(() => {
+    const saved = localStorage.getItem('showPinyinWriting');
+    return saved !== null ? JSON.parse(saved) : true;
+  });
 
   const currentWord = vocabularies[currentIndex];
+
+  useEffect(() => {
+    localStorage.setItem('showPinyinWriting', JSON.stringify(showPinyin));
+  }, [showPinyin]);
 
   useEffect(() => {
     const updatedVocab = getVocabulariesForLevel(level);
@@ -172,12 +180,21 @@ const PracticeWriting: React.FC<PracticeWritingProps> = ({ level }) => {
         >
           🎯 Chọn đáp án
         </button>
+        <button
+          className={`pinyin-toggle ${!showPinyin ? 'off' : ''}`}
+          onClick={() => setShowPinyin(!showPinyin)}
+          title={showPinyin ? "Ẩn Pinyin" : "Hiện Pinyin"}
+        >
+          {showPinyin ? '👁️ Pinyin' : '🙈 Pinyin'}
+        </button>
       </div>
 
       <div className="question-display">
-        <div className="pinyin-display">
-          <h2>{currentWord.pinyin}</h2>
-        </div>
+        {showPinyin && (
+          <div className="pinyin-display">
+            <h2>{currentWord.pinyin}</h2>
+          </div>
+        )}
         <div className="meaning-display">
           <p>{currentWord.vietnamese}</p>
         </div>

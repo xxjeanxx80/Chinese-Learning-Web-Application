@@ -39,6 +39,39 @@
   display: inline-block;
 }
 
+.practice-controls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 15px;
+}
+
+.pinyin-toggle {
+  padding: 8px 16px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  border: 2px solid var(--accent-primary, #667eea);
+  border-radius: 20px;
+  background: var(--bg-card, #ffffff);
+  color: var(--accent-primary, #667eea);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.pinyin-toggle.off {
+  opacity: 0.6;
+  border-color: var(--border-color, #ddd);
+  color: var(--text-tertiary, #999);
+}
+
+.pinyin-toggle:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+}
+
 .question-display {
   margin: 40px 0;
   padding: 30px;

@@ -28,15 +28,19 @@ const RandomPractice: React.FC<RandomPracticeProps> = ({ level }) => {
   // Mỗi từ vựng chỉ được tính 1 lần (đúng nếu có ít nhất 1 câu đúng)
   const [wordResults, setWordResults] = useState<Map<string, boolean>>(new Map());
   const [options, setOptions] = useState<string[]>([]);
+  const [showPinyin, setShowPinyin] = useState(() => {
+    const saved = localStorage.getItem('showPinyinRandom');
+    return saved !== null ? JSON.parse(saved) : true;
+  });
   const sessionStartTime = useRef<number>(Date.now());
 
   useEffect(() => {
-    const updatedVocab = getVocabulariesForLevel(level);
-    setVocabularies(updatedVocab);
-    if (updatedVocab.length > 0) {
+    localStorage.setItem('showPinyinRandom', JSON.stringify(showPinyin));
+    // Regenerate question if pinyin visibility changes to update question text
+    if (currentQuestion) {
       generateQuestion();
     }
-  }, [level]);
+  }, [showPinyin, level]);
 
   // Reload when vocabularies change
   useEffect(() => {
@@ -79,6 +83,9 @@ const RandomPractice: React.FC<RandomPracticeProps> = ({ level }) => {
 
     let question: PracticeQuestion;
 
+    const savedShowPinyin = localStorage.getItem('showPinyinRandom');
+    const isPinyinVisible = savedShowPinyin !== null ? JSON.parse(savedShowPinyin) : true;
+
     switch (randomType) {
       case 'pinyin':
         question = {
@@ -92,7 +99,9 @@ const RandomPractice: React.FC<RandomPracticeProps> = ({ level }) => {
         question = {
           word: randomWord,
           type: 'writing',
-          question: `Pinyin "${randomWord.pinyin}" có nghĩa là "${randomWord.vietnamese}". Nhập chữ Hán:`,
+          question: isPinyinVisible 
+            ? `Pinyin "${randomWord.pinyin}" có nghĩa là "${randomWord.vietnamese}". Nhập chữ Hán:`
+            : `Từ có nghĩa là "${randomWord.vietnamese}". Nhập chữ Hán:`,
           answer: randomWord.chinese
         };
         // Generate options for multiple choice
@@ -107,7 +116,9 @@ const RandomPractice: React.FC<RandomPracticeProps> = ({ level }) => {
         question = {
           word: randomWord,
           type: 'meaning',
-          question: `Chữ "${randomWord.chinese}" (${randomWord.pinyin}) có nghĩa là gì?`,
+          question: isPinyinVisible
+            ? `Chữ "${randomWord.chinese}" (${randomWord.pinyin}) có nghĩa là gì?`
+            : `Chữ "${randomWord.chinese}" có nghĩa là gì?`,
           answer: randomWord.vietnamese.toLowerCase().trim()
         };
         // Generate options
@@ -208,10 +219,19 @@ const RandomPractice: React.FC<RandomPracticeProps> = ({ level }) => {
             </span>
           )}
         </div>
-        <div className="question-type">
-          {currentQuestion.type === 'pinyin' && '📝 Kiểm tra Pinyin'}
-          {currentQuestion.type === 'writing' && '✍️ Kiểm tra Chữ Hán'}
-          {currentQuestion.type === 'meaning' && '💭 Kiểm tra Nghĩa'}
+        <div className="practice-controls">
+          <div className="question-type">
+            {currentQuestion.type === 'pinyin' && '📝 Kiểm tra Pinyin'}
+            {currentQuestion.type === 'writing' && '✍️ Kiểm tra Chữ Hán'}
+            {currentQuestion.type === 'meaning' && '💭 Kiểm tra Nghĩa'}
+          </div>
+          <button
+            className={`pinyin-toggle ${!showPinyin ? 'off' : ''}`}
+            onClick={() => setShowPinyin(!showPinyin)}
+            title={showPinyin ? "Ẩn Pinyin" : "Hiện Pinyin"}
+          >
+            {showPinyin ? '👁️ Pinyin' : '🙈 Pinyin'}
+          </button>
         </div>
       </div>
 
