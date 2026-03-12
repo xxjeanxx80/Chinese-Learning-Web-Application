@@ -35,12 +35,59 @@ const RandomPractice: React.FC<RandomPracticeProps> = ({ level }) => {
   const sessionStartTime = useRef<number>(Date.now());
 
   useEffect(() => {
-    localStorage.setItem('showPinyinRandom', JSON.stringify(showPinyin));
-    // Regenerate question if pinyin visibility changes to update question text
-    if (currentQuestion) {
+    const updatedVocab = getVocabulariesForLevel(level);
+    setVocabularies(updatedVocab);
+    if (updatedVocab.length > 0) {
       generateQuestion();
     }
-  }, [showPinyin, level]);
+  }, [level]);
+
+  useEffect(() => {
+    localStorage.setItem('showPinyinRandom', JSON.stringify(showPinyin));
+    // Nếu đang có câu hỏi, thì cập nhật lại câu hỏi để thay đổi text câu hỏi (hiện/ẩn pinyin)
+    if (currentQuestion) {
+      // Giữ nguyên từ vựng hiện tại, chỉ tạo lại question text
+      const randomWord = currentQuestion.word;
+      const randomType = currentQuestion.type;
+      let question: PracticeQuestion;
+
+      const isPinyinVisible = showPinyin;
+
+      switch (randomType) {
+        case 'pinyin':
+          question = {
+            word: randomWord,
+            type: 'pinyin',
+            question: `Chữ "${randomWord.chinese}" có nghĩa là "${randomWord.vietnamese}". Nhập pinyin:`,
+            answer: randomWord.pinyin.toLowerCase().trim()
+          };
+          break;
+        case 'writing':
+          question = {
+            word: randomWord,
+            type: 'writing',
+            question: isPinyinVisible 
+              ? `Pinyin "${randomWord.pinyin}" có nghĩa là "${randomWord.vietnamese}". Nhập chữ Hán:`
+              : `Từ có nghĩa là "${randomWord.vietnamese}". Nhập chữ Hán:`,
+            answer: randomWord.chinese
+          };
+          break;
+        case 'meaning':
+          question = {
+            word: randomWord,
+            type: 'meaning',
+            question: isPinyinVisible
+              ? `Chữ "${randomWord.chinese}" (${randomWord.pinyin}) có nghĩa là gì?`
+              : `Chữ "${randomWord.chinese}" có nghĩa là gì?`,
+            answer: randomWord.vietnamese.toLowerCase().trim()
+          };
+          break;
+        default:
+          return;
+      }
+      setCurrentQuestion(question);
+    }
+  }, [showPinyin]);
 
   // Reload when vocabularies change
   useEffect(() => {

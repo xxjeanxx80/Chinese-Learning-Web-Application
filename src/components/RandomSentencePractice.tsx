@@ -37,11 +37,50 @@ const RandomSentencePractice: React.FC<RandomSentencePracticeProps> = ({ level, 
 
   useEffect(() => {
     localStorage.setItem('showPinyinRandomSentence', JSON.stringify(showPinyin));
-    // Regenerate question if pinyin visibility changes to update question text
+    // Nếu đang có câu hỏi, thì cập nhật lại câu hỏi để thay đổi text câu hỏi (hiện/ẩn pinyin)
     if (currentQuestion) {
-      generateQuestion();
+      // Giữ nguyên câu hiện tại, chỉ tạo lại question text
+      const randomSentence = currentQuestion.sentence;
+      const randomType = currentQuestion.type;
+      let question: PracticeQuestion;
+
+      const isPinyinVisible = showPinyin;
+
+      switch (randomType) {
+        case 'pinyin':
+          question = {
+            sentence: randomSentence,
+            type: 'pinyin',
+            question: `Câu "${randomSentence.chinese}" có nghĩa là "${randomSentence.vietnamese}". Nhập pinyin:`,
+            answer: randomSentence.pinyin.toLowerCase().trim()
+          };
+          break;
+        case 'writing':
+          question = {
+            sentence: randomSentence,
+            type: 'writing',
+            question: isPinyinVisible
+              ? `Pinyin "${randomSentence.pinyin}" có nghĩa là "${randomSentence.vietnamese}". Nhập câu Hán:`
+              : `Câu có nghĩa là "${randomSentence.vietnamese}". Nhập câu Hán:`,
+            answer: randomSentence.chinese
+          };
+          break;
+        case 'meaning':
+          question = {
+            sentence: randomSentence,
+            type: 'meaning',
+            question: isPinyinVisible
+              ? `Câu "${randomSentence.chinese}" (${randomSentence.pinyin}) có nghĩa là gì?`
+              : `Câu "${randomSentence.chinese}" có nghĩa là gì?`,
+            answer: randomSentence.vietnamese.toLowerCase().trim()
+          };
+          break;
+        default:
+          return;
+      }
+      setCurrentQuestion(question);
     }
-  }, [showPinyin, level, currentTopic]);
+  }, [showPinyin]);
 
   useEffect(() => {
     if (currentTopic) {
