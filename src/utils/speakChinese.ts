@@ -1,71 +1,89 @@
 /**
  * Speak Chinese text (Mandarin zh-CN).
- * Uses the /api/tts proxy for reliable cross-browser TTS.
- * Falls back to Web Speech API if the proxy is unavailable.
+ * Uses a singleton Audio element to bypass Safari/Mobile restrictions.
  */
 
-let currentAudio: HTMLAudioElement | null = null;
+// Singleton Audio element
+let singletonAudio: HTMLAudioElement | null = null;
+
+// Audio context unlocking for Safari/Mobile
+if (typeof window !== 'undefined') {
+  singletonAudio = new Audio();
+  
+  // Unlocking trick: play silent sound on first interaction
+  const unlock = () => {
+    if (singletonAudio) {
+      singletonAudio.play().catch(() => {});
+      singletonAudio.pause();
+    }
+    window.removeEventListener('click', unlock);
+    window.removeEventListener('touchstart', unlock);
+  };
+  window.addEventListener('click', unlock);
+  window.addEventListener('touchstart', unlock);
+}
 
 export const speakChinese = (text: string): void => {
-  if (!text) return;
+  if (!text || !singletonAudio) return;
 
-  // Stop any currently playing audio
-  if (currentAudio) {
-    currentAudio.pause();
-    currentAudio.currentTime = 0;
-    currentAudio = null;
-  }
+  // Stop current
+  singletonAudio.pause();
 
-  // Use our own API proxy (bypasses CORS/ad-blocker, always Mandarin)
   const encodedText = encodeURIComponent(text);
-  const url = `/api/tts?text=${encodedText}`;
+  const primaryUrl = `/api/tts?text=${encodedText}`;
+  const fallbackUrl = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodedText}&tl=zh-CN&client=tw-ob`;
 
-  // Safari optimization: Create and play immediately if possible
-  const audio = new Audio(url);
-  currentAudio = audio;
-
-  // We don't wrap this in an async function immediately to keep the stack trace short
-  audio.play().catch(async (err) => {
-    console.warn('Primary audio playback failed, trying Google fallback...', err);
-    
-    // Fallback: try Google Translate directly
-    const googleUrl = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodedText}&tl=zh-CN&client=tw-ob`;
-    const fallbackAudio = new Audio(googleUrl);
-    currentAudio = fallbackAudio;
-    
+  // Safari optimization: sync source setting
+  singletonAudio.src = primaryUrl;
+  
+  const attemptPlay = async () => {
     try {
-      await fallbackAudio.play();
-    } catch (fallbackErr) {
-      console.error('All audio sources failed, using Web Speech API', fallbackErr);
-      fallbackWebSpeech(text);
+      await singletonAudio!.play();
+    } catch (err) {
+      console.warn('Primary TTS failed, trying fallback...', err);
+      
+      // Fallback 1: Google
+      if (singletonAudio) {
+        singletonAudio.src = fallbackUrl;
+        try {
+          await singletonAudio.play();
+        } catch (fallbackErr) {
+          console.error('All audio objects failed, using Web Speech API', fallbackErr);
+          fallbackWebSpeech(text);
+        }
+      }
     }
-  });
+  };
+
+  attemptPlay();
 };
 
 function fallbackWebSpeech(text: string): void {
   if (!window.speechSynthesis) return;
 
-  window.speechSynthesis.cancel();
+  // Synthesis also needs a user gesture sometimes, but usually works if called from a click handler
+  try {
+    window.speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = 'zh-CN';
+    utterance.rate = 0.9;
+    utterance.volume = 1;
 
-  const utterance = new SpeechSynthesisUtterance(text);
-  utterance.lang = 'zh-CN';
-  utterance.rate = 0.9;
-  utterance.pitch = 1;
-  utterance.volume = 1;
+    // Filter Mandarin voice
+    const voices = window.speechSynthesis.getVoices();
+    const mandarinVoice = voices.find(
+      (v) =>
+        v.lang === 'zh-CN' &&
+        !v.name.toLowerCase().includes('cantonese') &&
+        !v.name.toLowerCase().includes('hong kong')
+    );
 
-  // Strict Mandarin voice - avoid Cantonese/HK/TW
-  const voices = window.speechSynthesis.getVoices();
-  const mandarinVoice = voices.find(
-    (v) =>
-      v.lang === 'zh-CN' &&
-      !v.name.toLowerCase().includes('cantonese') &&
-      !v.name.toLowerCase().includes('hong kong') &&
-      !v.name.toLowerCase().includes('hk')
-  );
+    if (mandarinVoice) {
+      utterance.voice = mandarinVoice;
+    }
 
-  if (mandarinVoice) {
-    utterance.voice = mandarinVoice;
+    window.speechSynthesis.speak(utterance);
+  } catch (err) {
+    console.error('Web Speech API failed:', err);
   }
-
-  window.speechSynthesis.speak(utterance);
 }

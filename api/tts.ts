@@ -53,10 +53,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     const audioBuffer = await response.arrayBuffer();
+    const buffer = Buffer.from(audioBuffer);
 
     res.setHeader('Content-Type', 'audio/mpeg');
+    res.setHeader('Content-Length', buffer.length.toString());
+    res.setHeader('Accept-Ranges', 'bytes');
     res.setHeader('Cache-Control', 'public, max-age=86400'); // Cache 1 day
-    return res.send(Buffer.from(audioBuffer));
+    return res.send(buffer);
   } catch {
     // Fallback: Youdao Dictionary TTS (also Mandarin)
     try {
@@ -68,9 +71,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       }
 
       const audioBuffer = await youdaoResponse.arrayBuffer();
+      const buffer = Buffer.from(audioBuffer);
+
       res.setHeader('Content-Type', 'audio/mpeg');
+      res.setHeader('Content-Length', buffer.length.toString());
+      res.setHeader('Accept-Ranges', 'bytes');
       res.setHeader('Cache-Control', 'public, max-age=86400');
-      return res.send(Buffer.from(audioBuffer));
+      return res.send(buffer);
     } catch {
       return res.status(500).json({ error: 'Tat ca nguon TTS deu that bai' });
     }
