@@ -20,19 +20,25 @@ export const speakChinese = (text: string): void => {
   const encodedText = encodeURIComponent(text);
   const url = `/api/tts?text=${encodedText}`;
 
+  // Safari optimization: Create and play immediately if possible
   const audio = new Audio(url);
   currentAudio = audio;
 
-  audio.play().catch(() => {
+  // We don't wrap this in an async function immediately to keep the stack trace short
+  audio.play().catch(async (err) => {
+    console.warn('Primary audio playback failed, trying Google fallback...', err);
+    
     // Fallback: try Google Translate directly
     const googleUrl = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodedText}&tl=zh-CN&client=tw-ob`;
     const fallbackAudio = new Audio(googleUrl);
     currentAudio = fallbackAudio;
-
-    fallbackAudio.play().catch(() => {
-      // Last fallback: Web Speech API with strict Mandarin
+    
+    try {
+      await fallbackAudio.play();
+    } catch (fallbackErr) {
+      console.error('All audio sources failed, using Web Speech API', fallbackErr);
       fallbackWebSpeech(text);
-    });
+    }
   });
 };
 

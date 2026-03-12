@@ -20,17 +20,20 @@ const StrokeOrderModal: React.FC<StrokeOrderModalProps> = ({ character, onClose 
     if (!writerRef.current || !currentChar) return;
 
     // Clear previous writer
-    writerRef.current.innerHTML = '';
+    if (writerRef.current) {
+      writerRef.current.innerHTML = '';
+    }
 
-    const writer = HanziWriter.create(writerRef.current, currentChar, {
+    // Detect theme colors from computed styles
+    const writer = HanziWriter.create(writerRef.current!, currentChar, {
       width: 220,
       height: 220,
       padding: 10,
       strokeAnimationSpeed: 1,
       delayBetweenStrokes: 300,
-      strokeColor: '#333',
+      strokeColor: '#333333', // Always use dark color on the white board
       radicalColor: '#007AFF',
-      outlineColor: '#DDD',
+      outlineColor: '#EEEEEE',
       drawingColor: '#007AFF',
       showOutline: true,
       showCharacter: true,

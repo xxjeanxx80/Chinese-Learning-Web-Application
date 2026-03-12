@@ -20,17 +20,13 @@
 }
 
 .stroke-modal {
-  background: rgba(255, 255, 255, 0.92);
-  backdrop-filter: blur(40px);
-  -webkit-backdrop-filter: blur(40px);
-  border-radius: var(--apple-radius-lg, 20px);
+  background: var(--bg-primary); /* Use solid background of current theme */
+  border-radius: var(--apple-radius-lg, 24px);
   padding: 28px;
   min-width: 300px;
   max-width: 360px;
-  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.15),
-    0 8px 24px rgba(0, 0, 0, 0.08),
-    inset 0 1px 1px rgba(255, 255, 255, 0.8);
-  border: 1px solid rgba(255, 255, 255, 0.6);
+  box-shadow: var(--glass-shadow);
+  border: var(--glass-border-light);
   position: relative;
   animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
@@ -54,7 +50,7 @@
   height: 32px;
   border: none;
   border-radius: 50%;
-  background: rgba(0, 0, 0, 0.06);
+  background: var(--border-color);
   color: var(--text-secondary);
   cursor: pointer;
   display: flex;
@@ -65,7 +61,7 @@
 }
 
 .stroke-modal-close:hover {
-  background: rgba(0, 0, 0, 0.12);
+  background: var(--border-color);
   color: var(--text-primary);
 }
 
@@ -92,7 +88,7 @@
   padding: 8px 16px;
   border: none;
   border-radius: var(--apple-radius-pill, 50px);
-  background: rgba(0, 0, 0, 0.05);
+  background: var(--border-color);
   color: var(--text-primary);
   font-size: 1.4rem;
   font-weight: 600;
@@ -107,18 +103,22 @@
 }
 
 .char-tab:hover:not(.active) {
-  background: rgba(0, 0, 0, 0.1);
+  background: var(--border-color);
 }
 
 .stroke-writer-container {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(255, 255, 255, 0.6);
-  border-radius: var(--apple-radius-md, 12px);
+  background: #ffffff; /* Always light background for white board feel */
+  border-radius: var(--apple-radius-md, 14px);
   padding: 20px;
   margin: 0 auto;
-  border: 1px solid rgba(0, 0, 0, 0.06);
+  border: 1px solid var(--border-color);
+}
+
+.dark .stroke-writer-container {
+  background: #f0f0f0; /* Slightly off-white for contrast in dark mode */
 }
 
 .stroke-writer-container svg {
