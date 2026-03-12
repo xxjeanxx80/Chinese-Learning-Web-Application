@@ -60,7 +60,7 @@ const Translate: React.FC<TranslateProps> = ({ currentLevel = 'hsk1' }) => {
     try {
       const saved = localStorage.getItem(TRANSLATION_PROVIDER_KEY);
       if (saved === 'libre') return 'deepl';
-      if (saved && ['auto', 'deepl', 'google', 'mymemory'].includes(saved)) {
+      if (saved && ['auto', 'deepl', 'google'].includes(saved)) {
         return saved as TranslationProvider;
       }
     } catch (_) {}
@@ -313,14 +313,20 @@ const Translate: React.FC<TranslateProps> = ({ currentLevel = 'hsk1' }) => {
             })
           })
             .then(async (res) => {
+              const data = await res.json().catch(() => ({}));
               if (res.ok) {
-                const data = await res.json();
                 const translated = data?.translations?.[0]?.text?.trim();
                 if (translated && translated !== sourceText.trim()) return translated;
+              } else {
+                throw new Error(data.note ? `${data.error}. ${data.note}` : (data.error || 'Lỗi DeepL API'));
               }
-              throw new Error('Invalid response');
+              throw new Error('Invalid response từ DeepL');
             })
-            .catch(() => null)
+            // Nếu auto thì ghim lỗi và trả về null để fallback, nếu là deepl thì quăng lỗi ra
+            .catch((err) => {
+              if (provider === 'deepl') throw err;
+              return null;
+            })
         );
       };
 
@@ -347,46 +353,13 @@ const Translate: React.FC<TranslateProps> = ({ currentLevel = 'hsk1' }) => {
         );
       };
 
-      const addMyMemory = () => {
-        translationPromises.push(
-          fetch(
-            `https://api.mymemory.translated.net/get?q=${encodeURIComponent(sourceText)}&langpair=${sourceLangCode}|${targetLangCode}`
-          )
-            .then(async (response) => {
-              if (response.ok) {
-                const data = await response.json();
-                if (data.responseStatus === 200 && data.responseData) {
-                  const translated = data.responseData.translatedText;
-                  if (
-                    translated &&
-                    translated.trim() &&
-                    translated.toLowerCase().trim() !== sourceText.toLowerCase().trim()
-                  )
-                    return translated.trim();
-                }
-              }
-              throw new Error('Invalid response');
-            })
-            .catch(() => null)
-        );
-      };
-
       if (provider === 'auto') {
         addDeepL();
         addGoogle();
-        addMyMemory();
       } else if (provider === 'deepl') {
         addDeepL();
-        addGoogle();
-        addMyMemory();
       } else if (provider === 'google') {
         addGoogle();
-        addDeepL();
-        addMyMemory();
-      } else if (provider === 'mymemory') {
-        addMyMemory();
-        addGoogle();
-        addDeepL();
       }
 
       const allPromises = translationPromises;
@@ -420,10 +393,20 @@ const Translate: React.FC<TranslateProps> = ({ currentLevel = 'hsk1' }) => {
         }
       }
 
-      // Nếu không có kết quả nào, throw error
+      // Nếu không có kết quả nào, throw error đầu tiên tìm thấy (nếu có)
+      const rejectedPromise = results.find(r => r.status === 'rejected') as PromiseRejectedResult;
+      if (rejectedPromise && rejectedPromise.reason) {
+        throw new Error(rejectedPromise.reason.message || rejectedPromise.reason);
+      }
+      
       throw new Error('Không thể dịch văn bản này. Vui lòng thử lại.');
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Đã xảy ra lỗi khi dịch');
+    } catch (err: any) {
+      let msg = err instanceof Error ? err.message : 'Đã xảy ra lỗi khi dịch';
+      // Nếu Vite trả về HTML index yerine vì không tìm thấy đường dẫn /api
+      if (msg.includes('Unexpected token') && msg.includes('<')) {
+        msg = '⚠️ API DeepL yêu cầu Serverless Function. Tại máy cá nhân, hãy chạy lệnh "vercel dev" thay vì "npm run dev" để test, hoặc truy cập trên Vercel sau khi Deploy.';
+      }
+      setError(msg);
       setTargetText('');
     } finally {
       setIsTranslating(false);

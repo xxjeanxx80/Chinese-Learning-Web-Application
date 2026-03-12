@@ -48,6 +48,56 @@ function App() {
   const [showShortcutsModal, setShowShortcutsModal] = useState(false);
   const [showSupportModal, setShowSupportModal] = useState(false);
   const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false);
+  
+  // Custom Background
+  const [customBackground, setCustomBackground] = useState<string | null>(() => {
+    return localStorage.getItem('custom_app_background');
+  });
+
+  // Áp dụng background
+  useEffect(() => {
+    if (customBackground) {
+      document.body.style.backgroundImage = `url(${customBackground})`;
+      document.body.style.backgroundSize = 'cover';
+      document.body.style.backgroundPosition = 'center';
+      document.body.style.backgroundAttachment = 'fixed';
+      document.body.style.animation = 'none'; // Tắt animation liquidBg để ảnh đứng im
+    } else {
+      document.body.style.backgroundImage = '';
+      document.body.style.backgroundSize = '';
+      document.body.style.backgroundPosition = '';
+      document.body.style.backgroundAttachment = '';
+      document.body.style.animation = '';
+    }
+  }, [customBackground]);
+
+  const handleBackgroundUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      // Giới hạn size < 5MB để tránh quất đầy LocalStorage
+      if (file.size > 5 * 1024 * 1024) {
+        alert('Vui lòng chọn ảnh nhỏ hơn 5MB để đảm bảo hiệu năng!');
+        return;
+      }
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const base64String = reader.result as string;
+        setCustomBackground(base64String);
+        try {
+          localStorage.setItem('custom_app_background', base64String);
+        } catch (error) {
+          console.error('LocalStorage quota exceeded:', error);
+          alert('Ảnh này có độ phân giải quá cao không thể lưu lại cho lần sau. Tuy vậy nền vẫn sẽ được áp dụng tạm thời.');
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const removeCustomBackground = () => {
+    setCustomBackground(null);
+    localStorage.removeItem('custom_app_background');
+  };
 
   // Xóa tất cả dữ liệu localStorage khi app load
   useEffect(() => {
@@ -213,14 +263,41 @@ function App() {
                 onTopicChange={setCurrentTopic}
               />
             )}
-            <button
-              onClick={toggleTheme}
-              className="btn-theme-toggle"
-              title={theme === 'light' ? 'Chuyển sang Dark Mode' : 'Chuyển sang Light Mode'}
-              aria-label="Toggle theme"
-            >
-              {theme === 'light' ? '🌙' : '☀️'}
-            </button>
+            <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+              {customBackground ? (
+                <button
+                  onClick={removeCustomBackground}
+                  className="btn-theme-toggle"
+                  title="Xoá ảnh nền tuỳ chỉnh"
+                  style={{ background: 'rgba(255, 59, 48, 0.2)', borderColor: 'rgba(255, 59, 48, 0.5)' }}
+                >
+                  🗑️
+                </button>
+              ) : (
+                <label 
+                  className="btn-theme-toggle" 
+                  title="Tải lên ảnh nền (Dưới 5MB)"
+                  style={{ cursor: 'pointer' }}
+                >
+                  <input 
+                    type="file" 
+                    accept="image/*" 
+                    onChange={handleBackgroundUpload} 
+                    style={{ display: 'none' }} 
+                  />
+                  🖼️
+                </label>
+              )}
+              
+              <button
+                onClick={toggleTheme}
+                className="btn-theme-toggle"
+                title={theme === 'light' ? 'Chuyển sang Dark Mode' : 'Chuyển sang Light Mode'}
+                aria-label="Toggle theme"
+              >
+                {theme === 'light' ? '🌙' : '☀️'}
+              </button>
+            </div>
           </div>
         </div>
       </header>

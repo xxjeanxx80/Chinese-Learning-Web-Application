@@ -10,19 +10,22 @@
   padding: 8px 16px;
   font-size: 0.95rem;
   font-weight: 600;
-  border: 2px solid var(--accent-primary, #667eea);
-  border-radius: 20px;
-  background: var(--bg-card, #ffffff);
-  color: var(--accent-primary, #667eea);
+  border: var(--glass-border-light);
+  border-radius: var(--apple-radius-pill);
+  background: var(--glass-bg);
+  color: var(--text-primary);
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
   white-space: nowrap;
+  box-shadow: var(--glass-inner-light);
 }
 
 .topic-selector-button:hover {
-  background: var(--bg-tertiary, #f0f4ff);
-  transform: translateY(-1px);
-  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.2);
+  background: var(--glass-bg-hover);
+  transform: scale(0.96);
+  box-shadow: var(--glass-shadow-hover), var(--glass-inner-light);
 }
 
 .topic-selector-icon {
@@ -41,16 +44,19 @@
 
 .topic-dropdown-menu {
   position: absolute;
-  top: calc(100% + 8px);
+  top: calc(100% + 12px);
   left: 0;
   min-width: 220px;
-  background: var(--bg-card, #ffffff);
-  border: 2px solid var(--border-color, #e0e0e0);
-  border-radius: 12px;
-  box-shadow: 0 4px 20px var(--shadow, rgba(0, 0, 0, 0.15));
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: var(--glass-border-light);
+  border-radius: var(--apple-radius-lg);
+  box-shadow: var(--glass-shadow-hover), var(--glass-inner-light);
   z-index: 10000;
   overflow: hidden;
-  animation: slideDown 0.2s ease;
+  animation: slideDown 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  padding: 8px;
 }
 
 @keyframes slideDown {
@@ -72,22 +78,31 @@
   padding: 12px 16px;
   font-size: 0.95rem;
   font-weight: 500;
-  border: none;
-  background: var(--bg-card, #ffffff);
-  color: var(--text-primary, #333);
+  border-bottom: 1px solid rgba(0,0,0,0.03); /* Viền rất mờ */
+  background: transparent;
+  color: var(--text-primary);
+  border-radius: var(--apple-radius-md);
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   text-align: left;
+  margin-bottom: 4px;
+}
+
+.topic-dropdown-item:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
 }
 
 .topic-dropdown-item:hover {
-  background: var(--bg-tertiary, #f5f7fa);
+  background: var(--glass-bg-hover);
+  transform: translateX(4px);
 }
 
 .topic-dropdown-item.active {
-  background: linear-gradient(135deg, var(--accent-primary, #667eea) 0%, var(--accent-secondary, #764ba2) 100%);
+  background: rgba(0, 122, 255, 0.8); /* Apple Blue trong suốt */
   color: white;
   font-weight: 600;
+  box-shadow: 0 4px 12px rgba(0, 122, 255, 0.3);
 }
 
 .topic-dropdown-icon {

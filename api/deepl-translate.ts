@@ -1,7 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 
-const DEEPL_URL = 'https://api-free.deepl.com/v2/translate';
-
 /**
  * Proxy dich DeepL - tranh loi CORS khi goi truc tiep tu browser.
  * DeepL chan request tu frontend, nen phai goi qua backend.
@@ -37,6 +35,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(400).json({ error: 'Thieu text hoac target_lang' });
   }
 
+  const isFreeKey = apiKey.endsWith(':fx');
+  const DEEPL_URL = isFreeKey
+    ? 'https://api-free.deepl.com/v2/translate'
+    : 'https://api-deepl.com/v2/translate';
+
   try {
     const response = await fetch(DEEPL_URL, {
       method: 'POST',
@@ -47,7 +50,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       body: JSON.stringify({
         text: Array.isArray(text) ? text : [String(text)],
         source_lang: source_lang || undefined,
-        target_lang: String(target_lang)
+        target_lang: String(target_lang).toUpperCase()
       })
     });
 
@@ -55,8 +58,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     if (!response.ok) {
       return res.status(response.status).json({
-        error: data.message || 'Loi DeepL API',
-        ...data
+        error: data.message || 'Lỗi DeepL API',
+        details: data,
+        note: data.message?.includes('not supported') ? 'Lưu ý: DeepL hiện chưa hỗ trợ tiếng Việt (VI).' : ''
       });
     }
 

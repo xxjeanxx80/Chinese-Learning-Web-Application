@@ -47,19 +47,22 @@
 }
 
 .practice-mode-selector button.active {
-  background: linear-gradient(135deg, var(--accent-primary, #667eea) 0%, var(--accent-secondary, #764ba2) 100%);
+  background: var(--accent-primary);
   color: white;
   border-color: transparent;
 }
 
 .pinyin-toggle {
   margin-left: 10px;
-  background: var(--bg-card, #ffffff) !important;
-  color: var(--accent-primary, #667eea) !important;
-  border: 2px solid var(--accent-primary, #667eea) !important;
+  background: rgba(255, 255, 255, 0.2) !important;
+  color: var(--accent-primary) !important;
+  border: 1px solid rgba(255, 255, 255, 0.4) !important;
+  border-radius: var(--apple-radius-pill) !important;
   display: flex;
   align-items: center;
   gap: 5px;
+  backdrop-filter: var(--glass-blur);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05), inset 0 1px 1px rgba(255, 255, 255, 0.6) !important;
 }
 
 .pinyin-toggle.off {
@@ -97,7 +100,7 @@
 }
 
 .practice-mode-selector-secondary button.active {
-  background: linear-gradient(135deg, var(--accent-primary, #667eea) 0%, var(--accent-secondary, #764ba2) 100%);
+  background: var(--accent-primary);
   color: white;
   border-color: transparent;
 }
@@ -105,8 +108,26 @@
 .question-display {
   margin: 40px 0;
   padding: 30px;
-  background: var(--bg-tertiary, linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%));
-  border-radius: 15px;
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: var(--glass-border-light);
+  border-radius: var(--apple-radius-lg);
+  box-shadow: var(--glass-shadow), var(--glass-inner-light);
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.question-display::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0) 40%);
+  pointer-events: none;
 }
 
 .pinyin-display h2 {
@@ -162,22 +183,39 @@
   padding: 25px;
   font-size: 2rem;
   font-weight: 600;
-  border: 3px solid var(--border-color, #ddd);
-  border-radius: 15px;
-  background: var(--bg-card, #ffffff);
-  color: var(--text-primary, #333);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: var(--apple-radius-lg);
+  background: rgba(255, 255, 255, 0.4);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  color: var(--text-primary);
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   min-height: 100px;
   display: flex;
   align-items: center;
   justify-content: center;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.03), inset 0 1px 1px rgba(255, 255, 255, 0.7);
+  position: relative;
+  overflow: hidden;
+}
+
+.option-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 40%);
+  pointer-events: none;
 }
 
 .option-button:hover:not(:disabled) {
-  border-color: var(--accent-primary, #667eea);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+  border-color: rgba(255, 255, 255, 0.8);
+  background: rgba(255, 255, 255, 0.5);
+  transform: scale(0.98);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.05), inset 0 1px 1px rgba(255, 255, 255, 1);
 }
 
 .option-button:disabled {
@@ -204,20 +242,28 @@
 .input-section input {
   width: 100%;
   max-width: 400px;
-  padding: 15px 20px;
+  padding: 18px 24px;
   font-size: 1.5rem;
-  border: 2px solid var(--border-color, #ddd);
-  border-radius: 10px;
+  border: none;
+  border-radius: var(--apple-radius-md);
   margin-bottom: 20px;
   text-align: center;
-  transition: border-color 0.3s;
-  background: var(--bg-secondary, #ffffff);
-  color: var(--text-primary, #333);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  background: rgba(255, 255, 255, 0.5);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  color: var(--text-primary);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.dark .input-section input {
+  background: rgba(0, 0, 0, 0.2);
 }
 
 .input-section input:focus {
   outline: none;
-  border-color: var(--accent-primary, #667eea);
+  background: rgba(255, 255, 255, 0.7);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05), 0 0 0 4px rgba(0, 122, 255, 0.2);
 }
 
 .input-section input:disabled {
@@ -228,22 +274,23 @@
 
 .check-button,
 .next-button {
-  padding: 12px 40px;
-  font-size: 1.1rem;
+  padding: 16px 40px;
+  font-size: 1.2rem;
   font-weight: 600;
   border: none;
-  border-radius: 25px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: var(--apple-radius-pill);
+  background: var(--accent-primary);
   color: white;
   cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 8px 24px rgba(0, 122, 255, 0.3), inset 0 1px 1px rgba(255, 255, 255, 0.4);
 }
 
 .check-button:hover,
 .next-button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+  background: var(--accent-primary-hover);
+  transform: scale(0.96);
+  box-shadow: 0 4px 12px rgba(0, 122, 255, 0.2);
 }
 
 .result-section {
@@ -254,18 +301,25 @@
   font-size: 1.5rem;
   font-weight: 700;
   margin-bottom: 15px;
-  padding: 15px;
-  border-radius: 10px;
+  padding: 16px 24px;
+  border-radius: var(--apple-radius-md);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  box-shadow: var(--glass-shadow-hover), var(--glass-inner-light);
+  border: var(--glass-border-light);
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .result.correct {
-  color: var(--success, #4CAF50);
-  background-color: rgba(76, 175, 80, 0.1);
+  color: var(--success);
+  background-color: rgba(52, 199, 89, 0.15);
+  border: 1px solid rgba(52, 199, 89, 0.3);
 }
 
 .result.incorrect {
-  color: var(--error, #f44336);
-  background-color: rgba(244, 67, 54, 0.1);
+  color: var(--error);
+  background-color: rgba(255, 59, 48, 0.15);
+  border: 1px solid rgba(255, 59, 48, 0.3);
 }
 
 .correct-answer {

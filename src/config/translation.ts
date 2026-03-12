@@ -20,12 +20,11 @@ export const DEEPL_LANG_MAP: Record<string, string> = {
 export const TRANSLATION_PROVIDER_KEY = 'translation_provider';
 
 /** Cac nguon dich co the chon */
-export type TranslationProvider = 'auto' | 'deepl' | 'google' | 'mymemory';
+export type TranslationProvider = 'auto' | 'deepl' | 'google';
 
 /** Danh sach nguon dich hien thi tren GUI */
 export const TRANSLATION_PROVIDERS: { id: TranslationProvider; label: string }[] = [
   { id: 'auto', label: 'Tự động (thử lần lượt)' },
   { id: 'deepl', label: 'DeepL (chất lượng cao)' },
-  { id: 'google', label: 'Google Translate' },
-  { id: 'mymemory', label: 'MyMemory' }
+  { id: 'google', label: 'Google Translate' }
 ];

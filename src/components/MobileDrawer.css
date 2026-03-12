@@ -48,7 +48,7 @@
   justify-content: space-between;
   padding: 16px 20px;
   border-bottom: 1px solid var(--border-color, #e0e0e0);
-  background: linear-gradient(135deg, var(--accent-primary, #667eea) 0%, var(--accent-secondary, #764ba2) 100%);
+  background: var(--accent-primary);
   color: white;
   position: sticky;
   top: 0;
