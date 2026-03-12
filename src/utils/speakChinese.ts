@@ -1,61 +1,83 @@
 /**
  * Speak Chinese text (Mandarin zh-CN).
- * Uses a singleton Audio element to bypass Safari/Mobile restrictions.
+ * Advanced implementation for iOS/Safari compatibility using DOM-based singleton and silent kickstart.
  */
 
-// Singleton Audio element
-let singletonAudio: HTMLAudioElement | null = null;
+// Silent 1-second MP3 clip to "kickstart" iOS audio session
+const SILENT_KICKSTART = "data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQQAAAAAAA== ";
 
-// Audio context unlocking for Safari/Mobile
+let globalAudio: HTMLAudioElement | null = null;
+let isUnlocked = false;
+
+// Initialization and Unlocking
 if (typeof window !== 'undefined') {
-  singletonAudio = new Audio();
-  
-  // Unlocking trick: play silent sound on first interaction
-  const unlock = () => {
-    if (singletonAudio) {
-      singletonAudio.play().catch(() => {});
-      singletonAudio.pause();
-    }
-    window.removeEventListener('click', unlock);
-    window.removeEventListener('touchstart', unlock);
+  // Try to find the pre-defined audio tag in index.html
+  const init = () => {
+    globalAudio = document.getElementById('global-tts-player') as HTMLAudioElement;
+    
+    const unlock = () => {
+      if (globalAudio && !isUnlocked) {
+        // Kickstart with silence
+        globalAudio.src = SILENT_KICKSTART;
+        globalAudio.play().then(() => {
+          isUnlocked = true;
+          console.log('Audio logic unlocked for iOS');
+        }).catch(() => {});
+      }
+      window.removeEventListener('click', unlock);
+      window.removeEventListener('touchstart', unlock);
+    };
+    
+    window.addEventListener('click', unlock);
+    window.addEventListener('touchstart', unlock);
   };
-  window.addEventListener('click', unlock);
-  window.addEventListener('touchstart', unlock);
+
+  // Run init or wait for DOM
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
 }
 
 export const speakChinese = (text: string): void => {
-  if (!text || !singletonAudio) return;
-
-  // Stop current
-  singletonAudio.pause();
+  if (!text) return;
+  
+  if (!globalAudio) {
+    globalAudio = document.getElementById('global-tts-player') as HTMLAudioElement;
+  }
+  
+  if (!globalAudio) {
+    console.error('Could not find global-tts-player in DOM');
+    fallbackWebSpeech(text);
+    return;
+  }
 
   const encodedText = encodeURIComponent(text);
   const primaryUrl = `/api/tts?text=${encodedText}`;
   const fallbackUrl = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodedText}&tl=zh-CN&client=tw-ob`;
 
-  // Safari optimization: sync source setting
-  singletonAudio.src = primaryUrl;
+  // Stop any active sound
+  globalAudio.pause();
   
-  const attemptPlay = async () => {
-    try {
-      await singletonAudio!.play();
-    } catch (err) {
-      console.warn('Primary TTS failed, trying fallback...', err);
+  // CRITICAL: Set src and play in the same synchronous tick as the user gesture
+  globalAudio.src = primaryUrl;
+  
+  const playPromise = globalAudio.play();
+  
+  if (playPromise !== undefined) {
+    playPromise.catch((err) => {
+      console.warn('Primary TTS failed or was blocked, trying fallback...', err);
       
-      // Fallback 1: Google
-      if (singletonAudio) {
-        singletonAudio.src = fallbackUrl;
-        try {
-          await singletonAudio.play();
-        } catch (fallbackErr) {
-          console.error('All audio objects failed, using Web Speech API', fallbackErr);
+      if (globalAudio) {
+        globalAudio.src = fallbackUrl;
+        globalAudio.play().catch((fallbackErr) => {
+          console.error('All audio sources failed, using Web Speech API', fallbackErr);
           fallbackWebSpeech(text);
-        }
+        });
       }
-    }
-  };
-
-  attemptPlay();
+    });
+  }
 };
 
 function fallbackWebSpeech(text: string): void {

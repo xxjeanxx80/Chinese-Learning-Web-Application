@@ -54,9 +54,27 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     const audioBuffer = await response.arrayBuffer();
     const buffer = Buffer.from(audioBuffer);
+    const totalSize = buffer.length;
 
-    res.setHeader('Content-Type', 'audio/mpeg');
-    res.setHeader('Content-Length', buffer.length.toString());
+    // Handle Range header for iOS Safari
+    const range = req.headers.range;
+    if (range) {
+      const parts = range.replace(/bytes=/, "").split("-");
+      const start = parseInt(parts[0], 10);
+      const end = parts[1] ? parseInt(parts[1], 10) : totalSize - 1;
+      const chunksize = (end - start) + 1;
+      const file = buffer.slice(start, end + 1);
+
+      res.status(206).setHeader('Content-Range', `bytes ${start}-${end}/${totalSize}`);
+      res.setHeader('Accept-Ranges', 'bytes');
+      res.setHeader('Content-Length', chunksize.toString());
+      res.setHeader('Content-Type', 'audio/mpeg');
+      res.setHeader('Cache-Control', 'public, max-age=86400');
+      return res.send(file);
+    }
+
+    res.status(200).setHeader('Content-Type', 'audio/mpeg');
+    res.setHeader('Content-Length', totalSize.toString());
     res.setHeader('Accept-Ranges', 'bytes');
     res.setHeader('Cache-Control', 'public, max-age=86400'); // Cache 1 day
     return res.send(buffer);
@@ -72,9 +90,26 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
       const audioBuffer = await youdaoResponse.arrayBuffer();
       const buffer = Buffer.from(audioBuffer);
+      const totalSize = buffer.length;
 
-      res.setHeader('Content-Type', 'audio/mpeg');
-      res.setHeader('Content-Length', buffer.length.toString());
+      const range = req.headers.range;
+      if (range) {
+        const parts = range.replace(/bytes=/, "").split("-");
+        const start = parseInt(parts[0], 10);
+        const end = parts[1] ? parseInt(parts[1], 10) : totalSize - 1;
+        const chunksize = (end - start) + 1;
+        const file = buffer.slice(start, end + 1);
+
+        res.status(206).setHeader('Content-Range', `bytes ${start}-${end}/${totalSize}`);
+        res.setHeader('Accept-Ranges', 'bytes');
+        res.setHeader('Content-Length', chunksize.toString());
+        res.setHeader('Content-Type', 'audio/mpeg');
+        res.setHeader('Cache-Control', 'public, max-age=86400');
+        return res.send(file);
+      }
+
+      res.status(200).setHeader('Content-Type', 'audio/mpeg');
+      res.setHeader('Content-Length', totalSize.toString());
       res.setHeader('Accept-Ranges', 'bytes');
       res.setHeader('Cache-Control', 'public, max-age=86400');
       return res.send(buffer);
