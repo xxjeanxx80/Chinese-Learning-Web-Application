@@ -5,7 +5,10 @@ import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
 import { addStudySession } from '../utils/statisticsStorage';
 import { addWrongSentence, markSentenceCorrect } from '../utils/sentenceWrongAnswersStorage';
 import { markSentenceLearned } from '../utils/learnedItemsStorage';
+import { saveSessionProgress, loadSessionProgress } from '../utils/sessionProgressStorage';
 import { speakChinese } from '../utils/speakChinese';
+import StrokeOrderModal from './StrokeOrderModal';
+import LearnedWordsPanel from './LearnedWordsPanel';
 import './SentencePractice.css';
 import './SpeakButton.css';
 
@@ -23,16 +26,29 @@ const SentencePractice: React.FC<SentencePracticeProps> = ({ level, currentTopic
   const [userAnswer, setUserAnswer] = useState('');
   const [showResult, setShowResult] = useState(false);
   const [isCorrect, setIsCorrect] = useState(false);
-  // Lưu trạng thái đúng/sai cho từng câu: Map<index, boolean>
-  const [sentenceResults, setSentenceResults] = useState<Map<number, boolean>>(new Map());
-  // Lưu các câu đã xem (cho flashcard mode)
-  const [seenSentences, setSeenSentences] = useState<Set<number>>(new Set());
+  // Lưu trạng thái đúng/sai cho từng câu: Map<chinese, boolean>
+  const [sentenceResults, setSentenceResults] = useState<Map<string, boolean>>(() => 
+    loadSessionProgress('sentence', level, `results_${currentTopic}`, new Map())
+  );
+  // Lưu các câu đã xem (cho flashcard mode): Set<chinese>
+  const [seenSentences, setSeenSentences] = useState<Set<string>>(() => 
+    loadSessionProgress('sentence', level, `seen_${currentTopic}`, new Set())
+  );
   const [showOptions, setShowOptions] = useState(false);
   const [options, setOptions] = useState<string[]>([]);
   const [showPinyin, setShowPinyin] = useState(() => {
     const saved = localStorage.getItem('showPinyinSentence');
     return saved !== null ? JSON.parse(saved) : true;
   });
+
+  // Save progress when results or seen change
+  useEffect(() => {
+    saveSessionProgress('sentence', level, `results_${currentTopic}`, sentenceResults);
+  }, [sentenceResults, level, currentTopic]);
+
+  useEffect(() => {
+    saveSessionProgress('sentence', level, `seen_${currentTopic}`, seenSentences);
+  }, [seenSentences, level, currentTopic]);
 
   const sentences = useMemo(() => {
     if (currentTopic) {
@@ -121,7 +137,7 @@ const SentencePractice: React.FC<SentencePracticeProps> = ({ level, currentTopic
   // Track seen sentences in flashcard mode
   useEffect(() => {
     if (practiceMode === 'flashcard' && currentSentence) {
-      setSeenSentences(prev => new Set([...prev, currentIndex]));
+      setSeenSentences(prev => new Set([...prev, currentSentence.chinese]));
     }
   }, [currentIndex, currentSentence, practiceMode]);
 
@@ -146,10 +162,10 @@ const SentencePractice: React.FC<SentencePracticeProps> = ({ level, currentTopic
   const generateOptions = (correctIndex: number, sentenceList: typeof sentences) => {
     const correctSentence = sentenceList[correctIndex];
     const wrongSentences = sentenceList
-      .filter((_, idx) => idx !== correctIndex)
+      .filter((s) => s.chinese !== correctSentence.chinese)
       .sort(() => Math.random() - 0.5)
       .slice(0, 3)
-      .map(s => s.chinese);
+      .map((s) => s.chinese);
     
     const allOptions = [correctSentence.chinese, ...wrongSentences].sort(() => Math.random() - 0.5);
     setOptions(allOptions);
@@ -216,7 +232,7 @@ const SentencePractice: React.FC<SentencePracticeProps> = ({ level, currentTopic
     // Lưu kết quả cho câu này
     setSentenceResults(prev => {
       const newMap = new Map(prev);
-      newMap.set(currentIndex, correct);
+      newMap.set(currentSentence.chinese, correct);
       return newMap;
     });
 
@@ -303,34 +319,18 @@ const SentencePractice: React.FC<SentencePracticeProps> = ({ level, currentTopic
     enabled: true,
   });
 
-  // Tính điểm dựa trên tổng số câu
-  const score = useMemo(() => {
-    const total = sentences.length;
-    const correct = Array.from(sentenceResults.values()).filter(r => r === true).length;
-    return { correct, total };
-  }, [sentences.length, sentenceResults]);
+
+
+  const [strokeChar, setStrokeChar] = useState<string | null>(null);
 
   if (!currentSentence) {
     return <div className="sentence-practice-empty">Không có câu nào cho chủ đề này</div>;
   }
 
   return (
+    <>
     <div className="sentence-practice">
-      {practiceMode !== 'flashcard' && (
-        <div className="score-display">
-          <span>Điểm: {score.correct}/{score.total}</span>
-          {score.total > 0 && (
-            <span className="percentage">
-              ({Math.round((score.correct / score.total) * 100)}%)
-            </span>
-          )}
-          {sentenceResults.size > 0 && (
-            <span className="progress-info">
-              (Đã làm: {sentenceResults.size}/{score.total})
-            </span>
-          )}
-        </div>
-      )}
+
 
       <div className="sentence-content">
         {practiceMode === 'flashcard' ? (
@@ -352,7 +352,7 @@ const SentencePractice: React.FC<SentencePracticeProps> = ({ level, currentTopic
                 >
                   🔊
                 </button>
-                <div className="sentence-chinese">
+              <div className="sentence-chinese" onClick={() => setStrokeChar(currentSentence.chinese)} style={{cursor: 'pointer'}} title="Xem nét viết">
                   <h2>{currentSentence.chinese}</h2>
                 </div>
                 <div className="flashcard-hint">
@@ -384,10 +384,10 @@ const SentencePractice: React.FC<SentencePracticeProps> = ({ level, currentTopic
             <div className="flashcard-list">
               <h3>Danh sách câu ({sentences.length} câu)</h3>
               <div className="cards-grid">
-                {sentences.map((sentence, index) => (
+                {sentences.map((sentence: any, index: number) => (
                   <div
                     key={index}
-                    className={`card-item ${index === currentIndex ? 'active' : ''} ${seenSentences.has(index) ? 'seen' : ''}`}
+                    className={`card-item ${index === currentIndex ? 'active' : ''} ${seenSentences.has(sentence.chinese) ? 'seen' : ''}`}
                     onClick={() => handleCardSelect(index)}
                     title={`${sentence.chinese} - ${sentence.vietnamese}`}
                   >
@@ -470,9 +470,11 @@ const SentencePractice: React.FC<SentencePracticeProps> = ({ level, currentTopic
                     disabled={showResult}
                   />
                   {!showResult && (
-                    <button className="check-button" onClick={handleTypeCheck}>
-                      Kiểm tra
-                    </button>
+                    <div className="input-button-wrapper">
+                      <button className="check-button" onClick={handleTypeCheck}>
+                        Kiểm tra
+                      </button>
+                    </div>
                   )}
                 </div>
               </div>
@@ -546,9 +548,11 @@ const SentencePractice: React.FC<SentencePracticeProps> = ({ level, currentTopic
               />
               
               {!showResult && (
-                <button className="check-button" onClick={() => handleCheck()}>
-                  Kiểm tra
-                </button>
+                <div className="input-button-wrapper">
+                  <button className="check-button" onClick={() => handleCheck()}>
+                    Kiểm tra
+                  </button>
+                </div>
               )}
 
               {showResult && (
@@ -588,8 +592,23 @@ const SentencePractice: React.FC<SentencePracticeProps> = ({ level, currentTopic
         )}
       </div>
     </div>
+
+    {strokeChar && (
+      <StrokeOrderModal
+        character={strokeChar}
+        onClose={() => setStrokeChar(null)}
+      />
+    )}
+
+    <LearnedWordsPanel 
+      level={level}
+      itemType="sentence"
+      vocabularies={sentences} 
+      wordResults={sentenceResults} 
+      title="Câu đã học"
+    />
+    </>
   );
 };
 
 export default SentencePractice;
-

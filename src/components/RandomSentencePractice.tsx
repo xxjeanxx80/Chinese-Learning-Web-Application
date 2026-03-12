@@ -1,9 +1,12 @@
-import React, { useState, useEffect, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Sentence } from '../data/sentences';
 import { getSentencesForLevelAndTopic } from '../utils/sentenceStorage';
 import { markSentenceLearned } from '../utils/learnedItemsStorage';
 import { addStudySession } from '../utils/statisticsStorage';
+import { saveSessionProgress, loadSessionProgress } from '../utils/sessionProgressStorage';
 import { speakChinese } from '../utils/speakChinese';
+import StrokeOrderModal from './StrokeOrderModal';
+import LearnedWordsPanel from './LearnedWordsPanel';
 import './RandomSentencePractice.css';
 import './SpeakButton.css';
 
@@ -29,13 +32,20 @@ const RandomSentencePractice: React.FC<RandomSentencePracticeProps> = ({ level, 
   const [isCorrect, setIsCorrect] = useState(false);
   // Lưu trạng thái đúng/sai cho từng câu: Map<chinese, boolean>
   // Mỗi câu chỉ được tính 1 lần (đúng nếu có ít nhất 1 câu đúng)
-  const [sentenceResults, setSentenceResults] = useState<Map<string, boolean>>(new Map());
+  const [sentenceResults, setSentenceResults] = useState<Map<string, boolean>>(() => 
+    loadSessionProgress('sentence_random', level, `results_${currentTopic}`, new Map())
+  );
   const [options, setOptions] = useState<string[]>([]);
   const [showPinyin, setShowPinyin] = useState(() => {
     const saved = localStorage.getItem('showPinyinRandomSentence');
     return saved !== null ? JSON.parse(saved) : true;
   });
   const sessionStartTime = useRef<number>(Date.now());
+
+  // Save progress when sentenceResults changes
+  useEffect(() => {
+    saveSessionProgress('sentence_random', level, `results_${currentTopic}`, sentenceResults);
+  }, [sentenceResults, level, currentTopic]);
 
   useEffect(() => {
     localStorage.setItem('showPinyinRandomSentence', JSON.stringify(showPinyin));
@@ -238,14 +248,7 @@ const RandomSentencePractice: React.FC<RandomSentencePracticeProps> = ({ level, 
     sessionStartTime.current = Date.now();
   };
 
-  // Tính điểm dựa trên tổng số câu
-  const score = useMemo(() => {
-    if (!currentTopic) return { correct: 0, total: 0 };
-    const sentences = getSentencesForLevelAndTopic(level, currentTopic);
-    const total = sentences.length;
-    const correct = Array.from(sentenceResults.values()).filter(r => r === true).length;
-    return { correct, total };
-  }, [level, currentTopic, sentenceResults]);
+
 
   const handleNext = () => {
     generateQuestion();
@@ -257,6 +260,8 @@ const RandomSentencePractice: React.FC<RandomSentencePracticeProps> = ({ level, 
     }
   };
 
+  const [strokeChar, setStrokeChar] = useState<string | null>(null);
+
   if (!currentTopic) {
     return <div className="random-sentence-practice-empty">Vui lòng chọn chủ đề ở trên</div>;
   }
@@ -266,21 +271,10 @@ const RandomSentencePractice: React.FC<RandomSentencePracticeProps> = ({ level, 
   }
 
   return (
+    <>
     <div className="random-sentence-practice">
       <div className="practice-header">
-        <div className="score-display">
-          <span>Điểm: {score.correct}/{score.total}</span>
-          {score.total > 0 && (
-            <span className="percentage">
-              ({Math.round((score.correct / score.total) * 100)}%)
-            </span>
-          )}
-          {sentenceResults.size > 0 && (
-            <span className="progress-info">
-              (Đã làm: {sentenceResults.size}/{score.total})
-            </span>
-          )}
-        </div>
+
         <div className="practice-controls">
           <div className="question-type">
             {currentQuestion.type === 'pinyin' && '📝 Viết Pinyin'}
@@ -334,9 +328,11 @@ const RandomSentencePractice: React.FC<RandomSentencePracticeProps> = ({ level, 
             disabled={showResult}
           />
           {!showResult && (
-            <button className="check-button" onClick={() => handleCheck()}>
-              Kiểm tra
-            </button>
+            <div className="input-button-wrapper">
+              <button className="check-button" onClick={() => handleCheck()}>
+                Kiểm tra
+              </button>
+            </div>
           )}
         </div>
       )}
@@ -366,8 +362,23 @@ const RandomSentencePractice: React.FC<RandomSentencePracticeProps> = ({ level, 
         </div>
       )}
     </div>
+
+    {strokeChar && (
+      <StrokeOrderModal
+        character={strokeChar}
+        onClose={() => setStrokeChar(null)}
+      />
+    )}
+
+    <LearnedWordsPanel 
+      level={level}
+      itemType="sentence"
+      vocabularies={getSentencesForLevelAndTopic(level, currentTopic)} 
+      wordResults={sentenceResults} 
+      title="Câu đã học"
+    />
+    </>
   );
 };
 
 export default RandomSentencePractice;
-

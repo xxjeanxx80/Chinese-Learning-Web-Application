@@ -5,7 +5,10 @@ import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
 import { addWrongAnswer, markCorrect } from '../utils/wrongAnswersStorage';
 import { markVocabularyLearned } from '../utils/learnedItemsStorage';
 import { addStudySession } from '../utils/statisticsStorage';
+import { saveSessionProgress, loadSessionProgress } from '../utils/sessionProgressStorage';
 import { speakChinese } from '../utils/speakChinese';
+import StrokeOrderModal from './StrokeOrderModal';
+import LearnedWordsPanel from './LearnedWordsPanel';
 import './CheckVocabulary.css';
 import './SpeakButton.css';
 
@@ -18,12 +21,19 @@ const CheckVocabulary: React.FC<CheckVocabularyProps> = ({ level }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [userAnswer, setUserAnswer] = useState('');
   const [showResult, setShowResult] = useState(false);
-  // Lưu trạng thái đúng/sai cho từng từ vựng: Map<index, boolean>
-  const [wordResults, setWordResults] = useState<Map<number, boolean>>(new Map());
+  // Lưu trạng thái đúng/sai cho từng từ vựng: Map<chinese, boolean>
+  const [wordResults, setWordResults] = useState<Map<string, boolean>>(() => 
+    loadSessionProgress('vocabulary_check', level, 'results', new Map())
+  );
   const [isCorrect, setIsCorrect] = useState(false);
 
   // Memoize currentWord để tránh tính toán lại
   const currentWord = useMemo(() => vocabularies[currentIndex], [vocabularies, currentIndex]);
+  
+  // Save progress when wordResults changes
+  useEffect(() => {
+    saveSessionProgress('vocabulary_check', level, 'results', wordResults);
+  }, [wordResults, level]);
   
   useEffect(() => {
     const updatedVocab = getVocabulariesForLevel(level);
@@ -80,7 +90,7 @@ const CheckVocabulary: React.FC<CheckVocabularyProps> = ({ level }) => {
     // Lưu kết quả cho từ vựng này
     setWordResults(prev => {
       const newMap = new Map(prev);
-      newMap.set(currentIndex, correct);
+      newMap.set(currentWord.chinese, correct);
       return newMap;
     });
     
@@ -142,14 +152,17 @@ const CheckVocabulary: React.FC<CheckVocabularyProps> = ({ level }) => {
     enabled: !showResult || true, // Always enabled
   });
 
+  const [strokeChar, setStrokeChar] = useState<string | null>(null);
+
   if (!currentWord) {
     return <div className="check-vocab-empty">Không có từ vựng cho cấp độ này</div>;
   }
 
   return (
+    <>
     <div className="check-vocab">
       <div className="score-display">
-        <span>Điểm: {score.correct}/{score.total}</span>
+        <span>Từ đã học được: {score.correct}/{score.total}</span>
         {score.total > 0 && (
           <span className="percentage">
             ({Math.round((score.correct / score.total) * 100)}%)
@@ -163,57 +176,71 @@ const CheckVocabulary: React.FC<CheckVocabularyProps> = ({ level }) => {
       </div>
 
       <div className="word-display">
-        <button
-          className="speak-button"
-          onClick={() => speakChinese(currentWord.chinese)}
-          title="Phát âm"
-        >
-          🔊
-        </button>
-        <div className="chinese-char">
-          <h2>{currentWord.chinese}</h2>
-        </div>
-        <div className="vietnamese-meaning">
-          <p>{currentWord.vietnamese}</p>
-        </div>
-      </div>
-
-      <div className="input-section">
-        <label>Nhập pinyin:</label>
-        <input
-          type="text"
-          value={userAnswer}
-          onChange={(e) => setUserAnswer(e.target.value)}
-          onKeyPress={handleKeyPress}
-          placeholder="Ví dụ: nǐ hǎo"
-          disabled={showResult}
-        />
-        
-        {!showResult && (
-          <button className="check-button" onClick={handleCheck}>
-            Kiểm tra
-          </button>
-        )}
-
-        {showResult && (
-          <div className={`result-section ${isCorrect ? 'is-correct' : 'is-incorrect'}`}>
-            <div className="correct-answer">
-              {!isCorrect && (
-                <div className="user-wrong">
-                  Của bạn: <strong>{userAnswer}</strong>
-                </div>
-              )}
-              <div className="actual-correct">
-                Đáp án đúng: <strong>{currentWord.pinyin}</strong>
-              </div>
-            </div>
-            <button className="next-button" onClick={handleNext} autoFocus>
-              Từ tiếp theo
+            <button
+              className="speak-button"
+              onClick={() => speakChinese(currentWord.chinese)}
+              title="Phát âm"
+            >
+              🔊
             </button>
+            <div className="chinese-char" onClick={() => setStrokeChar(currentWord.chinese)} style={{cursor: 'pointer'}} title="Xem nét viết">
+              <h2>{currentWord.chinese}</h2>
+            </div>
+            <div className="vietnamese-meaning">
+              <p>{currentWord.vietnamese}</p>
+            </div>
           </div>
-        )}
+
+          <div className="input-section">
+            <label>Nhập pinyin:</label>
+            <input
+              type="text"
+              value={userAnswer}
+              onChange={(e) => setUserAnswer(e.target.value)}
+              onKeyPress={handleKeyPress}
+              placeholder="Ví dụ: nǐ hǎo"
+              disabled={showResult}
+            />
+            
+            {!showResult && (
+              <button className="check-button" onClick={handleCheck}>
+                Kiểm tra
+              </button>
+            )}
+
+            {showResult && (
+              <div className={`result-section ${isCorrect ? 'is-correct' : 'is-incorrect'}`}>
+                <div className="correct-answer">
+                  {!isCorrect && (
+                    <div className="user-wrong">
+                      Của bạn: <strong>{userAnswer}</strong>
+                    </div>
+                  )}
+                  <div className="actual-correct">
+                    Đáp án đúng: <strong>{currentWord.pinyin}</strong>
+                  </div>
+                </div>
+                <button className="next-button" onClick={handleNext} autoFocus>
+                  Từ tiếp theo
+                </button>
+              </div>
+            )}
       </div>
     </div>
+
+    <LearnedWordsPanel
+      level={level}
+      vocabularies={vocabularies}
+      wordResults={wordResults}
+    />
+
+    {strokeChar && (
+      <StrokeOrderModal
+        character={strokeChar}
+        onClose={() => setStrokeChar(null)}
+      />
+    )}
+    </>
   );
 };
 

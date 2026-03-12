@@ -19,6 +19,81 @@ interface SentenceManagerProps {
   onTopicChange: (topic: string) => void;
 }
 
+// SVG Icons
+const Icons = {
+  Plus: () => (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+      <line x1="12" y1="5" x2="12" y2="19"></line>
+      <line x1="5" y1="12" x2="19" y2="12"></line>
+    </svg>
+  ),
+  Edit: () => (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+      <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+    </svg>
+  ),
+  Trash: () => (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="3 6 5 6 21 6"></polyline>
+      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+      <line x1="10" y1="11" x2="10" y2="17"></line>
+      <line x1="14" y1="11" x2="14" y2="17"></line>
+    </svg>
+  ),
+  Save: () => (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+      <polyline points="17 21 17 13 7 13 7 21"></polyline>
+      <polyline points="7 3 7 8 15 8"></polyline>
+    </svg>
+  ),
+  X: () => (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+      <line x1="18" y1="6" x2="6" y2="18"></line>
+      <line x1="6" y1="6" x2="18" y2="18"></line>
+    </svg>
+  ),
+  Download: () => (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+      <polyline points="7 10 12 15 17 10"></polyline>
+      <line x1="12" y1="15" x2="12" y2="3"></line>
+    </svg>
+  ),
+  Upload: () => (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+      <polyline points="17 8 12 3 7 8"></polyline>
+      <line x1="12" y1="3" x2="12" y2="15"></line>
+    </svg>
+  ),
+  Search: () => (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="11" cy="11" r="8"></circle>
+      <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+    </svg>
+  ),
+  MessageCircle: () => (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
+    </svg>
+  ),
+  Info: () => (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="10"></circle>
+      <line x1="12" y1="16" x2="12" y2="12"></line>
+      <line x1="12" y1="8" x2="12.01" y2="8"></line>
+    </svg>
+  ),
+  BookOpen: () => (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
+      <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
+    </svg>
+  )
+};
+
 const SentenceManager: React.FC<SentenceManagerProps> = ({ currentLevel, currentTopic, onTopicChange }) => {
   const [customSentences, setCustomSentences] = useState(getCustomSentences());
   const [allSentences, setAllSentences] = useState<Sentence[]>([]);
@@ -225,7 +300,7 @@ const SentenceManager: React.FC<SentenceManagerProps> = ({ currentLevel, current
   };
 
   // Tính số câu custom: nếu không chọn topic thì tính tổng tất cả, nếu có chọn thì chỉ tính topic đó
-  const customSentenceList = useMemo(() => {
+  const customSentenceCount = useMemo(() => {
     const custom = getCustomSentences()[currentLevel] || {};
     if (!currentTopic) {
       // Tính tổng tất cả câu custom của tất cả topic
@@ -242,29 +317,35 @@ const SentenceManager: React.FC<SentenceManagerProps> = ({ currentLevel, current
   return (
     <div className="sentence-manager">
       <div className="manager-header">
-        <h2>💬 Quản lý câu tiếng Trung - {currentLevel.toUpperCase()}</h2>
+        <div className="manager-title-group">
+          <Icons.MessageCircle />
+          <h2>Quản lý câu - {currentLevel.toUpperCase()}</h2>
+        </div>
         <div className="header-actions">
           <div className="toggle-view">
-            <label>
+            <label className="checkbox-container">
+              Dòng mặc định
               <input
                 type="checkbox"
                 checked={showDefault}
                 onChange={(e) => setShowDefault(e.target.checked)}
               />
-              Hiển thị câu mặc định
+              <span className="checkmark"></span>
             </label>
           </div>
           <div className="header-export-import">
             <button 
               onClick={handleExport} 
               className="btn-export-compact"
-              title="Format: A1=Chữ Hán, B1=Pinyin, C1=Nghĩa tiếng Việt, D1=Category"
+              title="Sao lưu vào Excel"
             >
-              📥 Sao lưu Excel
+              <Icons.Download />
+              <span className="btn-text">Xuất Excel</span>
             </button>
             <div className="import-compact-wrapper">
-              <label className="btn-import-compact">
-                📤 Import Excel
+              <label className="btn-import-compact" title="Nhập từ Excel">
+                <Icons.Upload />
+                <span className="btn-text">Nhập Excel</span>
                 <input
                   type="file"
                   accept=".xlsx,.xls"
@@ -273,25 +354,27 @@ const SentenceManager: React.FC<SentenceManagerProps> = ({ currentLevel, current
                 />
               </label>
               <div className="import-mode-compact">
-                <label>
+                <label className="radio-container mini">
                   <input
                     type="radio"
-                    name="importMode"
+                    name="sentenceImportMode"
                     value="merge"
                     checked={importMode === 'merge'}
                     onChange={(e) => setImportMode(e.target.value as 'merge' | 'replace')}
                   />
-                  Gộp
+                  <span className="radio-mark"></span>
+                  <span>Gộp</span>
                 </label>
-                <label>
+                <label className="radio-container mini">
                   <input
                     type="radio"
-                    name="importMode"
+                    name="sentenceImportMode"
                     value="replace"
                     checked={importMode === 'replace'}
                     onChange={(e) => setImportMode(e.target.value as 'merge' | 'replace')}
                   />
-                  Thay thế
+                  <span className="radio-mark"></span>
+                  <span>Thay</span>
                 </label>
               </div>
             </div>
@@ -300,62 +383,77 @@ const SentenceManager: React.FC<SentenceManagerProps> = ({ currentLevel, current
       </div>
 
       <div className="add-sentence-form">
-        <h3>{editingIndex !== null ? '✏️ Sửa câu' : '➕ Thêm câu mới'}</h3>
+        <div className="form-header">
+          {editingIndex !== null ? <Icons.Edit /> : <Icons.Plus />}
+          <h3>{editingIndex !== null ? 'Sửa câu' : 'Thêm câu mới'}</h3>
+        </div>
         <div className="form-hint">
-          💡 Gợi ý: Bạn có thể thêm câu tự động bằng cách sử dụng mục <strong>Dịch thuật</strong> ở menu bên trái. Sau khi dịch, click nút "💬 Thêm vào câu" để thêm nhanh.
+          <div className="hint-icon">
+            <Icons.Info />
+          </div>
+          <p>Bạn có thể thêm câu tự động bằng cách sử dụng mục <strong>Dịch thuật</strong> ở menu bên trái. Sau khi dịch, click nút "Thêm vào câu" để thêm nhanh.</p>
         </div>
         <form onSubmit={handleSubmit}>
           <div className="form-row">
             <div className="form-group">
               <label>Chữ Hán:</label>
-              <input
-                type="text"
-                value={formData.chinese}
-                onChange={(e) => handleInputChange('chinese', e.target.value)}
-                placeholder="VD: 你好，我是新来的员工。"
-                required
-              />
+              <div className="input-wrapper">
+                <input
+                  type="text"
+                  value={formData.chinese}
+                  onChange={(e) => handleInputChange('chinese', e.target.value)}
+                  placeholder="VD: 你好，我是新来的员工。"
+                  required
+                />
+              </div>
             </div>
             <div className="form-group">
               <label>Pinyin:</label>
-              <input
-                type="text"
-                value={formData.pinyin}
-                onChange={(e) => handleInputChange('pinyin', e.target.value)}
-                placeholder="VD: nǐ hǎo, wǒ shì xīn lái de yuán gōng"
-                required
-              />
+              <div className="input-wrapper">
+                <input
+                  type="text"
+                  value={formData.pinyin}
+                  onChange={(e) => handleInputChange('pinyin', e.target.value)}
+                  placeholder="VD: nǐ hǎo, wǒ shì xīn lái de yuán gōng"
+                  required
+                />
+              </div>
             </div>
             <div className="form-group">
               <label>Nghĩa tiếng Việt:</label>
-              <input
-                type="text"
-                value={formData.vietnamese}
-                onChange={(e) => handleInputChange('vietnamese', e.target.value)}
-                placeholder="VD: Xin chào, tôi là nhân viên mới."
-                required
-              />
+              <div className="input-wrapper">
+                <input
+                  type="text"
+                  value={formData.vietnamese}
+                  onChange={(e) => handleInputChange('vietnamese', e.target.value)}
+                  placeholder="VD: Xin chào, tôi là nhân viên mới."
+                  required
+                />
+              </div>
             </div>
             <div className="form-group">
-              <label>Category (Chủ đề):</label>
-              <select
-                value={formData.category || currentTopic}
-                onChange={(e) => handleInputChange('category', e.target.value)}
-                required
-                className="category-select"
-              >
-                <option value="">-- Chọn chủ đề --</option>
-                {availableTopics.map(topic => (
-                  <option key={topic} value={topic}>
-                    {getTopicName(topic)}
-                  </option>
-                ))}
-              </select>
+              <label>Chủ đề (Category):</label>
+              <div className="input-wrapper">
+                <select
+                  value={formData.category || currentTopic}
+                  onChange={(e) => handleInputChange('category', e.target.value)}
+                  required
+                  className="category-select"
+                >
+                  <option value="">-- Chọn chủ đề --</option>
+                  {availableTopics.map(topic => (
+                    <option key={topic} value={topic}>
+                      {getTopicName(topic)}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
           </div>
           <div className="form-actions">
             <button type="submit" className="btn-primary">
-              {editingIndex !== null ? '💾 Lưu thay đổi' : '➕ Thêm câu'}
+              {editingIndex !== null ? <Icons.Save /> : <Icons.Plus />}
+              <span>{editingIndex !== null ? 'Lưu thay đổi' : 'Thêm câu'}</span>
             </button>
             {editingIndex !== null && (
               <button
@@ -367,7 +465,8 @@ const SentenceManager: React.FC<SentenceManagerProps> = ({ currentLevel, current
                   setFormData({ chinese: '', pinyin: '', vietnamese: '', category: currentTopic || '' });
                 }}
               >
-                ❌ Hủy
+                <Icons.X />
+                <span>Hủy</span>
               </button>
             )}
           </div>
@@ -376,23 +475,27 @@ const SentenceManager: React.FC<SentenceManagerProps> = ({ currentLevel, current
 
       <div className="sentence-list-section">
         <div className="list-header">
-          <h3>
-            📚 Danh sách câu
-            {currentTopic ? (
-              <> ({filteredSentences.length} câu - {customSentenceList} câu tự thêm)</>
-            ) : (
-              <> ({filteredSentences.length} câu - {customSentenceList} câu tự thêm từ tất cả chủ đề)</>
-            )}
-          </h3>
+          <div className="list-title-group">
+            <Icons.BookOpen />
+            <h3>
+              Danh sách câu
+              <span className="count-badge">
+                {filteredSentences.length} câu ({customSentenceCount} tự thêm)
+              </span>
+            </h3>
+          </div>
           <div className="list-header-actions">
             <div className="search-box">
+              <div className="search-icon">
+                <Icons.Search />
+              </div>
               <input
                 type="text"
-                placeholder="🔍 Tìm kiếm (chữ Hán, pinyin, nghĩa)..."
+                placeholder="Tìm kiếm chữ Hán, pinyin, nghĩa..."
                 value={searchQuery}
                 onChange={(e) => {
                   setSearchQuery(e.target.value);
-                  setCurrentPage(1); // Reset về trang 1 khi search
+                  setCurrentPage(1);
                 }}
                 className="search-input"
               />
@@ -403,26 +506,31 @@ const SentenceManager: React.FC<SentenceManagerProps> = ({ currentLevel, current
                     setCurrentPage(1);
                   }}
                   className="btn-clear-search"
-                  title="Xóa tìm kiếm"
                 >
-                  ✕
+                  <Icons.X />
                 </button>
               )}
             </div>
-            {customSentenceList > 0 && (
-              <button onClick={handleClear} className="btn-danger">
-                🗑️ Xóa tất cả câu tự thêm
-              </button>
-            )}
+            <div className="list-header-buttons">
+              {customSentenceCount > 0 && (
+                <button onClick={handleClear} className="btn-danger">
+                  <Icons.Trash />
+                  <span>Xóa hết câu tự thêm</span>
+                </button>
+              )}
+            </div>
           </div>
         </div>
 
         {filteredSentences.length === 0 ? (
           <div className="empty-message">
+            <div className="empty-icon">
+              <Icons.Search />
+            </div>
             <p>
               {searchQuery 
                 ? `Không tìm thấy câu nào với từ khóa "${searchQuery}"` 
-                : 'Chưa có câu nào. Hãy thêm câu mới!'}
+                : 'Chưa có câu nào trong danh sách này.'}
             </p>
           </div>
         ) : (
@@ -430,15 +538,12 @@ const SentenceManager: React.FC<SentenceManagerProps> = ({ currentLevel, current
             <div className="sentence-list">
               {paginatedSentences.map((sentence, localIndex) => {
                 const index = startIndex + localIndex;
-                // Tính toán isCustom và customIndex
                 let isCustom = false;
                 let customIndex = -1;
                 const sentenceTopic = sentence.category || '';
                 
                 if (currentTopic) {
-                  // Nếu có chọn topic, logic như cũ
                   const customList = getCustomSentences()[currentLevel]?.[currentTopic] || [];
-                  // Tìm index trong danh sách gốc (allSentences) để xác định isCustom
                   const originalIndex = allSentences.findIndex(
                     s => s.chinese === sentence.chinese && 
                          s.pinyin === sentence.pinyin && 
@@ -449,7 +554,6 @@ const SentenceManager: React.FC<SentenceManagerProps> = ({ currentLevel, current
                     customIndex = isCustom ? originalIndex - (showDefault ? allSentences.length - customList.length : 0) : -1;
                   }
                 } else {
-                  // Nếu không chọn topic, kiểm tra xem câu này có phải custom không
                   const custom = getCustomSentences()[currentLevel] || {};
                   if (sentenceTopic && custom[sentenceTopic]) {
                     const topicCustomList = custom[sentenceTopic];
@@ -470,7 +574,7 @@ const SentenceManager: React.FC<SentenceManagerProps> = ({ currentLevel, current
                     key={`${sentence.chinese}-${index}-${sentenceTopic}`}
                     sentence={sentence}
                     isCustom={isCustom}
-                    customIndex={customIndex}
+                    localIndex={customIndex}
                     onEdit={(idx) => handleEdit(idx, sentenceTopic)}
                     onDelete={(idx) => handleDelete(idx, sentenceTopic)}
                     getTopicName={getTopicName}
@@ -485,17 +589,21 @@ const SentenceManager: React.FC<SentenceManagerProps> = ({ currentLevel, current
                   disabled={currentPage === 1}
                   className="pagination-btn"
                 >
-                  ← Trước
+                  <Icons.X />
+                  <span>Trước</span>
                 </button>
-                <span className="pagination-info">
-                  Trang {currentPage} / {totalPages} ({filteredSentences.length} câu)
-                </span>
+                <div className="pagination-info">
+                  <span className="current-page">{currentPage}</span>
+                  <span className="separator">/</span>
+                  <span>{totalPages}</span>
+                </div>
                 <button
                   onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
                   disabled={currentPage === totalPages}
                   className="pagination-btn"
                 >
-                  Sau →
+                  <span>Sau</span>
+                  <Icons.X />
                 </button>
               </div>
             )}
@@ -510,11 +618,11 @@ const SentenceManager: React.FC<SentenceManagerProps> = ({ currentLevel, current
 const SentenceItem = memo<{
   sentence: Sentence;
   isCustom: boolean;
-  customIndex: number;
+  localIndex: number;
   onEdit: (index: number) => void;
   onDelete: (index: number) => void;
   getTopicName: (topic: string) => string;
-}>(({ sentence, isCustom, customIndex, onEdit, onDelete, getTopicName }) => {
+}>(({ sentence, isCustom, localIndex, onEdit, onDelete, getTopicName }) => {
   return (
     <div className={`sentence-item ${isCustom ? 'custom' : 'default'}`}>
       <div className="sentence-content">
@@ -527,21 +635,21 @@ const SentenceItem = memo<{
           </div>
         )}
       </div>
-      {isCustom && (
+      {isCustom && (localIndex !== -1) && (
         <div className="sentence-actions">
           <button
-            onClick={() => onEdit(customIndex)}
+            onClick={() => onEdit(localIndex)}
             className="btn-edit"
             title="Sửa"
           >
-            ✏️
+            <Icons.Edit />
           </button>
           <button
-            onClick={() => onDelete(customIndex)}
+            onClick={() => onDelete(localIndex)}
             className="btn-delete"
             title="Xóa"
           >
-            🗑️
+            <Icons.Trash />
           </button>
         </div>
       )}

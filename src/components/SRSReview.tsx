@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { getItemsToReview, reviewSRSItem, SRSItem } from '../utils/srsStorage';
 import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
+import { saveSessionProgress, loadSessionProgress } from '../utils/sessionProgressStorage';
 import './SRSReview.css';
 
 interface SRSReviewProps {
@@ -9,13 +10,26 @@ interface SRSReviewProps {
 
 const SRSReview: React.FC<SRSReviewProps> = ({ level }) => {
   const [itemsToReview, setItemsToReview] = useState<SRSItem[]>([]);
-  const [currentIndex, setCurrentIndex] = useState(0);
+  const [currentIndex, setCurrentIndex] = useState(() => 
+    loadSessionProgress('srs_review', level, 'currentIndex', 0)
+  );
   const [showAnswer, setShowAnswer] = useState(false);
-  const [completedCount, setCompletedCount] = useState(0);
+  const [completedCount, setCompletedCount] = useState(() => 
+    loadSessionProgress('srs_review', level, 'completedCount', 0)
+  );
 
   useEffect(() => {
     loadItemsToReview();
   }, [level]);
+
+  // Save session state
+  useEffect(() => {
+    saveSessionProgress('srs_review', level, 'currentIndex', currentIndex);
+  }, [currentIndex, level]);
+
+  useEffect(() => {
+    saveSessionProgress('srs_review', level, 'completedCount', completedCount);
+  }, [completedCount, level]);
 
   const loadItemsToReview = () => {
     const items = getItemsToReview(level);
@@ -98,7 +112,12 @@ const SRSReview: React.FC<SRSReviewProps> = ({ level }) => {
   return (
     <div className="srs-review">
       <div className="srs-header">
-        <h2>🔄 Spaced Repetition Review</h2>
+        <h2>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--accent-primary)' }}>
+            <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
+          </svg>
+          🔄 Ôn tập SRS
+        </h2>
         <div className="srs-progress">
           {completedCount} / {itemsToReview.length} từ đã review
         </div>

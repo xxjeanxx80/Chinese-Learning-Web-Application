@@ -17,6 +17,69 @@ interface VocabularyManagerProps {
   currentLevel: string;
 }
 
+// SVG Icons
+const Icons = {
+  Plus: () => (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+      <line x1="12" y1="5" x2="12" y2="19"></line>
+      <line x1="5" y1="12" x2="19" y2="12"></line>
+    </svg>
+  ),
+  Edit: () => (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+      <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+    </svg>
+  ),
+  Trash: () => (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="3 6 5 6 21 6"></polyline>
+      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+      <line x1="10" y1="11" x2="10" y2="17"></line>
+      <line x1="14" y1="11" x2="14" y2="17"></line>
+    </svg>
+  ),
+  Save: () => (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+      <polyline points="17 21 17 13 7 13 7 21"></polyline>
+      <polyline points="7 3 7 8 15 8"></polyline>
+    </svg>
+  ),
+  X: () => (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+      <line x1="18" y1="6" x2="6" y2="18"></line>
+      <line x1="6" y1="6" x2="18" y2="18"></line>
+    </svg>
+  ),
+  Download: () => (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+      <polyline points="7 10 12 15 17 10"></polyline>
+      <line x1="12" y1="15" x2="12" y2="3"></line>
+    </svg>
+  ),
+  Upload: () => (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+      <polyline points="17 8 12 3 7 8"></polyline>
+      <line x1="12" y1="3" x2="12" y2="15"></line>
+    </svg>
+  ),
+  Search: () => (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="11" cy="11" r="8"></circle>
+      <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+    </svg>
+  ),
+  CheckCircle: () => (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+      <polyline points="22 4 12 14.01 9 11.01"></polyline>
+    </svg>
+  )
+};
+
 const VocabularyManager: React.FC<VocabularyManagerProps> = ({ currentLevel }) => {
   const [customVocab, setCustomVocab] = useState(getCustomVocabularies());
   const [allVocab, setAllVocab] = useState<Vocabulary[]>([]);
@@ -198,36 +261,50 @@ const VocabularyManager: React.FC<VocabularyManagerProps> = ({ currentLevel }) =
   return (
     <div className="vocabulary-manager">
       <div className="manager-header">
-        <h2>📝 Quản lý từ vựng - {currentLevel.toUpperCase()}</h2>
+        <div className="manager-title-group">
+          <Icons.CheckCircle />
+          <h2>Quản lý từ vựng - {currentLevel.toUpperCase()}</h2>
+        </div>
+        
         <div className="header-actions">
           <div className="toggle-view">
-            <label>
+            <label className="checkbox-container">
               <input
                 type="checkbox"
                 checked={showDefault}
                 onChange={(e) => setShowDefault(e.target.checked)}
               />
+              <span className="checkmark"></span>
               Hiển thị từ vựng mặc định
             </label>
           </div>
+          
           <div className="header-export-import">
-            <button 
-              onClick={handleExport} 
-              className="btn-export-compact"
-              title="Sao lưu chỉ từ vựng tự thêm (Format: A1=Chữ Hán, B1=Pinyin, C1=Nghĩa tiếng Việt)"
-            >
-              📥 Sao lưu (tự thêm)
-            </button>
-            <button 
-              onClick={handleExportAll} 
-              className="btn-export-compact"
-              title="Sao lưu tất cả từ vựng (bao gồm từ mặc định và đã chỉnh sửa)"
-            >
-              📥 Sao lưu tất cả
-            </button>
+            <div className="export-buttons-group">
+              <button 
+                onClick={handleExport} 
+                className="btn-export-compact"
+                title="Sao lưu chỉ từ vựng tự thêm"
+              >
+                <Icons.Download />
+                <span className="btn-text">Sao lưu</span>
+                <span className="btn-subtext">(Tự thêm)</span>
+              </button>
+              <button 
+                onClick={handleExportAll} 
+                className="btn-export-compact"
+                title="Sao lưu tất cả từ vựng"
+              >
+                <Icons.Download />
+                <span className="btn-text">Sao lưu</span>
+                <span className="btn-subtext">(Tất cả)</span>
+              </button>
+            </div>
+            
             <div className="import-compact-wrapper">
               <label className="btn-import-compact">
-                📤 Import Excel
+                <Icons.Upload />
+                <span className="btn-text">Import Excel</span>
                 <input
                   type="file"
                   accept=".xlsx,.xls"
@@ -236,7 +313,7 @@ const VocabularyManager: React.FC<VocabularyManagerProps> = ({ currentLevel }) =
                 />
               </label>
               <div className="import-mode-compact">
-                <label>
+                <label className="radio-container mini">
                   <input
                     type="radio"
                     name="importMode"
@@ -244,9 +321,10 @@ const VocabularyManager: React.FC<VocabularyManagerProps> = ({ currentLevel }) =
                     checked={importMode === 'merge'}
                     onChange={(e) => setImportMode(e.target.value as 'merge' | 'replace')}
                   />
+                  <span className="radio-mark"></span>
                   Gộp
                 </label>
-                <label>
+                <label className="radio-container mini">
                   <input
                     type="radio"
                     name="importMode"
@@ -254,7 +332,8 @@ const VocabularyManager: React.FC<VocabularyManagerProps> = ({ currentLevel }) =
                     checked={importMode === 'replace'}
                     onChange={(e) => setImportMode(e.target.value as 'merge' | 'replace')}
                   />
-                  Thay thế
+                  <span className="radio-mark"></span>
+                  Thay
                 </label>
               </div>
             </div>
@@ -263,46 +342,70 @@ const VocabularyManager: React.FC<VocabularyManagerProps> = ({ currentLevel }) =
       </div>
 
       <div className="add-vocab-form">
-        <h3>{editingIndex !== null ? '✏️ Sửa từ vựng' : '➕ Thêm từ vựng mới'}</h3>
-        <div className="form-hint">
-          💡 Gợi ý: Bạn có thể thêm từ vựng tự động bằng cách sử dụng mục <strong>Dịch thuật</strong> ở menu bên trái. Sau khi dịch, click nút "📚 Thêm vào từ vựng" để thêm nhanh.
+        <div className="form-header">
+          {editingIndex !== null ? <Icons.Edit /> : <Icons.Plus />}
+          <h3>{editingIndex !== null ? 'Sửa từ vựng' : 'Thêm từ vựng mới'}</h3>
         </div>
+        
+        <div className="form-hint">
+          <div className="hint-icon">
+            <Icons.CheckCircle />
+          </div>
+          <p>Bạn có thể thêm từ vựng tự động bằng cách sử dụng mục <strong>Dịch thuật</strong> ở menu bên trái. Sau khi dịch, click nút "📚 Thêm vào từ vựng" để thêm nhanh.</p>
+        </div>
+        
         <form onSubmit={handleSubmit}>
           <div className="form-row">
             <div className="form-group">
               <label>Chữ Hán:</label>
-              <input
-                type="text"
-                value={formData.chinese}
-                onChange={(e) => handleInputChange('chinese', e.target.value)}
-                placeholder="VD: 你好"
-                required
-              />
+              <div className="input-wrapper">
+                <input
+                  type="text"
+                  value={formData.chinese}
+                  onChange={(e) => handleInputChange('chinese', e.target.value)}
+                  placeholder="VD: 你好"
+                  required
+                />
+              </div>
             </div>
             <div className="form-group">
               <label>Pinyin:</label>
-              <input
-                type="text"
-                value={formData.pinyin}
-                onChange={(e) => handleInputChange('pinyin', e.target.value)}
-                placeholder="VD: nǐ hǎo"
-                required
-              />
+              <div className="input-wrapper">
+                <input
+                  type="text"
+                  value={formData.pinyin}
+                  onChange={(e) => handleInputChange('pinyin', e.target.value)}
+                  placeholder="VD: nǐ hǎo"
+                  required
+                />
+              </div>
             </div>
             <div className="form-group">
               <label>Nghĩa tiếng Việt:</label>
-              <input
-                type="text"
-                value={formData.vietnamese}
-                onChange={(e) => handleInputChange('vietnamese', e.target.value)}
-                placeholder="VD: xin chào"
-                required
-              />
+              <div className="input-wrapper">
+                <input
+                  type="text"
+                  value={formData.vietnamese}
+                  onChange={(e) => handleInputChange('vietnamese', e.target.value)}
+                  placeholder="VD: xin chào"
+                  required
+                />
+              </div>
             </div>
           </div>
           <div className="form-actions">
             <button type="submit" className="btn-primary">
-              {editingIndex !== null ? '💾 Lưu thay đổi' : '➕ Thêm từ vựng'}
+              {editingIndex !== null ? (
+                <>
+                  <Icons.Save />
+                  <span>Lưu thay đổi</span>
+                </>
+              ) : (
+                <>
+                  <Icons.Plus />
+                  <span>Thêm từ vựng</span>
+                </>
+              )}
             </button>
             {editingIndex !== null && (
               <button
@@ -313,7 +416,8 @@ const VocabularyManager: React.FC<VocabularyManagerProps> = ({ currentLevel }) =
                   setFormData({ chinese: '', pinyin: '', vietnamese: '' });
                 }}
               >
-                ❌ Hủy
+                <Icons.X />
+                <span>Hủy</span>
               </button>
             )}
           </div>
@@ -322,19 +426,28 @@ const VocabularyManager: React.FC<VocabularyManagerProps> = ({ currentLevel }) =
 
       <div className="vocab-list-section">
         <div className="list-header">
-          <h3>
-            📚 Danh sách từ vựng 
-            ({filteredVocab.length} từ - {customVocabList.length} từ tự thêm)
-          </h3>
+          <div className="list-title-group">
+            <Icons.CheckCircle />
+            <h3>
+              Danh sách từ vựng 
+              <span className="count-badge">
+                {filteredVocab.length} từ ({customVocabList.length} tự thêm)
+              </span>
+            </h3>
+          </div>
+          
           <div className="list-header-actions">
             <div className="search-box">
+              <div className="search-icon">
+                <Icons.Search />
+              </div>
               <input
                 type="text"
-                placeholder="🔍 Tìm kiếm (chữ Hán, pinyin, nghĩa)..."
+                placeholder="Tìm kiếm chữ Hán, pinyin, nghĩa..."
                 value={searchQuery}
                 onChange={(e) => {
                   setSearchQuery(e.target.value);
-                  setCurrentPage(1); // Reset về trang 1 khi search
+                  setCurrentPage(1);
                 }}
                 className="search-input"
               />
@@ -347,14 +460,16 @@ const VocabularyManager: React.FC<VocabularyManagerProps> = ({ currentLevel }) =
                   className="btn-clear-search"
                   title="Xóa tìm kiếm"
                 >
-                  ✕
+                  <Icons.X />
                 </button>
               )}
             </div>
+            
             <div className="list-header-buttons">
               {customVocabList.length > 0 && (
                 <button onClick={handleClear} className="btn-danger">
-                  🗑️ Xóa tất cả từ tự thêm
+                  <Icons.Trash />
+                  <span>Xóa từ tự thêm</span>
                 </button>
               )}
               <button 
@@ -363,9 +478,10 @@ const VocabularyManager: React.FC<VocabularyManagerProps> = ({ currentLevel }) =
                   handleClearAll();
                 }}
                 className="btn-danger"
-                title="Xóa tất cả từ vựng tự thêm và từ đã chỉnh sửa (từ mặc định trong code không thể xóa)"
+                title="Xóa tất cả từ vựng tự thêm và đã chỉnh sửa"
               >
-                🗑️ Xóa tất cả từ tự thêm và đã chỉnh sửa
+                <Icons.Trash />
+                <span>Xóa trắng</span>
               </button>
             </div>
           </div>
@@ -373,6 +489,7 @@ const VocabularyManager: React.FC<VocabularyManagerProps> = ({ currentLevel }) =
 
         {filteredVocab.length === 0 ? (
           <div className="empty-message">
+            <div className="empty-icon">📂</div>
             <p>
               {searchQuery 
                 ? `Không tìm thấy từ vựng nào với từ khóa "${searchQuery}"` 
@@ -384,7 +501,6 @@ const VocabularyManager: React.FC<VocabularyManagerProps> = ({ currentLevel }) =
             <div className="vocab-list">
               {paginatedVocab.map((vocab, localIndex) => {
                 const index = startIndex + localIndex;
-                // Tìm index trong danh sách gốc (allVocab) để xác định isCustom
                 const originalIndex = allVocab.findIndex(
                   v => v.chinese === vocab.chinese && 
                        v.pinyin === vocab.pinyin && 
@@ -412,17 +528,19 @@ const VocabularyManager: React.FC<VocabularyManagerProps> = ({ currentLevel }) =
                   disabled={currentPage === 1}
                   className="pagination-btn"
                 >
-                  ← Trước
+                  <Icons.X /> <span>Trang trước</span>
                 </button>
-                <span className="pagination-info">
-                  Trang {currentPage} / {totalPages} ({filteredVocab.length} từ)
-                </span>
+                <div className="pagination-info">
+                  <span className="current-page">{currentPage}</span>
+                  <span className="separator">/</span>
+                  <span className="total-pages">{totalPages}</span>
+                </div>
                 <button
                   onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
                   disabled={currentPage === totalPages}
                   className="pagination-btn"
                 >
-                  Sau →
+                  <span>Trang sau</span> <Icons.X />
                 </button>
               </div>
             )}
@@ -455,14 +573,14 @@ const VocabItem = memo<{
             className="btn-edit"
             title="Sửa"
           >
-            ✏️
+            <Icons.Edit />
           </button>
           <button
             onClick={() => onDelete(customIndex)}
             className="btn-delete"
             title="Xóa"
           >
-            🗑️
+            <Icons.Trash />
           </button>
         </div>
       )}

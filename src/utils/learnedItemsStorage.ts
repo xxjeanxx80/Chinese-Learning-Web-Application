@@ -175,6 +175,11 @@ export function markVocabularyLearned(
   }
 
   saveLearnedVocabularies(learned);
+  
+  // Dispatch event for UI synchronization
+  window.dispatchEvent(new CustomEvent('learnedItemsUpdated', { 
+    detail: { type: 'vocabulary', level, chinese, practiceType, isCorrect } 
+  }));
 }
 
 /**
@@ -229,13 +234,25 @@ export function markSentenceLearned(
   }
 
   saveLearnedSentences(learned);
+
+  // Dispatch event for UI synchronization
+  window.dispatchEvent(new CustomEvent('learnedItemsUpdated', { 
+    detail: { type: 'sentence', level, topic, chinese, practiceType, isCorrect } 
+  }));
+}
+
+/**
+ * Kiểm tra xem từ vựng đã vượt qua cả 3 bài test chưa
+ */
+export function isItemMastered(passedTests: { pinyin: boolean; writing: boolean; meaning: boolean }): boolean {
+  return passedTests.pinyin && passedTests.writing && passedTests.meaning;
 }
 
 /**
  * Kiểm tra xem từ vựng đã vượt qua cả 3 bài test chưa
  */
 function hasPassedAllTests(passedTests: { pinyin: boolean; writing: boolean; meaning: boolean }): boolean {
-  return passedTests.pinyin && passedTests.writing && passedTests.meaning;
+  return isItemMastered(passedTests);
 }
 
 /**

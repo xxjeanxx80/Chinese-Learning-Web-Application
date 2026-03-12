@@ -7,17 +7,22 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 30px;
-  padding-bottom: 15px;
-  border-bottom: 2px solid var(--border-color, #e0e0e0);
+  flex-wrap: wrap;
+  gap: 20px;
+  padding-bottom: 24px;
+  margin-bottom: 35px;
+  border-bottom: 1px solid var(--glass-border-light);
 }
 
 .srs-header h2 {
+  display: flex;
+  align-items: center;
+  gap: 12px;
   margin: 0;
-  font-size: 1.5rem;
-  color: var(--text-primary, #333);
+  font-size: 1.8rem;
   font-weight: 700;
-  letter-spacing: 0.3px;
+  letter-spacing: -0.5px;
+  color: var(--text-primary);
 }
 
 .srs-progress {

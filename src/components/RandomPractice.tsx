@@ -3,7 +3,10 @@ import { Vocabulary } from '../data/vocabulary';
 import { getVocabulariesForLevel } from '../utils/vocabularyStorage';
 import { markVocabularyLearned } from '../utils/learnedItemsStorage';
 import { addStudySession } from '../utils/statisticsStorage';
+import { saveSessionProgress, loadSessionProgress } from '../utils/sessionProgressStorage';
 import { speakChinese } from '../utils/speakChinese';
+import StrokeOrderModal from './StrokeOrderModal';
+import LearnedWordsPanel from './LearnedWordsPanel';
 import './RandomPractice.css';
 import './SpeakButton.css';
 
@@ -28,13 +31,20 @@ const RandomPractice: React.FC<RandomPracticeProps> = ({ level }) => {
   const [isCorrect, setIsCorrect] = useState(false);
   // Lưu trạng thái đúng/sai cho từng từ vựng: Map<chinese, boolean>
   // Mỗi từ vựng chỉ được tính 1 lần (đúng nếu có ít nhất 1 câu đúng)
-  const [wordResults, setWordResults] = useState<Map<string, boolean>>(new Map());
+  const [wordResults, setWordResults] = useState<Map<string, boolean>>(() => 
+    loadSessionProgress('vocabulary_random', level, 'results', new Map())
+  );
   const [options, setOptions] = useState<string[]>([]);
   const [showPinyin, setShowPinyin] = useState(() => {
     const saved = localStorage.getItem('showPinyinRandom');
     return saved !== null ? JSON.parse(saved) : true;
   });
   const sessionStartTime = useRef<number>(Date.now());
+
+  // Save progress when wordResults changes
+  useEffect(() => {
+    saveSessionProgress('vocabulary_random', level, 'results', wordResults);
+  }, [wordResults, level]);
 
   useEffect(() => {
     const updatedVocab = getVocabulariesForLevel(level);
@@ -248,15 +258,18 @@ const RandomPractice: React.FC<RandomPracticeProps> = ({ level }) => {
     }
   };
 
+  const [strokeChar, setStrokeChar] = useState<string | null>(null);
+
   if (!currentQuestion) {
     return <div className="random-practice-empty">Không có từ vựng cho cấp độ này</div>;
   }
 
   return (
+    <>
     <div className="random-practice">
       <div className="practice-header">
         <div className="score-display">
-          <span>Điểm: {score.correct}/{score.total}</span>
+          <span>Từ đã học được: {score.correct}/{score.total}</span>
           {score.total > 0 && (
             <span className="percentage">
               ({Math.round((score.correct / score.total) * 100)}%)
@@ -366,6 +379,20 @@ const RandomPractice: React.FC<RandomPracticeProps> = ({ level }) => {
         </div>
       )}
     </div>
+
+    <LearnedWordsPanel
+      level={level}
+      vocabularies={vocabularies}
+      wordResults={wordResults}
+    />
+
+    {strokeChar && (
+      <StrokeOrderModal
+        character={strokeChar}
+        onClose={() => setStrokeChar(null)}
+      />
+    )}
+    </>
   );
 };
 

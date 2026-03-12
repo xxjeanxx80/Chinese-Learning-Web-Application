@@ -18,7 +18,6 @@ type Language = 'zh' | 'vi' | 'en';
 interface LanguageOption {
   code: Language;
   name: string;
-  flag: string;
 }
 
 interface TranslateProps {
@@ -26,9 +25,9 @@ interface TranslateProps {
 }
 
 const languages: LanguageOption[] = [
-  { code: 'zh', name: 'Tiếng Trung', flag: '🇨🇳' },
-  { code: 'vi', name: 'Tiếng Việt', flag: '🇻🇳' },
-  { code: 'en', name: 'Tiếng Anh', flag: '🇬🇧' }
+  { code: 'zh', name: 'Tiếng Trung' },
+  { code: 'vi', name: 'Tiếng Việt' },
+  { code: 'en', name: 'Tiếng Anh' }
 ];
 
 const topicOptions = [
@@ -41,6 +40,51 @@ const topicOptions = [
   { value: 'food', label: 'Ẩm thực' },
   { value: 'health', label: 'Sức khỏe' }
 ];
+
+interface CustomDropdownProps {
+  options: { value: string; label: string }[];
+  value: string;
+  onChange: (value: any) => void;
+  className?: string;
+}
+
+const CustomDropdown: React.FC<CustomDropdownProps> = ({ options, value, onChange, className = '' }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const selectedOption = options.find(opt => opt.value === value);
+
+  useEffect(() => {
+    const handleClickOutside = () => setIsOpen(false);
+    if (isOpen) {
+      window.addEventListener('click', handleClickOutside);
+    }
+    return () => window.removeEventListener('click', handleClickOutside);
+  }, [isOpen]);
+
+  return (
+    <div className={`custom-dropdown ${className} ${isOpen ? 'is-open' : ''}`} onClick={(e) => e.stopPropagation()}>
+      <div className="dropdown-trigger" onClick={() => setIsOpen(!isOpen)}>
+        <span>{selectedOption?.label}</span>
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+      </div>
+      {isOpen && (
+        <div className="dropdown-menu">
+          {options.map(opt => (
+            <div 
+              key={opt.value} 
+              className={`dropdown-item ${opt.value === value ? 'selected' : ''}`}
+              onClick={() => {
+                onChange(opt.value);
+                setIsOpen(false);
+              }}
+            >
+              {opt.label}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
 
 const Translate: React.FC<TranslateProps> = ({ currentLevel = 'hsk1' }) => {
   const [sourceText, setSourceText] = useState('');
@@ -589,21 +633,26 @@ const Translate: React.FC<TranslateProps> = ({ currentLevel = 'hsk1' }) => {
   return (
     <div className="translate-container">
       <div className="translate-header">
-        <h2>🌐 Dịch thuật</h2>
+        <div className="title-group">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+          <h2>Dịch thuật</h2>
+        </div>
         <div className="translate-actions">
           <button 
             onClick={handleClearCache} 
-            className="btn-clear-cache"
-            title="Xóa cache dịch thuật (không ảnh hưởng từ vựng/câu đã lưu)"
+            className="btn-clear-cache-glass"
+            title="Xóa cache dịch thuật"
           >
-            🗄️ Xóa cache
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M21 8v13H3V8"/><path d="M1 3h22v5H1z"/><path d="M10 12h4"/></svg>
+            <span>Xóa cache</span>
           </button>
           <button 
             onClick={handleClear} 
-            className="btn-clear"
+            className="btn-clear-glass"
             title="Xóa tất cả"
           >
-            🗑️ Xóa
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
+            <span>Xóa</span>
           </button>
         </div>
       </div>
@@ -612,17 +661,12 @@ const Translate: React.FC<TranslateProps> = ({ currentLevel = 'hsk1' }) => {
         <div className="language-selectors">
           <div className="language-selector">
             <label>Từ:</label>
-            <select 
+            <CustomDropdown 
               value={sourceLang} 
-              onChange={(e) => setSourceLang(e.target.value as Language)}
-              className="lang-select"
-            >
-              {languages.map(lang => (
-                <option key={lang.code} value={lang.code}>
-                  {lang.flag} {lang.name}
-                </option>
-              ))}
-            </select>
+              onChange={setSourceLang}
+              options={languages.map(l => ({ value: l.code, label: l.name }))}
+              className="lang-dropdown"
+            />
           </div>
 
           <button 
@@ -630,55 +674,43 @@ const Translate: React.FC<TranslateProps> = ({ currentLevel = 'hsk1' }) => {
             className="btn-swap"
             title="Đổi ngôn ngữ"
           >
-            ⇄
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m7 21-4-4 4-4"/><path d="M3 17h18"/><path d="m17 3 4 4-4 4"/><path d="M21 7H3"/></svg>
           </button>
 
           <div className="language-selector">
             <label>Sang:</label>
-            <select 
+            <CustomDropdown 
               value={targetLang} 
-              onChange={(e) => setTargetLang(e.target.value as Language)}
-              className="lang-select"
-            >
-              {languages.map(lang => (
-                <option key={lang.code} value={lang.code}>
-                  {lang.flag} {lang.name}
-                </option>
-              ))}
-            </select>
+              onChange={setTargetLang}
+              options={languages.map(l => ({ value: l.code, label: l.name }))}
+              className="lang-dropdown"
+            />
           </div>
         </div>
 
-        <div className="provider-selector-row">
+        <div className="provider-selector-row" style={{ marginTop: '20px' }}>
           <label className="provider-label">Nguồn dịch:</label>
-          <select
+          <CustomDropdown
             value={translationProvider}
-            onChange={(e) => setTranslationProvider(e.target.value as TranslationProvider)}
-            className="provider-select"
-            title="Chọn API dịch thuật"
-          >
-            {TRANSLATION_PROVIDERS.map((p) => (
-              <option key={p.id} value={p.id}>
-                {p.label}
-              </option>
-            ))}
-          </select>
+            onChange={setTranslationProvider}
+            options={TRANSLATION_PROVIDERS.map(p => ({ value: p.id, label: p.label }))}
+            className="provider-dropdown"
+          />
         </div>
 
-        <div className="translate-boxes">
+        <div className="translate-boxes" style={{ marginTop: '30px' }}>
           <div className="translate-box source-box">
             <div className="box-header">
               <span className="box-label">
-                {languages.find(l => l.code === sourceLang)?.flag} 
                 {languages.find(l => l.code === sourceLang)?.name}
               </span>
               {sourceText && (
                 <button 
                   onClick={() => handleCopy(sourceText)}
-                  className="btn-copy"
+                  className="btn-copy-glass"
                   title="Sao chép"
                 >
-                  📋
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
                 </button>
               )}
             </div>
@@ -697,16 +729,15 @@ const Translate: React.FC<TranslateProps> = ({ currentLevel = 'hsk1' }) => {
           <div className="translate-box target-box">
             <div className="box-header">
               <span className="box-label">
-                {languages.find(l => l.code === targetLang)?.flag} 
                 {languages.find(l => l.code === targetLang)?.name}
               </span>
               {targetText && (
                 <button 
                   onClick={() => handleCopy(targetText)}
-                  className="btn-copy"
+                  className="btn-copy-glass"
                   title="Sao chép"
                 >
-                  📋
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
                 </button>
               )}
             </div>
@@ -769,52 +800,46 @@ const Translate: React.FC<TranslateProps> = ({ currentLevel = 'hsk1' }) => {
                 {addType === 'vocab' ? '📚 Thêm vào từ vựng' : '💬 Thêm vào câu'}
               </h3>
               <button 
-                className="modal-close"
+                className="btn-clear-glass" 
+                style={{ padding: '8px', minWidth: 'auto', borderRadius: '50%' }}
                 onClick={() => setShowAddModal(false)}
               >
-                ✕
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
               </button>
             </div>
             <div className="modal-body">
-              <div className="modal-preview">
-                <div className="preview-item">
-                  <strong>Chữ Hán:</strong> {sourceLang === 'zh' ? sourceText : targetText}
+              <div className="modal-preview-card" style={{ background: 'rgba(0,0,0,0.03)', padding: '20px', borderRadius: 'var(--apple-radius-lg)', marginBottom: '24px', border: '1px solid rgba(0,0,0,0.05)' }}>
+                <div style={{ marginBottom: '16px' }}>
+                  <div style={{ fontSize: '0.75rem', opacity: 0.5, textTransform: 'uppercase', fontWeight: 800, letterSpacing: '0.05em' }}>Chữ Hán</div>
+                  <div style={{ fontSize: '2rem', fontWeight: 700, color: 'var(--accent-primary)', marginTop: '4px' }}>{sourceLang === 'zh' ? sourceText : targetText}</div>
                 </div>
-                <div className="preview-item">
-                  <strong>Nghĩa:</strong> {sourceLang === 'zh' ? targetText : sourceText}
+                <div>
+                  <div style={{ fontSize: '0.75rem', opacity: 0.5, textTransform: 'uppercase', fontWeight: 800, letterSpacing: '0.05em' }}>Nghĩa Việt</div>
+                  <div style={{ fontSize: '1.2rem', fontWeight: 600, marginTop: '4px' }}>{sourceLang === 'zh' ? targetText : sourceText}</div>
                 </div>
               </div>
-              <div className="modal-input-group">
-                <label>Pinyin: *</label>
-                {isLoadingPinyin ? (
-                  <div className="pinyin-loading">
-                    <span className="spinner-small">⏳</span>
-                    <span>Đang lấy pinyin...</span>
-                  </div>
-                ) : (
-                  <input
-                    type="text"
-                    value={pinyinInput}
-                    onChange={(e) => setPinyinInput(e.target.value)}
-                    placeholder="VD: nǐ hǎo"
-                    className="modal-input"
-                  />
-                )}
+
+              <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <label style={{ fontSize: '0.9rem', fontWeight: 700, color: 'var(--text-secondary)' }}>Pinyin {isLoadingPinyin && <span className="spinner-small" style={{ marginLeft: '8px' }}>⏳</span>}</label>
+                <input
+                  type="text"
+                  value={pinyinInput}
+                  onChange={(e) => setPinyinInput(e.target.value)}
+                  placeholder={isLoadingPinyin ? "Đang lấy pinyin tự động..." : "VD: nǐ hǎo"}
+                  disabled={isLoadingPinyin}
+                  className="translate-input-compact"
+                />
               </div>
+
               {addType === 'sentence' && (
-                <div className="modal-input-group">
-                  <label>Chủ đề:</label>
-                  <select
+                <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '20px' }}>
+                  <label style={{ fontSize: '0.9rem', fontWeight: 700, color: 'var(--text-secondary)' }}>Chủ đề</label>
+                  <CustomDropdown
+                    options={topicOptions}
                     value={selectedTopic}
-                    onChange={(e) => setSelectedTopic(e.target.value)}
-                    className="modal-select"
-                  >
-                    {topicOptions.map(topic => (
-                      <option key={topic.value} value={topic.value}>
-                        {topic.label}
-                      </option>
-                    ))}
-                  </select>
+                    onChange={setSelectedTopic}
+                    className="topic-selector-dropdown"
+                  />
                 </div>
               )}
             </div>
@@ -828,9 +853,9 @@ const Translate: React.FC<TranslateProps> = ({ currentLevel = 'hsk1' }) => {
               <button 
                 onClick={handleConfirmAdd}
                 className="btn-modal-confirm"
-                disabled={!pinyinInput.trim()}
+                disabled={!pinyinInput.trim() || isLoadingPinyin}
               >
-                Thêm
+                Xác nhận
               </button>
             </div>
           </div>

@@ -174,3 +174,17 @@
   }
 }
 
+.mobile-learned-wrapper {
+  border-top: 1px solid var(--glass-border-dark);
+  margin-top: 10px;
+  background: rgba(0, 0, 0, 0.02);
+  max-height: 350px;
+  overflow-y: auto;
+}
+
+@media (max-width: 768px) {
+  .hsk-mega-menu {
+    max-height: 80vh;
+    overflow-y: auto;
+  }
+}

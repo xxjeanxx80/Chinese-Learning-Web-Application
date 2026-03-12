@@ -63,26 +63,37 @@
   font-weight: 500;
 }
 
+.practice-layout {
+  display: flex;
+  gap: 24px;
+  align-items: flex-start;
+}
+
+.practice-main {
+  flex: 1;
+  min-width: 0;
+}
+
 .input-section {
   margin-top: 40px;
 }
 
 .input-section label {
   display: block;
-  margin-bottom: 10px;
-  font-size: 1.1rem;
+  margin-bottom: 12px;
+  font-size: 1rem;
   font-weight: 600;
   color: var(--text-primary, #333);
+  text-align: center;
 }
 
 .input-section input {
   width: 100%;
-  max-width: 400px;
-  padding: 18px 24px;
-  font-size: 1.2rem;
+  padding: 16px 20px;
+  font-size: 1.1rem;
   border: none;
   border-radius: var(--apple-radius-md);
-  margin-bottom: 20px;
+  margin-bottom: 16px;
   text-align: center;
   transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   background: rgba(255, 255, 255, 0.5);
@@ -108,10 +119,35 @@
   color: var(--text-secondary, #666);
 }
 
-.check-button,
+.check-button {
+  padding: 14px 40px;
+  font-size: 1.05rem;
+  font-weight: 600;
+  border: none;
+  border-radius: var(--apple-radius-pill);
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  /* Liquid Glass styling */
+  background: rgba(255, 255, 255, 0.35);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  color: var(--accent-primary);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06),
+    inset 0 1px 1px rgba(255, 255, 255, 0.6);
+  letter-spacing: 0.3px;
+}
+
+.check-button:hover {
+  background: rgba(255, 255, 255, 0.5);
+  transform: scale(0.97);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08),
+    inset 0 1px 1px rgba(255, 255, 255, 0.8);
+}
+
 .next-button {
-  padding: 16px 40px;
-  font-size: 1.2rem;
+  padding: 14px 32px;
+  font-size: 1.05rem;
   font-weight: 600;
   border: none;
   border-radius: var(--apple-radius-pill);
@@ -119,14 +155,17 @@
   color: white;
   cursor: pointer;
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-  box-shadow: 0 8px 24px rgba(0, 122, 255, 0.3), inset 0 1px 1px rgba(255, 255, 255, 0.4);
+  /* Liquid Glass tint */
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 4px 16px rgba(0, 122, 255, 0.25),
+    inset 0 1px 1px rgba(255, 255, 255, 0.3);
 }
 
-.check-button:hover,
 .next-button:hover {
   background: var(--accent-primary-hover);
-  transform: scale(0.96);
-  box-shadow: 0 4px 12px rgba(0, 122, 255, 0.2);
+  transform: scale(0.97);
+  box-shadow: 0 2px 8px rgba(0, 122, 255, 0.15);
 }
 
 .result-section {

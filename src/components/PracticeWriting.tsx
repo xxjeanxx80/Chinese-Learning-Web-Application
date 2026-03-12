@@ -3,7 +3,10 @@ import { Vocabulary } from '../data/vocabulary';
 import { getVocabulariesForLevel } from '../utils/vocabularyStorage';
 import { markVocabularyLearned } from '../utils/learnedItemsStorage';
 import { addStudySession } from '../utils/statisticsStorage';
+import { saveSessionProgress, loadSessionProgress } from '../utils/sessionProgressStorage';
 import { speakChinese } from '../utils/speakChinese';
+import StrokeOrderModal from './StrokeOrderModal';
+import LearnedWordsPanel from './LearnedWordsPanel';
 import './PracticeWriting.css';
 import './SpeakButton.css';
 
@@ -17,8 +20,10 @@ const PracticeWriting: React.FC<PracticeWritingProps> = ({ level }) => {
   const [userAnswer, setUserAnswer] = useState('');
   const [showResult, setShowResult] = useState(false);
   const [isCorrect, setIsCorrect] = useState(false);
-  // Lưu trạng thái đúng/sai cho từng từ vựng: Map<index, boolean>
-  const [wordResults, setWordResults] = useState<Map<number, boolean>>(new Map());
+  // Lưu trạng thái đúng/sai cho từng từ vựng: Map<chinese, boolean>
+  const [wordResults, setWordResults] = useState<Map<string, boolean>>(() => 
+    loadSessionProgress('vocabulary_writing', level, 'results', new Map())
+  );
   const [showOptions, setShowOptions] = useState(false);
   const [options, setOptions] = useState<string[]>([]);
   const [showPinyin, setShowPinyin] = useState(() => {
@@ -27,6 +32,11 @@ const PracticeWriting: React.FC<PracticeWritingProps> = ({ level }) => {
   });
 
   const currentWord = vocabularies[currentIndex];
+
+  // Save progress when wordResults changes
+  useEffect(() => {
+    saveSessionProgress('vocabulary_writing', level, 'results', wordResults);
+  }, [wordResults, level]);
 
   useEffect(() => {
     localStorage.setItem('showPinyinWriting', JSON.stringify(showPinyin));
@@ -92,7 +102,7 @@ const PracticeWriting: React.FC<PracticeWritingProps> = ({ level }) => {
     // Lưu kết quả cho từ vựng này
     setWordResults(prev => {
       const newMap = new Map(prev);
-      newMap.set(currentIndex, correct);
+      newMap.set(currentWord.chinese, correct);
       return newMap;
     });
 
@@ -113,7 +123,7 @@ const PracticeWriting: React.FC<PracticeWritingProps> = ({ level }) => {
     // Lưu kết quả cho từ vựng này
     setWordResults(prev => {
       const newMap = new Map(prev);
-      newMap.set(currentIndex, correct);
+      newMap.set(currentWord.chinese, correct);
       return newMap;
     });
 
@@ -149,14 +159,17 @@ const PracticeWriting: React.FC<PracticeWritingProps> = ({ level }) => {
     }
   };
 
+  const [strokeChar, setStrokeChar] = useState<string | null>(null);
+
   if (!currentWord) {
     return <div className="practice-writing-empty">Không có từ vựng cho cấp độ này</div>;
   }
 
   return (
+    <>
     <div className="practice-writing">
       <div className="score-display">
-        <span>Điểm: {score.correct}/{score.total}</span>
+        <span>Từ đã học được: {score.correct}/{score.total}</span>
         {score.total > 0 && (
           <span className="percentage">
             ({Math.round((score.correct / score.total) * 100)}%)
@@ -263,6 +276,20 @@ const PracticeWriting: React.FC<PracticeWritingProps> = ({ level }) => {
         </div>
       )}
     </div>
+
+    <LearnedWordsPanel
+      level={level}
+      vocabularies={vocabularies}
+      wordResults={wordResults}
+    />
+
+    {strokeChar && (
+      <StrokeOrderModal
+        character={strokeChar}
+        onClose={() => setStrokeChar(null)}
+      />
+    )}
+    </>
   );
 };
 

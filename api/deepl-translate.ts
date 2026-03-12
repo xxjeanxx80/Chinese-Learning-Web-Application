@@ -5,7 +5,21 @@ import type { VercelRequest, VercelResponse } from '@vercel/node';
  * DeepL chan request tu frontend, nen phai goi qua backend.
  */
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
+  const allowedOrigins = [
+    'http://localhost:3000',
+    'http://localhost:5173',
+    'https://tieng-trung.vercel.app', // Vi du domain cua ban
+    process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : ''
+  ].filter(Boolean);
+
+  const origin = req.headers.origin;
+  if (origin && allowedOrigins.includes(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+  } else if (!origin) {
+    // Cho phep cac request khong co origin (vi du goi truc tiep)
+    res.setHeader('Access-Control-Allow-Origin', '*'); 
+  }
+
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 

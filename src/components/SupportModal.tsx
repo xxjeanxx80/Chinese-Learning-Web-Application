@@ -7,7 +7,7 @@ interface SupportModalProps {
 
 const SupportModal: React.FC<SupportModalProps> = ({ onClose }) => {
   // QR Code image từ public folder
-  const qrCodeUrl = '/qr-code.jpg';
+  const qrCodeUrl = '/support_qr.jpg';
 
   return (
     <div className="support-modal-overlay" onClick={onClose}>
@@ -17,23 +17,23 @@ const SupportModal: React.FC<SupportModalProps> = ({ onClose }) => {
         </button>
         
         <div className="support-modal-header">
-          <div className="support-icon">☕️❤️</div>
-          <h2>Mời tôi một cốc cà phê</h2>
+          <div className="support-icon">🥛🥛🥛</div>
+          <h2>Buying miku a Milkkkkkkkiiuu</h2>
         </div>
 
         <div className="support-modal-body">
           <p className="support-message">
-            Nếu trang web hữu ích, hãy ủng hộ để tôi tiếp tục duy trì và phát triển dự án.
+            Nếu MikuHan giúp bạn học tốt hơn, hãy thưởng cho Miku một hộp sữa để Miku có thêm sức mạnh phát triển dự án nhé! (✿◠‿◠)
           </p>
 
           <div className="qr-code-container">
             <img 
               src={qrCodeUrl} 
-              alt="QR Code thanh toán" 
+              alt="Quét mã này để gửi yêu thương cho Miku nè! (っ◕‿◕)っ" 
               className="qr-code-image"
               onError={(e) => {
                 // Fallback nếu không tìm thấy QR code
-                console.error('Không thể tải QR code. Vui lòng đảm bảo file qr-code.jpg có trong thư mục public.');
+                console.error('Không thể tải QR code. Vui lòng đảm bảo file support_qr.jpg có trong thư mục public.');
                 const target = e.target as HTMLImageElement;
                 target.style.display = 'none';
               }}
@@ -41,7 +41,7 @@ const SupportModal: React.FC<SupportModalProps> = ({ onClose }) => {
           </div>
 
           <p className="support-thanks">
-            Cảm ơn bạn đã đồng hành cùng dự án! 🙏
+            Cảm ơn bạn đã luôn ở bên cạnh Miku! Arigatooo! (´｡• ᵕ •｡`) ♡
           </p>
         </div>
       </div>
