@@ -10,8 +10,7 @@
   </head>
   <body>
     <div id="root"></div>
-    <!-- Global Audio Player for Safari/Mobile Compatibility -->
-    <audio id="global-tts-player" preload="auto" style="display:none"></audio>
+    <audio id="global-tts-player" preload="auto" playsinline webkit-playsinline style="position:fixed;left:0;top:0;width:1px;height:1px;opacity:0;pointer-events:none;"></audio>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

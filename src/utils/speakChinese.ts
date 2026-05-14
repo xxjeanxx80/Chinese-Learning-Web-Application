@@ -4,7 +4,7 @@
  */
 
 // Silent 1-second MP3 clip to "kickstart" iOS audio session
-const SILENT_KICKSTART = "data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQQAAAAAAA== ";
+const SILENT_KICKSTART = "data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQQAAAAAAA==";
 
 let globalAudio: HTMLAudioElement | null = null;
 let isUnlocked = false;
@@ -16,16 +16,30 @@ if (typeof window !== 'undefined') {
     globalAudio = document.getElementById('global-tts-player') as HTMLAudioElement;
     
     const unlock = () => {
-      if (globalAudio && !isUnlocked) {
-        // Kickstart with silence
-        globalAudio.src = SILENT_KICKSTART;
-        globalAudio.play().then(() => {
+      if (!globalAudio || isUnlocked) return;
+
+      const prevMuted = globalAudio.muted;
+      const prevVolume = globalAudio.volume;
+
+      globalAudio.muted = true;
+      globalAudio.volume = 0;
+      globalAudio.src = SILENT_KICKSTART;
+
+      const p = globalAudio.play();
+      globalAudio.muted = prevMuted;
+      globalAudio.volume = prevVolume;
+      if (p !== undefined) {
+        p.then(() => {
+          globalAudio?.pause();
+          if (globalAudio) {
+            globalAudio.currentTime = 0;
+          }
           isUnlocked = true;
-          console.log('Audio logic unlocked for iOS');
-        }).catch(() => {});
+          window.removeEventListener('click', unlock);
+          window.removeEventListener('touchstart', unlock);
+        }).catch(() => {
+        });
       }
-      window.removeEventListener('click', unlock);
-      window.removeEventListener('touchstart', unlock);
     };
     
     window.addEventListener('click', unlock);
@@ -55,27 +69,21 @@ export const speakChinese = (text: string): void => {
 
   const encodedText = encodeURIComponent(text);
   const primaryUrl = `/api/tts?text=${encodedText}`;
-  const fallbackUrl = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodedText}&tl=zh-CN&client=tw-ob`;
 
   // Stop any active sound
   globalAudio.pause();
+  globalAudio.currentTime = 0;
   
   // CRITICAL: Set src and play in the same synchronous tick as the user gesture
   globalAudio.src = primaryUrl;
+  globalAudio.load();
   
   const playPromise = globalAudio.play();
   
   if (playPromise !== undefined) {
     playPromise.catch((err) => {
-      console.warn('Primary TTS failed or was blocked, trying fallback...', err);
-      
-      if (globalAudio) {
-        globalAudio.src = fallbackUrl;
-        globalAudio.play().catch((fallbackErr) => {
-          console.error('All audio sources failed, using Web Speech API', fallbackErr);
-          fallbackWebSpeech(text);
-        });
-      }
+      console.warn('Primary TTS failed or was blocked, using Web Speech API', err);
+      fallbackWebSpeech(text);
     });
   }
 };
