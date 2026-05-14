@@ -144,6 +144,13 @@ export function markVocabularyLearned(
   const now = Date.now();
   const chinese = vocabulary.chinese;
 
+  if (!isCorrect && !learned[level][chinese]) {
+    window.dispatchEvent(new CustomEvent('learnedItemsUpdated', { 
+      detail: { type: 'vocabulary', level, chinese, practiceType, isCorrect } 
+    }));
+    return;
+  }
+
   if (learned[level][chinese]) {
     // Đã có, cập nhật
     const item = learned[level][chinese];
@@ -201,6 +208,13 @@ export function markSentenceLearned(
 
   const now = Date.now();
   const chinese = sentence.chinese;
+
+  if (!isCorrect && !learned[level][chinese]) {
+    window.dispatchEvent(new CustomEvent('learnedItemsUpdated', { 
+      detail: { type: 'sentence', level, topic, chinese, practiceType, isCorrect } 
+    }));
+    return;
+  }
 
   if (learned[level][chinese]) {
     // Đã có, cập nhật

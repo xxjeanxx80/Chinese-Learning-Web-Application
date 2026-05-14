@@ -3,6 +3,8 @@ import { createPortal } from 'react-dom';
 
 import { speakChinese } from '../utils/speakChinese';
 import { getLearnedVocabularies, getLearnedSentences } from '../utils/learnedItemsStorage';
+import { getWrongAnswersByLevel } from '../utils/wrongAnswersStorage';
+import { getWrongSentences } from '../utils/sentenceWrongAnswersStorage';
 import StrokeOrderModal from './StrokeOrderModal';
 import './LearnedWordsPanel.css';
 
@@ -50,14 +52,19 @@ const LearnedWordsPanel: React.FC<LearnedWordsPanelProps> = ({
   const [strokeChar, setStrokeChar] = useState<string | null>(null);
   const [expandedIndex, setExpandedIndex] = useState<number | null>(null);
   const [isOpen, setIsOpen] = useState(!isInline);
+  const [activeTab, setActiveTab] = useState<'learned' | 'wrong'>('learned');
   const [globalLearned, setGlobalLearned] = useState(() => 
     itemType === 'vocabulary' ? getLearnedVocabularies() : getLearnedSentences()
+  );
+  const [globalWrong, setGlobalWrong] = useState(() => 
+    itemType === 'vocabulary' ? getWrongAnswersByLevel(level) : Object.values(getWrongSentences()[level] || {}).flat()
   );
 
   // Listen for updates from any practice component
   useEffect(() => {
     const handleUpdate = () => {
       setGlobalLearned(itemType === 'vocabulary' ? getLearnedVocabularies() : getLearnedSentences());
+      setGlobalWrong(itemType === 'vocabulary' ? getWrongAnswersByLevel(level) : Object.values(getWrongSentences()[level] || {}).flat());
     };
     
     window.addEventListener('learnedItemsUpdated', handleUpdate);
@@ -67,40 +74,47 @@ const LearnedWordsPanel: React.FC<LearnedWordsPanelProps> = ({
       window.removeEventListener('learnedItemsUpdated', handleUpdate);
       window.removeEventListener('vocabUpdated', handleUpdate);
     };
-  }, []);
+  }, [level, itemType]);
 
-  // Filter and prepare learned items
-  const learnedItems = useMemo(() => {
+  // Filter and prepare items
+  const { learnedList, wrongList } = useMemo(() => {
     const levelLearned = (globalLearned as any)[level] || {};
-    const result: { 
-      key: number; 
-      item: any; 
-      isSession: boolean; 
-      mastery: { pinyin: boolean; writing: boolean; meaning: boolean } 
-    }[] = [];
+    const resultLearned: any[] = [];
+    const resultWrong: any[] = [];
     
-    // Convert current level items to a list
-    Object.keys(levelLearned).forEach(chinese => {
-      const storedItem = levelLearned[chinese];
-      const index = vocabularies.findIndex(v => v.chinese === chinese);
-      
-      if (index !== -1) {
-        result.push({
-          key: index,
-          item: vocabularies[index],
-          isSession: wordResults.has(chinese) && wordResults.get(chinese) === true,
-          mastery: storedItem.passedTests
-        });
+    vocabularies.forEach((item, index) => {
+      const chinese = item.chinese;
+      const isSessionTrue = wordResults.has(chinese) && wordResults.get(chinese) === true;
+      const isSessionFalse = wordResults.has(chinese) && wordResults.get(chinese) === false;
+      const storedLearned = levelLearned[chinese];
+      const storedWrong = globalWrong.find((w: any) => (w.vocabulary?.chinese || w.sentence?.chinese) === chinese);
+
+      const masteryObj = storedLearned?.passedTests || { pinyin: false, writing: false, meaning: false };
+
+      if (isSessionFalse) {
+        resultWrong.push({ key: index, item, isSession: true, mastery: masteryObj });
+      } else if (isSessionTrue) {
+        resultLearned.push({ key: index, item, isSession: true, mastery: masteryObj });
+      } else if (storedWrong) {
+        resultWrong.push({ key: index, item, isSession: false, mastery: masteryObj });
+      } else if (storedLearned) {
+        resultLearned.push({ key: index, item, isSession: false, mastery: masteryObj });
       }
     });
 
-    // Sort: Session items first, then by vocabIndex
-    return result.sort((a, b) => {
+    const sortFn = (a: any, b: any) => {
       if (a.isSession && !b.isSession) return -1;
       if (!a.isSession && b.isSession) return 1;
       return a.key - b.key;
-    });
-  }, [globalLearned, level, vocabularies, wordResults]);
+    };
+
+    return {
+      learnedList: resultLearned.sort(sortFn),
+      wrongList: resultWrong.sort(sortFn)
+    };
+  }, [globalLearned, globalWrong, level, vocabularies, wordResults]);
+
+  const displayItems = activeTab === 'learned' ? learnedList : wrongList;
 
   const toggleExpand = (key: number) => {
     setExpandedIndex(expandedIndex === key ? null : key);
@@ -120,10 +134,9 @@ const LearnedWordsPanel: React.FC<LearnedWordsPanelProps> = ({
       >
         <div className="learned-panel-title">
           <span className="menu-icon"><BookIcon /></span>
-          <span className="menu-text">{title || (itemType === 'vocabulary' ? "Từ đã học" : "Câu đã học")}</span>
+          <span className="menu-text">{title || (itemType === 'vocabulary' ? "Từ vựng" : "Câu")}</span>
         </div>
         <div className="learned-panel-meta">
-          <span className="learned-count">{learnedItems.length}</span>
           {isInline && (
             <span className="menu-arrow" style={{ opacity: 1 }}>
               <svg 
@@ -138,8 +151,23 @@ const LearnedWordsPanel: React.FC<LearnedWordsPanelProps> = ({
       </div>
 
       {(!isInline || isOpen) && (
-        <div className={`learned-panel-list ${isInline ? 'mobile-menu-submenu' : ''}`}>
-        {learnedItems.length === 0 ? (
+        <>
+          <div className="learned-panel-tabs">
+            <button 
+              className={`learned-tab ${activeTab === 'learned' ? 'active' : ''}`}
+              onClick={(e) => { e.stopPropagation(); setActiveTab('learned'); setExpandedIndex(null); }}
+            >
+              Đã thuộc <span className="learned-count">{learnedList.length}</span>
+            </button>
+            <button 
+              className={`learned-tab ${activeTab === 'wrong' ? 'active' : ''}`}
+              onClick={(e) => { e.stopPropagation(); setActiveTab('wrong'); setExpandedIndex(null); }}
+            >
+              Chưa thuộc <span className="learned-count wrong">{wrongList.length}</span>
+            </button>
+          </div>
+          <div className={`learned-panel-list ${isInline ? 'mobile-menu-submenu' : ''}`}>
+        {displayItems.length === 0 ? (
           <div className="learned-empty">
             <div className="learned-empty-icon">
               <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" opacity="0.3">
@@ -149,16 +177,18 @@ const LearnedWordsPanel: React.FC<LearnedWordsPanelProps> = ({
               </svg>
             </div>
             <p>Chưa có mục nào</p>
-            <p className="learned-empty-hint">Trả lời đúng để thêm vào đây</p>
+            <p className="learned-empty-hint">
+              {activeTab === 'learned' ? 'Trả lời đúng để thêm vào đây' : 'Từ vựng trả lời sai sẽ nằm ở đây'}
+            </p>
           </div>
         ) : (
-          learnedItems.map(({ key, item, isSession, mastery }) => (
+          displayItems.map(({ key, item, isSession, mastery }) => (
             <div
               key={key}
-              className={`learned-item ${expandedIndex === key ? 'expanded' : ''} ${isSession ? 'is-session' : ''}`}
+              className={`learned-item ${expandedIndex === key ? 'expanded' : ''} ${isSession ? 'is-session' : ''} ${activeTab === 'wrong' ? 'wrong-item' : ''}`}
             >
               <div className="learned-item-main" onClick={() => toggleExpand(key)}>
-                {isSession && <div className="session-indicator" title="Vừa học trong phiên này" />}
+                {isSession && <div className={`session-indicator ${activeTab === 'wrong' ? 'wrong' : ''}`} title="Vừa học trong phiên này" />}
                 <span className="learned-chinese">{item.chinese}</span>
                 <span className="learned-pinyin">{item.pinyin}</span>
                 
@@ -201,6 +231,7 @@ const LearnedWordsPanel: React.FC<LearnedWordsPanelProps> = ({
           ))
         )}
         </div>
+        </>
       )}
     </aside>
   );
