@@ -8,6 +8,7 @@ const SILENT_KICKSTART = "data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEA
 
 let globalAudio: HTMLAudioElement | null = null;
 let isUnlocked = false;
+let isUnlocking = false;
 
 // Initialization and Unlocking
 if (typeof window !== 'undefined') {
@@ -16,29 +17,27 @@ if (typeof window !== 'undefined') {
     globalAudio = document.getElementById('global-tts-player') as HTMLAudioElement;
     
     const unlock = () => {
-      if (!globalAudio || isUnlocked) return;
+      if (isUnlocked || isUnlocking) return;
+      isUnlocking = true;
 
-      const prevMuted = globalAudio.muted;
-      const prevVolume = globalAudio.volume;
+      const audio = new Audio(SILENT_KICKSTART);
+      audio.muted = true;
+      audio.volume = 0;
 
-      globalAudio.muted = true;
-      globalAudio.volume = 0;
-      globalAudio.src = SILENT_KICKSTART;
-
-      const p = globalAudio.play();
-      globalAudio.muted = prevMuted;
-      globalAudio.volume = prevVolume;
+      const p = audio.play();
       if (p !== undefined) {
         p.then(() => {
-          globalAudio?.pause();
-          if (globalAudio) {
-            globalAudio.currentTime = 0;
-          }
+          audio.pause();
+          audio.currentTime = 0;
           isUnlocked = true;
+          isUnlocking = false;
           window.removeEventListener('click', unlock);
           window.removeEventListener('touchstart', unlock);
         }).catch(() => {
+          isUnlocking = false;
         });
+      } else {
+        isUnlocking = false;
       }
     };
     
