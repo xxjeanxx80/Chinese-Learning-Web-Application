@@ -408,9 +408,11 @@
 
 .sentence-chinese {
   font-size: 1.5rem;
-  font-weight: 700;
+  font-family: var(--font-hanzi);
+  font-weight: 600;
   margin-bottom: 8px;
   line-height: 1.3;
+  letter-spacing: 0.01em;
 }
 
 .sentence-pinyin {

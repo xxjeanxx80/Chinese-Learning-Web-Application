@@ -493,9 +493,10 @@
 
 .vocab-chinese {
   font-size: 1.8rem;
-  font-weight: 700;
+  font-family: var(--font-hanzi);
+  font-weight: 600;
   margin-bottom: 6px;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.01em;
 }
 
 .vocab-pinyin {

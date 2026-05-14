@@ -150,7 +150,9 @@
   font-size: 4rem;
   margin-bottom: 15px;
   color: var(--text-primary, #333);
-  font-weight: 700;
+  font-family: var(--font-hanzi);
+  font-weight: 600;
+  letter-spacing: 0.02em;
 }
 
 .pinyin-hint p {

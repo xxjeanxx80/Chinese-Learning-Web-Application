@@ -49,6 +49,9 @@ html {
   --mesh-2: rgba(52, 199, 89, 0.2);
   --mesh-3: rgba(0, 240, 255, 0.3);
   --mesh-4: rgba(90, 200, 250, 0.3);
+
+  --font-ui: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Inter', 'Segoe UI', 'Roboto', 'Helvetica Neue', sans-serif;
+  --font-hanzi: 'Noto Sans SC', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Noto Sans CJK SC', sans-serif;
 }
 
 :root.dark {
@@ -88,7 +91,7 @@ html {
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Inter', 'Segoe UI', 'Roboto', 'Helvetica Neue', sans-serif;
+  font-family: var(--font-ui);
   font-weight: 400;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;

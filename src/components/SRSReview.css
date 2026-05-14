@@ -125,9 +125,11 @@
 
 .srs-chinese {
   font-size: 3rem;
-  font-weight: 700;
+  font-family: var(--font-hanzi);
+  font-weight: 600;
   color: var(--text-primary, #333);
   margin-bottom: 16px;
+  letter-spacing: 0.02em;
 }
 
 .srs-pinyin {
