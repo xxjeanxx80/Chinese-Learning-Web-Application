@@ -66,16 +66,19 @@ export const speakChinese = (text: string): void => {
 
   const encodedText = encodeURIComponent(text);
   
-  // Dùng Baidu Fanyi TTS (Nguồn gốc nội địa Trung, phát âm chuẩn 100%, không bị Brave chặn như Google)
-  // URL format: lan=zh (tiếng Trung), spd=5 (tốc độ chuẩn, có thể để nguyên rồi dùng playbackRate)
-  const baiduUrl = `https://fanyi.baidu.com/gettts?lan=zh&text=${encodedText}&spd=5&source=web`;
+  // Dùng API Proxy nội bộ để gọi Baidu Fanyi.
+  // Lý do: 
+  // 1. Dùng proxy để bypass mọi lỗi CSP (Content Security Policy) trên trình duyệt.
+  // 2. Trình duyệt Brave sẽ không block request vì đây là request nội bộ (cùng domain).
+  // 3. Server Vercel gọi Baidu không bị chặn IP (như Google).
+  const proxyUrl = `/api/tts?text=${encodedText}`;
 
   globalAudio.pause();
   globalAudio.currentTime = 0;
   
   // Giảm tốc độ đọc xuống 85% để dễ nghe hơn
   globalAudio.playbackRate = 0.85;
-  globalAudio.src = baiduUrl;
+  globalAudio.src = proxyUrl;
   globalAudio.load();
   
   const playPromise = globalAudio.play();

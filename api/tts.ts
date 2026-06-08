@@ -25,19 +25,19 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   const encodedText = encodeURIComponent(text);
 
-  // Source 1: Google Translate TTS (Duy nhất 1 nguồn để tối ưu tốc độ và độ chuẩn)
-  const googleUrl = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodedText}&tl=zh-CN&client=tw-ob`;
+  // Source: Baidu Fanyi TTS (Phát âm chuẩn, không bị block IP Vercel như Google)
+  const baiduUrl = `https://fanyi.baidu.com/gettts?lan=zh&text=${encodedText}&spd=5&source=web`;
 
   try {
-    const response = await fetch(googleUrl, { 
+    const response = await fetch(baiduUrl, { 
       headers: { 
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36', 
-        'Referer': 'https://translate.google.com/' 
+        'Referer': 'https://fanyi.baidu.com/' 
       } 
     });
 
     if (!response.ok) {
-      return res.status(502).json({ error: 'Google TTS request failed' });
+      return res.status(502).json({ error: 'Baidu TTS request failed' });
     }
 
     const arrayBuffer = await response.arrayBuffer();
