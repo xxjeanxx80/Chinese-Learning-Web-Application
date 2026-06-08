@@ -1,4 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
+import { Buffer } from 'buffer';
 
 /**
  * TTS Proxy - Phát âm tiếng Trung Phổ thông (Mandarin zh-CN).
@@ -18,17 +19,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(405).json({ error: 'Only GET supported' });
   }
 
-  const text = req.query.text as string;
-  if (!text) {
-    return res.status(400).json({ error: 'Missing text parameter' });
-  }
-
-  const encodedText = encodeURIComponent(text);
-
-  // Source: Baidu Fanyi TTS (Phát âm chuẩn, không bị block IP Vercel như Google)
-  const baiduUrl = `https://fanyi.baidu.com/gettts?lan=zh&text=${encodedText}&spd=5&source=web`;
-
   try {
+    const text = req.query.text as string;
+    if (!text) {
+      return res.status(400).json({ error: 'Missing text parameter' });
+    }
+
+    const encodedText = encodeURIComponent(text);
+
+    // Source: Baidu Fanyi TTS (Phát âm chuẩn, không bị block IP Vercel như Google)
+    const baiduUrl = `https://fanyi.baidu.com/gettts?lan=zh&text=${encodedText}&spd=5&source=web`;
+
     const response = await fetch(baiduUrl, { 
       headers: { 
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36', 
@@ -44,7 +45,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const buffer = Buffer.from(arrayBuffer);
 
     if (buffer.length < 100) {
-      return res.status(502).json({ error: 'Google TTS returned empty buffer' });
+      return res.status(502).json({ error: 'Baidu TTS returned empty buffer' });
     }
 
     const totalSize = buffer.length;
@@ -73,7 +74,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     res.setHeader('Accept-Ranges', 'bytes');
     res.setHeader('Cache-Control', 'public, max-age=86400');
     return res.send(buffer);
-  } catch (err) {
-    return res.status(502).json({ error: 'TTS source failed completely' });
+  } catch (err: any) {
+    return res.status(500).json({ 
+      error: 'TTS source failed completely',
+      message: err.message,
+      stack: err.stack 
+    });
   }
 }
