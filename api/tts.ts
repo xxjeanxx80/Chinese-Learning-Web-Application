@@ -1,59 +1,63 @@
-import type { VercelRequest, VercelResponse } from '@vercel/node';
+export const config = {
+  runtime: 'edge',
+};
 
 /**
  * TTS Proxy - Phát âm tiếng Trung Phổ thông (Mandarin zh-CN).
- * Proxy luồng âm thanh trực tiếp từ Baidu Fanyi để lách mọi giới hạn.
+ * Chạy trên Vercel Edge Network để tối đa tốc độ và không bị crash Node.js Buffer.
  */
-export default function handler(req: VercelRequest, res: VercelResponse) {
-  // CORS
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Range');
-
+export default async function handler(req: Request) {
   if (req.method === 'OPTIONS') {
-    return res.status(200).end();
+    return new Response(null, {
+      status: 200,
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'GET, OPTIONS',
+      },
+    });
   }
 
-  if (req.method !== 'GET') {
-    return res.status(405).json({ error: 'Only GET supported' });
-  }
-
-  const text = req.query.text as string;
+  const url = new URL(req.url);
+  const text = url.searchParams.get('text');
+  
   if (!text) {
-    return res.status(400).json({ error: 'Missing text parameter' });
+    return new Response(JSON.stringify({ error: 'Missing text parameter' }), {
+      status: 400,
+      headers: { 'Content-Type': 'application/json' },
+    });
   }
 
   const encodedText = encodeURIComponent(text);
   const baiduUrl = `https://fanyi.baidu.com/gettts?lan=zh&text=${encodedText}&spd=5&source=web`;
 
   try {
-    // Dynamic require để tránh lỗi "module not found" lúc Vercel khởi tạo Serverless Function
-    const https = require('https');
-
-    https.get(baiduUrl, {
+    const response = await fetch(baiduUrl, {
       headers: {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
         'Referer': 'https://fanyi.baidu.com/'
       }
-    }, (proxyRes: any) => {
-      res.status(proxyRes.statusCode || 200);
-      res.setHeader('Content-Type', proxyRes.headers['content-type'] || 'audio/mpeg');
-      
-      if (proxyRes.headers['content-length']) {
-        res.setHeader('Content-Length', proxyRes.headers['content-length']);
+    });
+
+    if (!response.ok) {
+      return new Response(JSON.stringify({ error: 'Baidu TTS request failed' }), {
+        status: 502,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+
+    // Proxy the audio stream directly to the client
+    return new Response(response.body, {
+      status: 200,
+      headers: {
+        'Content-Type': 'audio/mpeg',
+        'Cache-Control': 'public, max-age=86400',
+        'Access-Control-Allow-Origin': '*'
       }
-      
-      res.setHeader('Cache-Control', 'public, max-age=86400');
-      
-      // Stream trực tiếp audio data về cho client (không cần dùng Buffer hay ArrayBuffer)
-      proxyRes.pipe(res);
-    }).on('error', (err: any) => {
-      return res.status(500).json({ error: 'Proxy stream error', details: err.message });
     });
   } catch (err: any) {
-    return res.status(500).json({ 
-      error: 'Proxy initialization failed',
-      message: err.message 
+    return new Response(JSON.stringify({ error: 'Proxy crashed', message: err.message }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' },
     });
   }
 }
