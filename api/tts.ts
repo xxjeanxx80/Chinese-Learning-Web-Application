@@ -1,10 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 
-// Force Node.js runtime (NOT Edge)
-export const config = {
-  runtime: 'nodejs',
-};
-
 /**
  * TTS Proxy - Phát âm tiếng Trung Phổ thông (Mandarin zh-CN).
  */
