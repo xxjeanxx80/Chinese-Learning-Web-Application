@@ -1,7 +1,9 @@
 /**
  * Speak Chinese text (Mandarin zh-CN).
- * Fast implementation routing through Vercel Proxy to use Google Translate TTS
- * (bypassing Brave browser's strict third-party blocks on Google Translate directly).
+ * Fast implementation using Baidu Fanyi TTS directly.
+ * - Bypasses Brave's Google tracker block.
+ * - Bypasses Brave's lack of built-in Web Speech voices.
+ * - Accurate Mandarin pronunciation (fixes Youdao's "er" bug).
  */
 
 const SILENT_KICKSTART = "data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQQAAAAAAA==";
@@ -64,24 +66,23 @@ export const speakChinese = (text: string): void => {
 
   const encodedText = encodeURIComponent(text);
   
-  // Dùng API Proxy nội bộ để gọi Google Translate.
-  // Lý do: Trình duyệt Brave block Google Translate trực tiếp. Proxy nội bộ bypass chặn quảng cáo của Brave.
-  // Google Translate có phát âm chuẩn xác (không bị lỗi "er" thành "ai" như Youdao).
-  const proxyUrl = `/api/tts?text=${encodedText}`;
+  // Dùng Baidu Fanyi TTS (Nguồn gốc nội địa Trung, phát âm chuẩn 100%, không bị Brave chặn như Google)
+  // URL format: lan=zh (tiếng Trung), spd=5 (tốc độ chuẩn, có thể để nguyên rồi dùng playbackRate)
+  const baiduUrl = `https://fanyi.baidu.com/gettts?lan=zh&text=${encodedText}&spd=5&source=web`;
 
   globalAudio.pause();
   globalAudio.currentTime = 0;
   
   // Giảm tốc độ đọc xuống 85% để dễ nghe hơn
   globalAudio.playbackRate = 0.85;
-  globalAudio.src = proxyUrl;
+  globalAudio.src = baiduUrl;
   globalAudio.load();
   
   const playPromise = globalAudio.play();
   
   if (playPromise !== undefined) {
     playPromise.catch((err) => {
-      console.warn('Proxy TTS failed, falling back to Web Speech API.', err);
+      console.warn('Baidu TTS failed, falling back to Web Speech API.', err);
       fallbackWebSpeech(text);
     });
   }
