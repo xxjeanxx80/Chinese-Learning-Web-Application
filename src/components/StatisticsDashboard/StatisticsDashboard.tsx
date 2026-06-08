@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { getStatistics, getStatisticsByPeriod, resetStatistics, Statistics } from '../utils/statisticsStorage';
-import { getAllLearnedVocabularyCounts, getAllLearnedSentenceCounts, getTotalLearnedVocabularyCount, getTotalLearnedSentenceCount, clearLearnedItems } from '../utils/learnedItemsStorage';
-import { getVocabulariesForLevel } from '../utils/vocabularyStorage';
+import { getStatistics, getStatisticsByPeriod, resetStatistics, Statistics } from '../../utils/statisticsStorage';
+import { getAllLearnedVocabularyCounts, getAllLearnedSentenceCounts, getTotalLearnedVocabularyCount, getTotalLearnedSentenceCount, clearLearnedItems } from '../../utils/learnedItemsStorage';
+import { getVocabulariesForLevel } from '../../utils/vocabularyStorage';
 import './StatisticsDashboard.css';
 
 interface StatisticsDashboardProps {

@@ -1,20 +1,20 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { Vocabulary } from '../data/vocabulary';
-import { getVocabulariesForLevel } from '../utils/vocabularyStorage';
-import { markVocabularyLearned } from '../utils/learnedItemsStorage';
-import { addStudySession } from '../utils/statisticsStorage';
-import { saveSessionProgress, loadSessionProgress } from '../utils/sessionProgressStorage';
-import { speakChinese } from '../utils/speakChinese';
-import StrokeOrderModal from './StrokeOrderModal';
-import LearnedWordsPanel from './LearnedWordsPanel';
-import './PracticeWriting.css';
-import './SpeakButton.css';
+import { Vocabulary } from '../../data/vocabulary';
+import { getVocabulariesForLevel } from '../../utils/vocabularyStorage';
+import { markVocabularyLearned } from '../../utils/learnedItemsStorage';
+import { addStudySession } from '../../utils/statisticsStorage';
+import { saveSessionProgress, loadSessionProgress } from '../../utils/sessionProgressStorage';
+import { speakChinese } from '../../utils/speakChinese';
+import StrokeOrderModal from '../StrokeOrderModal';
+import LearnedWordsPanel from '../LearnedWordsPanel';
+import './PracticeMeaning.css';
+import '../SpeakButton.css';
 
-interface PracticeWritingProps {
+interface PracticeMeaningProps {
   level: string;
 }
 
-const PracticeWriting: React.FC<PracticeWritingProps> = ({ level }) => {
+const PracticeMeaning: React.FC<PracticeMeaningProps> = ({ level }) => {
   const [vocabularies, setVocabularies] = useState<Vocabulary[]>(getVocabulariesForLevel(level));
   const [currentIndex, setCurrentIndex] = useState(0);
   const [userAnswer, setUserAnswer] = useState('');
@@ -22,12 +22,12 @@ const PracticeWriting: React.FC<PracticeWritingProps> = ({ level }) => {
   const [isCorrect, setIsCorrect] = useState(false);
   // Lưu trạng thái đúng/sai cho từng từ vựng: Map<chinese, boolean>
   const [wordResults, setWordResults] = useState<Map<string, boolean>>(() => 
-    loadSessionProgress('vocabulary_writing', level, 'results', new Map())
+    loadSessionProgress('vocabulary_meaning', level, 'results', new Map())
   );
   const [showOptions, setShowOptions] = useState(false);
   const [options, setOptions] = useState<string[]>([]);
   const [showPinyin, setShowPinyin] = useState(() => {
-    const saved = localStorage.getItem('showPinyinWriting');
+    const saved = localStorage.getItem('showPinyinMeaning');
     return saved !== null ? JSON.parse(saved) : true;
   });
 
@@ -35,11 +35,11 @@ const PracticeWriting: React.FC<PracticeWritingProps> = ({ level }) => {
 
   // Save progress when wordResults changes
   useEffect(() => {
-    saveSessionProgress('vocabulary_writing', level, 'results', wordResults);
+    saveSessionProgress('vocabulary_meaning', level, 'results', wordResults);
   }, [wordResults, level]);
 
   useEffect(() => {
-    localStorage.setItem('showPinyinWriting', JSON.stringify(showPinyin));
+    localStorage.setItem('showPinyinMeaning', JSON.stringify(showPinyin));
   }, [showPinyin]);
 
   useEffect(() => {
@@ -81,21 +81,26 @@ const PracticeWriting: React.FC<PracticeWritingProps> = ({ level }) => {
 
   const generateOptions = (correctIndex: number, vocabList: Vocabulary[]) => {
     const correctWord = vocabList[correctIndex];
-    const wrongWords = vocabList
+    const wrongMeanings = vocabList
       .filter((_, idx) => idx !== correctIndex)
       .sort(() => Math.random() - 0.5)
       .slice(0, 3)
-      .map(w => w.chinese);
+      .map(w => w.vietnamese);
     
-    const allOptions = [correctWord.chinese, ...wrongWords].sort(() => Math.random() - 0.5);
+    const allOptions = [correctWord.vietnamese, ...wrongMeanings].sort(() => Math.random() - 0.5);
     setOptions(allOptions);
+  };
+
+  const normalizeAnswer = (answer: string): string => {
+    return answer.toLowerCase().trim().replace(/\s+/g, ' ');
   };
 
   const sessionStartTime = useRef<number>(Date.now());
 
   const handleCheck = (answer: string) => {
     if (!currentWord) return;
-    const correct = answer === currentWord.chinese;
+    const correct = normalizeAnswer(answer) === normalizeAnswer(currentWord.vietnamese);
+    
     setIsCorrect(correct);
     setUserAnswer(answer);
     setShowResult(true);
@@ -106,18 +111,19 @@ const PracticeWriting: React.FC<PracticeWritingProps> = ({ level }) => {
       return newMap;
     });
 
-    // Đánh dấu từ vựng đã học (test writing)
-    markVocabularyLearned(level, currentWord, 'writing', correct);
+    // Đánh dấu từ vựng đã học (test meaning)
+    markVocabularyLearned(level, currentWord, 'meaning', correct);
 
     // Statistics tracking
     const duration = Math.floor((Date.now() - sessionStartTime.current) / 1000);
-    addStudySession(level, correct ? 1 : 0, 1, duration, 'vocabulary-writing');
+    addStudySession(level, correct ? 1 : 0, 1, duration, 'vocabulary-meaning');
     sessionStartTime.current = Date.now();
   };
 
   const handleTypeCheck = () => {
     if (!userAnswer.trim() || !currentWord) return;
-    const correct = userAnswer.trim() === currentWord.chinese;
+    const correct = normalizeAnswer(userAnswer) === normalizeAnswer(currentWord.vietnamese);
+    
     setIsCorrect(correct);
     setShowResult(true);
     // Lưu kết quả cho từ vựng này
@@ -127,12 +133,12 @@ const PracticeWriting: React.FC<PracticeWritingProps> = ({ level }) => {
       return newMap;
     });
 
-    // Đánh dấu từ vựng đã học (test writing)
-    markVocabularyLearned(level, currentWord, 'writing', correct);
+    // Đánh dấu từ vựng đã học (test meaning)
+    markVocabularyLearned(level, currentWord, 'meaning', correct);
 
     // Statistics tracking
     const duration = Math.floor((Date.now() - sessionStartTime.current) / 1000);
-    addStudySession(level, correct ? 1 : 0, 1, duration, 'vocabulary-writing');
+    addStudySession(level, correct ? 1 : 0, 1, duration, 'vocabulary-meaning');
     sessionStartTime.current = Date.now();
   };
 
@@ -162,12 +168,12 @@ const PracticeWriting: React.FC<PracticeWritingProps> = ({ level }) => {
   const [strokeChar, setStrokeChar] = useState<string | null>(null);
 
   if (!currentWord) {
-    return <div className="practice-writing-empty">Không có từ vựng cho cấp độ này</div>;
+    return <div className="practice-meaning-empty">Không có từ vựng cho cấp độ này</div>;
   }
 
   return (
     <>
-    <div className="practice-writing">
+    <div className="practice-meaning">
       <div className="score-display">
         <span>Từ đã học được: {score.correct}/{score.total}</span>
         {score.total > 0 && (
@@ -187,7 +193,7 @@ const PracticeWriting: React.FC<PracticeWritingProps> = ({ level }) => {
           className={!showOptions ? 'active' : ''}
           onClick={() => setShowOptions(false)}
         >
-          ⌨️ Viết Hán Tự
+          ⌨️ Nhập nghĩa
         </button>
         <button
           className={showOptions ? 'active' : ''}
@@ -212,32 +218,37 @@ const PracticeWriting: React.FC<PracticeWritingProps> = ({ level }) => {
         >
           🔊
         </button>
-        <div className="meaning-display-primary">
-          <h2>{currentWord.vietnamese}</h2>
+        <div className="chinese-display" onClick={() => setStrokeChar(currentWord.chinese)} style={{cursor: 'pointer'}} title="Xem nét viết">
+          <h2>{currentWord.chinese}</h2>
         </div>
         {showPinyin && (
-          <div className="pinyin-display-secondary">
-            <p>{currentWord.pinyin}</p>
+          <div className="pinyin-hint">
+            <p>Pinyin: {currentWord.pinyin}</p>
           </div>
         )}
         <div className="instruction">
-          {showOptions ? 'Chọn chữ Hán đúng:' : 'Nhập chữ Hán:'}
+          {showOptions ? 'Chọn nghĩa đúng:' : 'Nhập nghĩa tiếng Việt:'}
         </div>
       </div>
 
       {showOptions ? (
         <div className="options-section">
           <div className="options-grid">
-            {options.map((option, idx) => (
-              <button
-                key={idx}
-                className={`option-button ${showResult && option === currentWord.chinese ? 'correct-option' : ''} ${showResult && userAnswer === option && option !== currentWord.chinese ? 'wrong-option' : ''}`}
-                onClick={() => !showResult && handleCheck(option)}
-                disabled={showResult}
-              >
-                {option}
-              </button>
-            ))}
+            {options.map((option, idx) => {
+              const isCorrectOption = normalizeAnswer(option) === normalizeAnswer(currentWord.vietnamese);
+              const isWrongOption = showResult && userAnswer === option && !isCorrectOption;
+              
+              return (
+                <button
+                  key={idx}
+                  className={`option-button ${showResult && isCorrectOption ? 'correct-option' : ''} ${isWrongOption ? 'wrong-option' : ''}`}
+                  onClick={() => !showResult && handleCheck(option)}
+                  disabled={showResult}
+                >
+                  {option}
+                </button>
+              );
+            })}
           </div>
         </div>
       ) : (
@@ -247,7 +258,7 @@ const PracticeWriting: React.FC<PracticeWritingProps> = ({ level }) => {
             value={userAnswer}
             onChange={(e) => setUserAnswer(e.target.value)}
             onKeyPress={handleKeyPress}
-            placeholder="Nhập chữ Hán..."
+            placeholder="Nhập nghĩa tiếng Việt..."
             disabled={showResult}
           />
           {!showResult && (
@@ -267,8 +278,12 @@ const PracticeWriting: React.FC<PracticeWritingProps> = ({ level }) => {
               </div>
             )}
             <div className="actual-correct">
-              Đáp án đúng: <strong>{currentWord.chinese}</strong>
+              Đáp án đúng: <strong>{currentWord.vietnamese}</strong>
             </div>
+          </div>
+          <div className="word-info">
+            Chữ: <strong>{currentWord.chinese}</strong> | 
+            Pinyin: <strong>{currentWord.pinyin}</strong>
           </div>
           <button className="next-button" onClick={handleNext} autoFocus>
             Từ tiếp theo
@@ -293,4 +308,5 @@ const PracticeWriting: React.FC<PracticeWritingProps> = ({ level }) => {
   );
 };
 
-export default PracticeWriting;
+export default PracticeMeaning;
+

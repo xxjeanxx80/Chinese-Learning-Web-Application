@@ -47,7 +47,10 @@ An advanced, highly interactive web application for learning and mastering Chine
 ```text
 ├── api/                  # Vercel Serverless API routes (TTS, DeepL)
 ├── src/
-│   ├── components/       # UI Components (SRS, Character Writing, Sentences, Stats)
+│   ├── components/       # Component-Folder UI Architecture (20+ components)
+│   │   ├── BottomNavBar/ # Component logic, styling, and index.ts entry point
+│   │   ├── SRSReview/    # Spaced Repetition scheduler folder
+│   │   └── ...           
 │   ├── contexts/         # ThemeContext (Light/Dark themes)
 │   ├── data/             # Vocabulary and sentence datasets
 │   ├── hooks/            # Custom React hooks (shortcuts, virtualization)

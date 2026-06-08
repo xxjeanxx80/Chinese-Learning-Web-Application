@@ -1,9 +1,9 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import './Translate.css';
-import { addVocabulary } from '../utils/vocabularyStorage';
-import { addSentence } from '../utils/sentenceStorage';
-import { Vocabulary } from '../data/vocabulary';
-import { Sentence } from '../data/sentences';
+import { addVocabulary } from '../../utils/vocabularyStorage';
+import { addSentence } from '../../utils/sentenceStorage';
+import { Vocabulary } from '../../data/vocabulary';
+import { Sentence } from '../../data/sentences';
 import { pinyin } from 'pinyin-pro';
 import {
   DEEPL_PROXY_URL,
@@ -11,7 +11,7 @@ import {
   TRANSLATION_PROVIDER_KEY,
   TRANSLATION_PROVIDERS,
   type TranslationProvider
-} from '../config/translation';
+} from '../../config/translation';
 
 type Language = 'zh' | 'vi' | 'en';
 

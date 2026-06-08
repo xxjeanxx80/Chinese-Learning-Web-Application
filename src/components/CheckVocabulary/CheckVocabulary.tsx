@@ -1,16 +1,16 @@
 import React, { useState, useEffect, useMemo, useCallback, memo } from 'react';
-import { Vocabulary } from '../data/vocabulary';
-import { getVocabulariesForLevel } from '../utils/vocabularyStorage';
-import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
-import { addWrongAnswer, markCorrect } from '../utils/wrongAnswersStorage';
-import { markVocabularyLearned } from '../utils/learnedItemsStorage';
-import { addStudySession } from '../utils/statisticsStorage';
-import { saveSessionProgress, loadSessionProgress } from '../utils/sessionProgressStorage';
-import { speakChinese } from '../utils/speakChinese';
-import StrokeOrderModal from './StrokeOrderModal';
-import LearnedWordsPanel from './LearnedWordsPanel';
+import { Vocabulary } from '../../data/vocabulary';
+import { getVocabulariesForLevel } from '../../utils/vocabularyStorage';
+import { useKeyboardShortcuts } from '../../hooks/useKeyboardShortcuts';
+import { addWrongAnswer, markCorrect } from '../../utils/wrongAnswersStorage';
+import { markVocabularyLearned } from '../../utils/learnedItemsStorage';
+import { addStudySession } from '../../utils/statisticsStorage';
+import { saveSessionProgress, loadSessionProgress } from '../../utils/sessionProgressStorage';
+import { speakChinese } from '../../utils/speakChinese';
+import StrokeOrderModal from '../StrokeOrderModal';
+import LearnedWordsPanel from '../LearnedWordsPanel';
 import './CheckVocabulary.css';
-import './SpeakButton.css';
+import '../SpeakButton.css';
 
 interface CheckVocabularyProps {
   level: string;

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useCallback, memo } from 'react';
-import { Vocabulary } from '../data/vocabulary';
+import { Vocabulary } from '../../data/vocabulary';
 import {
   getCustomVocabularies,
   addVocabulary,
@@ -10,7 +10,7 @@ import {
   exportVocabulariesForLevel,
   importCustomVocabulariesFromExcel,
   getVocabulariesForLevel
-} from '../utils/vocabularyStorage';
+} from '../../utils/vocabularyStorage';
 import './VocabularyManager.css';
 
 interface VocabularyManagerProps {

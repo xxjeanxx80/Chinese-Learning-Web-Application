@@ -1,14 +1,14 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { Vocabulary } from '../data/vocabulary';
-import { getVocabulariesForLevel } from '../utils/vocabularyStorage';
-import { markVocabularyLearned } from '../utils/learnedItemsStorage';
-import { addStudySession } from '../utils/statisticsStorage';
-import { saveSessionProgress, loadSessionProgress } from '../utils/sessionProgressStorage';
-import { speakChinese } from '../utils/speakChinese';
-import StrokeOrderModal from './StrokeOrderModal';
-import LearnedWordsPanel from './LearnedWordsPanel';
+import { Vocabulary } from '../../data/vocabulary';
+import { getVocabulariesForLevel } from '../../utils/vocabularyStorage';
+import { markVocabularyLearned } from '../../utils/learnedItemsStorage';
+import { addStudySession } from '../../utils/statisticsStorage';
+import { saveSessionProgress, loadSessionProgress } from '../../utils/sessionProgressStorage';
+import { speakChinese } from '../../utils/speakChinese';
+import StrokeOrderModal from '../StrokeOrderModal';
+import LearnedWordsPanel from '../LearnedWordsPanel';
 import './RandomPractice.css';
-import './SpeakButton.css';
+import '../SpeakButton.css';
 
 interface RandomPracticeProps {
   level: string;

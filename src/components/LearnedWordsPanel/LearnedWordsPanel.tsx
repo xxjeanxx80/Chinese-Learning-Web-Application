@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 
-import { speakChinese } from '../utils/speakChinese';
-import { getLearnedVocabularies, getLearnedSentences } from '../utils/learnedItemsStorage';
-import { getWrongAnswersByLevel } from '../utils/wrongAnswersStorage';
-import { getWrongSentences } from '../utils/sentenceWrongAnswersStorage';
-import StrokeOrderModal from './StrokeOrderModal';
+import { speakChinese } from '../../utils/speakChinese';
+import { getLearnedVocabularies, getLearnedSentences } from '../../utils/learnedItemsStorage';
+import { getWrongAnswersByLevel } from '../../utils/wrongAnswersStorage';
+import { getWrongSentences } from '../../utils/sentenceWrongAnswersStorage';
+import StrokeOrderModal from '../StrokeOrderModal';
 import './LearnedWordsPanel.css';
 
 // Inline SVG icons for clean look

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useCallback, memo } from 'react';
-import { Sentence } from '../data/sentences';
+import { Sentence } from '../../data/sentences';
 import {
   getCustomSentences,
   addSentence,
@@ -10,7 +10,7 @@ import {
   importCustomSentencesFromExcel,
   getSentencesForLevelAndTopic,
   getTopicsForLevel
-} from '../utils/sentenceStorage';
+} from '../../utils/sentenceStorage';
 import './SentenceManager.css';
 
 interface SentenceManagerProps {

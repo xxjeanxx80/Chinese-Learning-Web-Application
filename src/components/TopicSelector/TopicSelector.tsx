@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import type React from 'react';
-import { getTopicsForLevel } from '../utils/sentenceStorage';
+import { getTopicsForLevel } from '../../utils/sentenceStorage';
 import './TopicSelector.css';
 
 interface TopicSelectorProps {

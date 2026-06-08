@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { getItemsToReview, reviewSRSItem, SRSItem } from '../utils/srsStorage';
-import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
-import { saveSessionProgress, loadSessionProgress } from '../utils/sessionProgressStorage';
+import { getItemsToReview, reviewSRSItem, SRSItem } from '../../utils/srsStorage';
+import { useKeyboardShortcuts } from '../../hooks/useKeyboardShortcuts';
+import { saveSessionProgress, loadSessionProgress } from '../../utils/sessionProgressStorage';
 import './SRSReview.css';
 
 interface SRSReviewProps {
