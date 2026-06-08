@@ -46,20 +46,24 @@ An advanced, highly interactive web application for learning and mastering Chine
 ## 📂 Project Architecture
 ```text
 ├── api/                  # Vercel Serverless API routes (TTS, DeepL)
+├── data/                 # Data templates for CSV/JSON importing
+├── public/               # Static assets (logos, images)
 ├── src/
 │   ├── components/       # Component-Folder UI Architecture (20+ components)
 │   │   ├── BottomNavBar/ # Component logic, styling, and index.ts entry point
 │   │   ├── SRSReview/    # Spaced Repetition scheduler folder
 │   │   └── ...           
-│   ├── contexts/         # ThemeContext (Light/Dark themes)
+│   ├── config/           # Application configs (translation settings, etc.)
+│   ├── contexts/         # ThemeContext (Light/Dark theme management)
 │   ├── data/             # Vocabulary and sentence datasets
 │   ├── hooks/            # Custom React hooks (shortcuts, virtualization)
-│   ├── utils/            # Helper utils (Pinyin normalization)
+│   ├── utils/            # Helper utils (Pinyin normalizers, formatting)
 │   ├── App.tsx           # Application root layout & routing
 │   ├── App.css           # Component styles
 │   └── index.css         # Theme-based CSS3 system and animations
-├── public/               # Static assets
 ├── package.json          # Node dependencies and scripts
+├── tsconfig.json         # TypeScript compiler configurations
+├── vercel.json           # Vercel deployment configuration
 └── vite.config.ts        # Vite build configuration
 ```
 
