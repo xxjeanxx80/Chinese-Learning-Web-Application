@@ -1,7 +1,7 @@
 /**
  * Speak Chinese text (Mandarin zh-CN).
- * Fast implementation using Google Translate TTS directly (bypassing proxy for speed)
- * with customized playback rate for learners.
+ * Fast implementation routing through Vercel Proxy to use Google Translate TTS
+ * (bypassing Brave browser's strict third-party blocks on Google Translate directly).
  */
 
 const SILENT_KICKSTART = "data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQQAAAAAAA==";
@@ -64,23 +64,24 @@ export const speakChinese = (text: string): void => {
 
   const encodedText = encodeURIComponent(text);
   
-  // Use ONLY Google Translate TTS directly for maximum speed and accuracy (fixes Youdao's "er" mispronunciation)
-  // <audio> tags bypass CORS, so we don't need the Vercel proxy.
-  const googleUrl = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodedText}&tl=zh-CN&client=tw-ob`;
+  // Dùng API Proxy nội bộ để gọi Google Translate.
+  // Lý do: Trình duyệt Brave block Google Translate trực tiếp. Proxy nội bộ bypass chặn quảng cáo của Brave.
+  // Google Translate có phát âm chuẩn xác (không bị lỗi "er" thành "ai" như Youdao).
+  const proxyUrl = `/api/tts?text=${encodedText}`;
 
   globalAudio.pause();
   globalAudio.currentTime = 0;
   
   // Giảm tốc độ đọc xuống 85% để dễ nghe hơn
   globalAudio.playbackRate = 0.85;
-  globalAudio.src = googleUrl;
+  globalAudio.src = proxyUrl;
   globalAudio.load();
   
   const playPromise = globalAudio.play();
   
   if (playPromise !== undefined) {
     playPromise.catch((err) => {
-      console.warn('Google TTS failed, falling back to Web Speech API.', err);
+      console.warn('Proxy TTS failed, falling back to Web Speech API.', err);
       fallbackWebSpeech(text);
     });
   }
