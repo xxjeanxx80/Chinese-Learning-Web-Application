@@ -1,5 +1,4 @@
 import { Sentence, getSentencesByLevel } from '../data/sentences';
-import * as XLSX from 'xlsx';
 
 const STORAGE_KEY = 'hsk_custom_sentences';
 
@@ -164,8 +163,10 @@ export function clearAllCustomSentences(): void {
  * @param includeDefault Nếu true, export cả câu mặc định
  * @param level Nếu có, chỉ export level đó
  */
-export function exportCustomSentences(includeDefault: boolean = false, level?: string): void {
+export async function exportCustomSentences(includeDefault: boolean = false, level?: string): Promise<void> {
   try {
+    const XLSX = await import('xlsx');
+
     const custom = getCustomSentences();
     
     // Tạo workbook
@@ -248,8 +249,10 @@ export function importCustomSentencesFromExcel(file: File, level: string, merge:
   return new Promise((resolve) => {
     const reader = new FileReader();
     
-    reader.onload = (e) => {
+    reader.onload = async (e) => {
       try {
+        const XLSX = await import('xlsx');
+
         const data = new Uint8Array(e.target?.result as ArrayBuffer);
         const workbook = XLSX.read(data, { type: 'array' });
         

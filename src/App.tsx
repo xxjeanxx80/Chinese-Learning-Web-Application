@@ -1,4 +1,4 @@
-import { useState, lazy, Suspense, useMemo, useCallback, useEffect } from 'react';
+import { useState, lazy, Suspense, useMemo, useEffect } from 'react';
 import './App.css';
 import HSKLevelSelector from './components/HSKLevelSelector';
 import TopicSelector from './components/TopicSelector';
@@ -8,6 +8,9 @@ import SupportModal from './components/SupportModal';
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
 import MobileDrawer from './components/MobileDrawer';
 import BottomNavBar from './components/BottomNavBar';
+import Sidebar from './components/Sidebar/Sidebar';
+import { useAppNavigation } from './hooks/useAppNavigation';
+import { useCustomBackground } from './hooks/useCustomBackground';
 import { Analytics } from '@vercel/analytics/react';
 
 // Lazy load components để giảm bundle size ban đầu
@@ -36,122 +39,28 @@ const ComponentLoader = () => (
   </div>
 );
 
-type FunctionType = 'vocabulary' | 'writing' | 'meaning' | 'random' | 'manage' | 'sentence-pinyin' | 'sentence-writing' | 'sentence-meaning' | 'sentence-random' | 'sentence-manage' | 'translate' | 'statistics';
-
 function App() {
   const { theme, toggleTheme } = useTheme();
-  const [currentLevel, setCurrentLevel] = useState<string>(() => 
-    localStorage.getItem('hsk_currentLevel') || 'hsk1'
-  );
-  const [currentFunction, setCurrentFunction] = useState<FunctionType>(() => 
-    (localStorage.getItem('hsk_currentFunction') as FunctionType) || 'vocabulary'
-  );
-  const [expandedMenu, setExpandedMenu] = useState<'vocab' | 'sentence' | null>(() => {
-    const saved = localStorage.getItem('hsk_expandedMenu');
-    return saved ? (saved as any) : 'vocab';
-  });
-  const [currentTopic, setCurrentTopic] = useState<string>(() => 
-    localStorage.getItem('hsk_currentTopic') || ''
-  );
   const [showShortcutsModal, setShowShortcutsModal] = useState(false);
   const [showSupportModal, setShowSupportModal] = useState(false);
   const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false);
-  
-  // Persist navigation state
-  useEffect(() => {
-    localStorage.setItem('hsk_currentLevel', currentLevel);
-  }, [currentLevel]);
 
-  useEffect(() => {
-    localStorage.setItem('hsk_currentFunction', currentFunction);
-  }, [currentFunction]);
+  const {
+    currentLevel,
+    setCurrentLevel,
+    currentFunction,
+    handleFunctionChange,
+    expandedMenu,
+    setExpandedMenu,
+    currentTopic,
+    setCurrentTopic
+  } = useAppNavigation();
 
-  useEffect(() => {
-    if (expandedMenu) {
-      localStorage.setItem('hsk_expandedMenu', expandedMenu);
-    }
-  }, [expandedMenu]);
-
-  useEffect(() => {
-    localStorage.setItem('hsk_currentTopic', currentTopic);
-  }, [currentTopic]);
-  
-  // Custom Background
-  const [customBackground, setCustomBackground] = useState<string | null>(() => {
-    return localStorage.getItem('custom_app_background');
-  });
-
-  // Áp dụng background
-  useEffect(() => {
-    if (customBackground) {
-      document.body.style.backgroundImage = `url(${customBackground})`;
-      document.body.style.backgroundSize = 'cover';
-      document.body.style.backgroundPosition = 'center';
-      document.body.style.backgroundAttachment = 'fixed';
-      document.body.style.animation = 'none'; // Tắt animation liquidBg để ảnh đứng im
-    } else {
-      document.body.style.backgroundImage = '';
-      document.body.style.backgroundSize = '';
-      document.body.style.backgroundPosition = '';
-      document.body.style.backgroundAttachment = '';
-      document.body.style.animation = '';
-    }
-  }, [customBackground]);
-
-  const handleBackgroundUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      // Giới hạn size < 5MB để tránh quất đầy LocalStorage
-      if (file.size > 5 * 1024 * 1024) {
-        alert('Vui lòng chọn ảnh nhỏ hơn 5MB để đảm bảo hiệu năng!');
-        return;
-      }
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const base64String = reader.result as string;
-        setCustomBackground(base64String);
-        try {
-          localStorage.setItem('custom_app_background', base64String);
-        } catch (error) {
-          console.error('LocalStorage quota exceeded:', error);
-          alert('Ảnh này có độ phân giải quá cao không thể lưu lại cho lần sau. Tuy vậy nền vẫn sẽ được áp dụng tạm thời.');
-        }
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const removeCustomBackground = () => {
-    setCustomBackground(null);
-    localStorage.removeItem('custom_app_background');
-  };
-
-
-
-  // Tự động chọn "Tất cả chủ đề" khi chuyển sang sentence mode
-  useEffect(() => {
-    const isSentenceMode = currentFunction.startsWith('sentence-');
-    if (isSentenceMode) {
-      // Mặc định chọn "Tất cả chủ đề" (empty string)
-      if (!currentTopic) {
-        setCurrentTopic('');
-      }
-    }
-  }, [currentFunction, currentLevel, currentTopic]);
-
-  const handleFunctionChange = useCallback((func: FunctionType) => {
-    setCurrentFunction(func);
-    // Tự động mở menu tương ứng
-    if (func === 'vocabulary' || func === 'writing' || func === 'meaning' || func === 'random' || func === 'manage') {
-      setExpandedMenu('vocab');
-    } else if (func === 'sentence-pinyin' || func === 'sentence-writing' || func === 'sentence-meaning' || func === 'sentence-random' || func === 'sentence-manage') {
-      setExpandedMenu('sentence');
-    } else if (func === 'translate' || func === 'statistics') {
-      setExpandedMenu(null);
-    }
-    // Đóng drawer khi chọn function trên mobile
-    setIsMobileDrawerOpen(false);
-  }, []);
+  const {
+    customBackground,
+    handleBackgroundUpload,
+    removeCustomBackground
+  } = useCustomBackground();
 
   const renderFunction = useMemo(() => {
     const props = { level: currentLevel };
@@ -188,15 +97,14 @@ function App() {
         return <RandomSentencePractice {...sentenceProps} />;
       case 'sentence-manage':
         return <SentenceManager {...sentenceManagerProps} />;
-            case 'translate':
-              return <Translate currentLevel={currentLevel} />;
-            case 'statistics':
-              return <StatisticsDashboard currentLevel={currentLevel} />;
-            default:
-              return <CheckVocabulary {...props} />;
-          }
-  }, [currentFunction, currentLevel, currentTopic]);
-
+      case 'translate':
+        return <Translate currentLevel={currentLevel} />;
+      case 'statistics':
+        return <StatisticsDashboard currentLevel={currentLevel} />;
+      default:
+        return <CheckVocabulary {...props} />;
+    }
+  }, [currentFunction, currentLevel, currentTopic, setCurrentTopic]);
 
   // Keyboard shortcuts
   useKeyboardShortcuts({
@@ -311,238 +219,23 @@ function App() {
         isOpen={isMobileDrawerOpen} 
         onClose={() => setIsMobileDrawerOpen(false)}
       >
-        <div className="sidebar-section">
-          <h3 className="sidebar-title">Tùy chọn bài học</h3>
-          <nav className="sidebar-menu">
-              {/* Học từ */}
-              <div className="menu-group">
-                <button
-                  className="menu-group-header"
-                  onClick={() => setExpandedMenu(expandedMenu === 'vocab' ? null : 'vocab')}
-                >
-                  <span className="menu-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></span>
-                  <span className="menu-text">Học từ</span>
-                  <span className="menu-arrow">{expandedMenu === 'vocab' ? '▼' : '▶'}</span>
-                </button>
-                <div className={`menu-submenu ${expandedMenu === 'vocab' ? 'expanded' : 'collapsed'}`}>
-                  <button 
-                    className={`menu-item ${currentFunction === 'vocabulary' ? 'active' : ''}`}
-                      onClick={() => handleFunctionChange('vocabulary')}
-                    >
-                      <span className="menu-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></span>
-                      <span className="menu-text">Viết Pinyin</span>
-                    </button>
-                    <button 
-                      className={`menu-item ${currentFunction === 'writing' ? 'active' : ''}`}
-                      onClick={() => handleFunctionChange('writing')}
-                    >
-                      <span className="menu-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="4 7 4 4 20 4 20 7"/><line x1="9" y1="20" x2="15" y2="20"/><line x1="12" y1="4" x2="12" y2="20"/></svg></span>
-                      <span className="menu-text">Viết Hán Tự</span>
-                    </button>
-                    <button 
-                      className={`menu-item ${currentFunction === 'meaning' ? 'active' : ''}`}
-                      onClick={() => handleFunctionChange('meaning')}
-                    >
-                      <span className="menu-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>
-                      <span className="menu-text">Viết Nghĩa</span>
-                    </button>
-                    <button 
-                      className={`menu-item ${currentFunction === 'random' ? 'active' : ''}`}
-                      onClick={() => handleFunctionChange('random')}
-                    >
-                      <span className="menu-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/><polyline points="21 16 21 21 16 21"/><line x1="15" y1="15" x2="21" y2="21"/><line x1="4" y1="4" x2="9" y2="9"/></svg></span>
-                      <span className="menu-text">Luyện tập ngẫu nhiên</span>
-                    </button>
-                    <button 
-                      className={`menu-item ${currentFunction === 'manage' ? 'active' : ''}`}
-                      onClick={() => handleFunctionChange('manage')}
-                    >
-                      <span className="menu-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></span>
-                      <span className="menu-text">Quản lý từ vựng</span>
-                    </button>
-                  </div>
-              </div>
-
-              {/* Học câu */}
-              <div className="menu-group">
-                <button
-                  className="menu-group-header"
-                  onClick={() => setExpandedMenu(expandedMenu === 'sentence' ? null : 'sentence')}
-                >
-                  <span className="menu-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg></span>
-                  <span className="menu-text">Học câu</span>
-                  <span className="menu-arrow">{expandedMenu === 'sentence' ? '▼' : '▶'}</span>
-                </button>
-                <div className={`menu-submenu ${expandedMenu === 'sentence' ? 'expanded' : 'collapsed'}`}>
-                  <button 
-                    className={`menu-item ${currentFunction === 'sentence-pinyin' ? 'active' : ''}`}
-                      onClick={() => handleFunctionChange('sentence-pinyin')}
-                    >
-                      <span className="menu-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></span>
-                      <span className="menu-text">Viết Pinyin</span>
-                    </button>
-                    <button 
-                      className={`menu-item ${currentFunction === 'sentence-writing' ? 'active' : ''}`}
-                      onClick={() => handleFunctionChange('sentence-writing')}
-                    >
-                      <span className="menu-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="4 7 4 4 20 4 20 7"/><line x1="9" y1="20" x2="15" y2="20"/><line x1="12" y1="4" x2="12" y2="20"/></svg></span>
-                      <span className="menu-text">Viết Hán Tự</span>
-                    </button>
-                    <button 
-                      className={`menu-item ${currentFunction === 'sentence-meaning' ? 'active' : ''}`}
-                      onClick={() => handleFunctionChange('sentence-meaning')}
-                    >
-                      <span className="menu-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>
-                      <span className="menu-text">Viết Nghĩa</span>
-                    </button>
-                    <button 
-                      className={`menu-item ${currentFunction === 'sentence-random' ? 'active' : ''}`}
-                      onClick={() => handleFunctionChange('sentence-random')}
-                    >
-                      <span className="menu-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/><polyline points="21 16 21 21 16 21"/><line x1="15" y1="15" x2="21" y2="21"/><line x1="4" y1="4" x2="9" y2="9"/></svg></span>
-                      <span className="menu-text">Luyện tập ngẫu nhiên</span>
-                    </button>
-                    <button 
-                      className={`menu-item ${currentFunction === 'sentence-manage' ? 'active' : ''}`}
-                      onClick={() => handleFunctionChange('sentence-manage')}
-                    >
-                      <span className="menu-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></span>
-                      <span className="menu-text">Quản lý câu</span>
-                    </button>
-                  </div>
-              </div>
-            </nav>
-          </div>
+        <Sidebar 
+          currentFunction={currentFunction}
+          expandedMenu={expandedMenu}
+          onFunctionChange={(func) => handleFunctionChange(func, () => setIsMobileDrawerOpen(false))}
+          onToggleMenu={setExpandedMenu}
+        />
       </MobileDrawer>
 
       <div className="app-layout">
         {/* Desktop Sidebar - Ẩn trên mobile */}
         <aside className="sidebar desktop-sidebar">
-          <div className="sidebar-section">
-            <h3 className="sidebar-title">Chức năng</h3>
-            <nav className="sidebar-menu">
-              {/* Học từ */}
-              <div className="menu-group">
-                <button
-                  className="menu-group-header"
-                  onClick={() => setExpandedMenu(expandedMenu === 'vocab' ? null : 'vocab')}
-                >
-                  <span className="menu-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></span>
-                  <span className="menu-text">Học từ</span>
-                  <span className="menu-arrow">{expandedMenu === 'vocab' ? '▼' : '▶'}</span>
-                </button>
-                {expandedMenu === 'vocab' && (
-                  <div className="menu-submenu">
-                    <button 
-                      className={`menu-item ${currentFunction === 'vocabulary' ? 'active' : ''}`}
-                      onClick={() => handleFunctionChange('vocabulary')}
-                    >
-                      <span className="menu-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></span>
-                      <span className="menu-text">Viết Pinyin</span>
-                    </button>
-                    <button 
-                      className={`menu-item ${currentFunction === 'writing' ? 'active' : ''}`}
-                      onClick={() => handleFunctionChange('writing')}
-                    >
-                      <span className="menu-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="4 7 4 4 20 4 20 7"/><line x1="9" y1="20" x2="15" y2="20"/><line x1="12" y1="4" x2="12" y2="20"/></svg></span>
-                      <span className="menu-text">Viết Hán Tự</span>
-                    </button>
-                    <button 
-                      className={`menu-item ${currentFunction === 'meaning' ? 'active' : ''}`}
-                      onClick={() => handleFunctionChange('meaning')}
-                    >
-                      <span className="menu-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>
-                      <span className="menu-text">Viết Nghĩa</span>
-                    </button>
-                    <button 
-                      className={`menu-item ${currentFunction === 'random' ? 'active' : ''}`}
-                      onClick={() => handleFunctionChange('random')}
-                    >
-                      <span className="menu-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/><polyline points="21 16 21 21 16 21"/><line x1="15" y1="15" x2="21" y2="21"/><line x1="4" y1="4" x2="9" y2="9"/></svg></span>
-                      <span className="menu-text">Luyện tập ngẫu nhiên</span>
-                    </button>
-                    <button 
-                      className={`menu-item ${currentFunction === 'manage' ? 'active' : ''}`}
-                      onClick={() => handleFunctionChange('manage')}
-                    >
-                      <span className="menu-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></span>
-                      <span className="menu-text">Quản lý từ vựng</span>
-                    </button>
-                  </div>
-                )}
-              </div>
-
-              {/* Học câu */}
-              <div className="menu-group">
-                <button
-                  className="menu-group-header"
-                  onClick={() => setExpandedMenu(expandedMenu === 'sentence' ? null : 'sentence')}
-                >
-                  <span className="menu-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg></span>
-                  <span className="menu-text">Học câu</span>
-                  <span className="menu-arrow">{expandedMenu === 'sentence' ? '▼' : '▶'}</span>
-                </button>
-                {expandedMenu === 'sentence' && (
-                  <div className="menu-submenu">
-                    <button 
-                      className={`menu-item ${currentFunction === 'sentence-pinyin' ? 'active' : ''}`}
-                      onClick={() => handleFunctionChange('sentence-pinyin')}
-                    >
-                      <span className="menu-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></span>
-                      <span className="menu-text">Viết Pinyin</span>
-                    </button>
-                    <button 
-                      className={`menu-item ${currentFunction === 'sentence-writing' ? 'active' : ''}`}
-                      onClick={() => handleFunctionChange('sentence-writing')}
-                    >
-                      <span className="menu-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="4 7 4 4 20 4 20 7"/><line x1="9" y1="20" x2="15" y2="20"/><line x1="12" y1="4" x2="12" y2="20"/></svg></span>
-                      <span className="menu-text">Viết Hán Tự</span>
-                    </button>
-                    <button 
-                      className={`menu-item ${currentFunction === 'sentence-meaning' ? 'active' : ''}`}
-                      onClick={() => handleFunctionChange('sentence-meaning')}
-                    >
-                      <span className="menu-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>
-                      <span className="menu-text">Viết Nghĩa</span>
-                    </button>
-                    <button 
-                      className={`menu-item ${currentFunction === 'sentence-random' ? 'active' : ''}`}
-                      onClick={() => handleFunctionChange('sentence-random')}
-                    >
-                      <span className="menu-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/><polyline points="21 16 21 21 16 21"/><line x1="15" y1="15" x2="21" y2="21"/><line x1="4" y1="4" x2="9" y2="9"/></svg></span>
-                      <span className="menu-text">Luyện tập ngẫu nhiên</span>
-                    </button>
-                    <button 
-                      className={`menu-item ${currentFunction === 'sentence-manage' ? 'active' : ''}`}
-                      onClick={() => handleFunctionChange('sentence-manage')}
-                    >
-                      <span className="menu-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></span>
-                      <span className="menu-text">Quản lý câu</span>
-                    </button>
-                  </div>
-                )}
-              </div>
-
-              {/* Dịch thuật & Tiện ích */}
-              <div className="menu-group">
-                <button
-                  className={`menu-item menu-item-standalone ${currentFunction === 'translate' ? 'active' : ''}`}
-                  onClick={() => handleFunctionChange('translate')}
-                >
-                  <span className="menu-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg></span>
-                  <span className="menu-text">Dịch thuật</span>
-                </button>
-                <button
-                  className={`menu-item menu-item-standalone ${currentFunction === 'statistics' ? 'active' : ''}`}
-                  onClick={() => handleFunctionChange('statistics')}
-                >
-                  <span className="menu-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></span>
-                  <span className="menu-text">Thống kê</span>
-                </button>
-              </div>
-
-            </nav>
-          </div>
+          <Sidebar 
+            currentFunction={currentFunction}
+            expandedMenu={expandedMenu}
+            onFunctionChange={handleFunctionChange}
+            onToggleMenu={setExpandedMenu}
+          />
         </aside>
 
         <main className="app-main">

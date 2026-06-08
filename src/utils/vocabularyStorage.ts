@@ -1,6 +1,5 @@
 import { Vocabulary } from '../data/vocabulary';
 import { hskVocabulary } from '../data/vocabulary';
-import * as XLSX from 'xlsx';
 
 const STORAGE_KEY = 'hsk_custom_vocabularies';
 const OVERRIDE_KEY = 'hsk_vocabulary_overrides';
@@ -171,8 +170,10 @@ export function clearAllVocabularies(): void {
  * @param level Level HSK cần export (hsk1, hsk2, ...)
  * @param includeCustom Chỉ export từ tự thêm hay tất cả (default + custom)
  */
-export function exportVocabulariesForLevel(level: string, includeCustom: boolean = false): void {
+export async function exportVocabulariesForLevel(level: string, includeCustom: boolean = false): Promise<void> {
   try {
+    const XLSX = await import('xlsx');
+
     const validLevels = ['hsk1', 'hsk2', 'hsk3', 'hsk4', 'hsk5', 'tuluyen'];
     const targetLevel = level.toLowerCase();
     
@@ -243,8 +244,10 @@ export function exportVocabulariesForLevel(level: string, includeCustom: boolean
  * Export từ vựng custom ra Excel (để sao lưu) - TẤT CẢ LEVEL
  * Format: A1=Chữ Hán, B1=Pinyin, C1=Nghĩa tiếng Việt
  */
-export function exportCustomVocabularies(): void {
+export async function exportCustomVocabularies(): Promise<void> {
   try {
+    const XLSX = await import('xlsx');
+
     const custom = getCustomVocabularies();
     
     // Tạo workbook
@@ -314,7 +317,9 @@ export function exportAllVocabularies(): string {
 /**
  * Export từ vựng ra Excel (chỉ từ tự thêm)
  */
-export function exportToExcelCustom(): void {
+export async function exportToExcelCustom(): Promise<void> {
+    const XLSX = await import('xlsx');
+
   const custom = getCustomVocabularies();
   
   // Tạo workbook
@@ -389,7 +394,9 @@ export function exportToExcelCustom(): void {
 /**
  * Export tất cả từ vựng ra Excel (default + custom)
  */
-export function exportToExcelAll(): void {
+export async function exportToExcelAll(): Promise<void> {
+    const XLSX = await import('xlsx');
+
   // Tạo workbook
   const workbook = XLSX.utils.book_new();
   
@@ -515,8 +522,10 @@ export function importCustomVocabulariesFromExcel(file: File, level: string, mer
   return new Promise((resolve) => {
     const reader = new FileReader();
     
-    reader.onload = (e) => {
+    reader.onload = async (e) => {
       try {
+        const XLSX = await import('xlsx');
+
         const data = new Uint8Array(e.target?.result as ArrayBuffer);
         const workbook = XLSX.read(data, { type: 'array' });
         
