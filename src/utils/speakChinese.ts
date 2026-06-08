@@ -1,6 +1,7 @@
 /**
  * Speak Chinese text (Mandarin zh-CN).
- * Advanced implementation with proxy + direct client-side fallback + Web Speech fallback.
+ * Fast implementation using Google Translate TTS directly (bypassing proxy for speed)
+ * with customized playback rate for learners.
  */
 
 const SILENT_KICKSTART = "data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQQAAAAAAA==";
@@ -50,14 +51,9 @@ if (typeof window !== 'undefined') {
   }
 }
 
-// Chaining audio playback sequentially
-function playAudioSource(sources: string[], text: string, index: number = 0) {
-  if (index >= sources.length) {
-    console.warn('All TTS endpoints failed, falling back to Web Speech API.');
-    fallbackWebSpeech(text);
-    return;
-  }
-
+export const speakChinese = (text: string): void => {
+  if (!text) return;
+  
   if (!globalAudio) {
     globalAudio = document.getElementById('global-tts-player') as HTMLAudioElement;
     if (!globalAudio) {
@@ -66,36 +62,28 @@ function playAudioSource(sources: string[], text: string, index: number = 0) {
     }
   }
 
+  const encodedText = encodeURIComponent(text);
+  
+  // Use ONLY Google Translate TTS directly for maximum speed and accuracy (fixes Youdao's "er" mispronunciation)
+  // <audio> tags bypass CORS, so we don't need the Vercel proxy.
+  const googleUrl = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodedText}&tl=zh-CN&client=tw-ob`;
+
   globalAudio.pause();
   globalAudio.currentTime = 0;
   
-  // Use current source
-  globalAudio.src = sources[index];
+  // Giảm tốc độ đọc xuống 85% để dễ nghe hơn
+  globalAudio.playbackRate = 0.85;
+  globalAudio.src = googleUrl;
   globalAudio.load();
   
   const playPromise = globalAudio.play();
   
   if (playPromise !== undefined) {
     playPromise.catch((err) => {
-      console.warn(`TTS source [${index}] failed:`, sources[index], err);
-      // Try next source
-      playAudioSource(sources, text, index + 1);
+      console.warn('Google TTS failed, falling back to Web Speech API.', err);
+      fallbackWebSpeech(text);
     });
   }
-}
-
-export const speakChinese = (text: string): void => {
-  if (!text) return;
-  
-  const encodedText = encodeURIComponent(text);
-  
-  const sources = [
-    `/api/tts?text=${encodedText}`, // Primary: Vercel Proxy
-    `https://dict.youdao.com/dictvoice?audio=${encodedText}&le=zh`, // Fallback 1: Direct Youdao (audio tag bypasses CORS)
-    `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodedText}&tl=zh-CN&client=tw-ob` // Fallback 2: Direct Google (audio tag bypasses CORS)
-  ];
-
-  playAudioSource(sources, text, 0);
 };
 
 function fallbackWebSpeech(text: string): void {
@@ -105,7 +93,8 @@ function fallbackWebSpeech(text: string): void {
     window.speechSynthesis.cancel();
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.lang = 'zh-CN';
-    utterance.rate = 0.9;
+    // Web speech rate (0.1 to 10). 0.8 is slightly slower than normal.
+    utterance.rate = 0.8;
     utterance.volume = 1;
 
     const voices = window.speechSynthesis.getVoices();
