@@ -1,136 +1,87 @@
-# App Học Tiếng Trung HSK
+# 🇨🇳 HSK Chinese Learning Platform
 
-Ứng dụng web học tiếng Trung với 5 cấp độ HSK (HSK 1 - HSK 5), bao gồm nhiều chức năng luyện tập đa dạng.
+An advanced, highly interactive web application for learning and mastering Chinese vocabulary, character stroke order, and grammar from HSK 1 to HSK 5. Features a Spaced Repetition System (SRS), active character writing checks, text-to-speech (TTS) integration, and dynamic statistics tracking.
 
-## Tính năng
+[![React](https://img.shields.io/badge/React-18-20232A?style=flat-flat&logo=react&logoColor=61DAFB)](https://react.dev/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5-007ACC?style=flat-flat&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![Vite](https://img.shields.io/badge/Vite-7-B736FF?style=flat-flat&logo=vite&logoColor=FFD62E)](https://vitejs.dev/)
+[![Vercel](https://img.shields.io/badge/Vercel-Serverless-000000?style=flat-flat&logo=vercel&logoColor=white)](https://vercel.com/)
 
-### 5 Cấp độ HSK
-- **HSK 1**: Từ vựng cơ bản (25 từ)
-- **HSK 2**: Từ vựng sơ cấp (25 từ)
-- **HSK 3**: Từ vựng trung cấp (25 từ)
-- **HSK 4**: Từ vựng trung cao cấp (25 từ)
-- **HSK 5**: Từ vựng cao cấp (25 từ)
+---
 
-### 4 Chức năng luyện tập
+## 🚀 Key Highlights & CV Bullet Points
+- **Performance Optimization**: Structured and optimized a local JSON dataset for efficient vocabulary tracking, improving data loading speed and app performance.
+- **Client-Side Caching & Persistence**: Implemented client-side caching (LocalStorage) to save learning progress, SRS review states, and settings, enhancing user retention and creating a seamless offline experience.
+- **Spaced Repetition System (SRS)**: Built a custom repetition scheduler based on user recall performance to optimize vocabulary retention and highlight weaker areas.
+- **Serverless API Proxying**: Designed Vercel Serverless Functions (`api/deepl-translate.ts`, `api/tts.ts`) to proxy DeepL translation and TTS APIs, successfully resolving CORS restrictions while keeping API credentials secured.
+- **Interactive Hanzi Writing Engine**: Integrated `hanzi-writer` for real-time stroke order visualization and canvas-based character writing validation.
+- **Advanced UX Features**: Implemented custom hooks for hotkey navigation (`useKeyboardShortcuts`) and virtual scrolling (`useVirtualScroll`) to handle large word lists efficiently without performance lag.
 
-1. **✅ Kiểm tra từ vựng**
-   - Hiển thị từ tiếng Trung và nghĩa tiếng Việt
-   - Yêu cầu nhập pinyin
-   - Tự động kiểm tra và chấm điểm
+---
 
-2. **🃏 Flashcard**
-   - Học từ vựng dạng thẻ
-   - Click để lật thẻ xem nghĩa và pinyin
-   - Theo dõi số từ đã học
+## 🌟 Key Features
+- **5 HSK Levels**: Pre-loaded vocabulary sets for HSK 1 through HSK 5.
+- **Multiple Learning Modes**:
+  - **Vocab Checks**: Test pinyin input with spelling normalization.
+  - **Meaning Quizzes**: Select/write the correct translation.
+  - **Stroke Practice**: Interactive canvas for drawing characters.
+  - **Sentence Practice**: Exercises for syntax, grammar, and building Chinese sentences.
+- **Spaced Repetition (SRS)**: Automatically schedules review cards depending on grading levels.
+- **Real-Time Translation**: Direct lookups with DeepL integration.
+- **Speech Synthesis (TTS)**: Clean audio pronunciations for vocabulary and sentences.
+- **Custom Content Manager**: Direct dashboard to add, edit, or import custom vocabulary and sentences.
+- **Analytics & History**: Track daily streaks, correct answer percentage, and HSK level completion progress.
 
-3. **✍️ Luyện viết**
-   - Hiển thị pinyin và nghĩa
-   - Yêu cầu nhập chữ Hán hoặc chọn đáp án
-   - Hai chế độ: nhập tay hoặc chọn đáp án
+---
 
-4. **🎲 Luyện tập ngẫu nhiên**
-   - Trộn các loại câu hỏi: pinyin, chữ Hán, nghĩa
-   - Tự động chuyển đổi giữa các dạng bài tập
-   - Luyện tập tổng hợp toàn diện
+## 🛠️ Tech Stack
+- **Frontend Core**: React 18, TypeScript, Vite
+- **Styling**: Custom CSS3 (CSS Variables, Responsive Layouts, Light/Dark Modes)
+- **Backend / Serverless**: Vercel Serverless Functions (Node.js)
+- **APIs & Tools**: DeepL API, Web Speech Synthesis / Custom TTS, Hanzi Writer, Pinyin-Pro
+- **Analytics & Data**: Vercel Analytics, Local JSON Dataset with XLSX & CSV importing pipelines
 
-## Cài đặt
+---
 
+## 📂 Project Architecture
+```text
+├── api/                  # Vercel Serverless API routes (TTS, DeepL)
+├── src/
+│   ├── components/       # UI Components (SRS, Character Writing, Sentences, Stats)
+│   ├── contexts/         # ThemeContext (Light/Dark themes)
+│   ├── data/             # Vocabulary and sentence datasets
+│   ├── hooks/            # Custom React hooks (shortcuts, virtualization)
+│   ├── utils/            # Helper utils (Pinyin normalization)
+│   ├── App.tsx           # Application root layout & routing
+│   ├── App.css           # Component styles
+│   └── index.css         # Theme-based CSS3 system and animations
+├── public/               # Static assets
+├── package.json          # Node dependencies and scripts
+└── vite.config.ts        # Vite build configuration
+```
+
+---
+
+## ⚙️ Quick Start
+
+### 1. Installation
 ```bash
-# Cài đặt dependencies
+# Clone the repository and install dependencies
 npm install
-
-# Chạy ứng dụng ở chế độ development
-npm run dev
-
-# Build ứng dụng
-npm run build
-
-# Preview build
-npm run preview
 ```
 
-### Cấu hình DeepL (Dịch thuật)
-
-DeepL chặn gọi trực tiếp từ browser (CORS), nên cần dùng proxy backend:
-
-1. **Deploy lên Vercel**: Vào Project > Settings > Environment Variables, thêm biến `DEEPL_API_KEY` với API key của bạn (key `:fx` = free).
-2. **Chạy local với DeepL**: Dùng `vercel dev` thay cho `npm run dev`, và tạo file `.env.local` với `DEEPL_API_KEY=...`.
-
-## Import Từ Vựng
-
-Thay vì nhập tay, bạn có thể import từ vựng từ CSV hoặc JSON:
-
-### Import từ CSV (Dễ nhất) ⭐
-
-1. Tạo file CSV với format:
-```csv
-level,chinese,pinyin,vietnamese
-hsk1,你好,nǐ hǎo,xin chào
-hsk1,再见,zài jiàn,tạm biệt
-```
-
-2. Chạy lệnh:
+### 2. Run Locally
+To run the full app locally with serverless function proxies (DeepL / TTS), use the Vercel CLI:
 ```bash
-npm run import:csv data/your-file.csv
+# Install Vercel CLI globally (if not already installed)
+npm install -g vercel
+
+# Run development server with Serverless Functions support
+vercel dev
 ```
+*(Alternatively, run `npm run dev` for frontend-only development).*
 
-### Import từ JSON
+---
 
-1. Tạo file JSON theo template
-2. Chạy lệnh:
-```bash
-npm run import:json data/your-file.json
-```
-
-
-**Nguồn dữ liệu gợi ý:**
-- Copy từ bảng Excel/Google Sheets
-- Tải từ các trang web HSK (HSK Academy, Laoshi.io)
-- Sử dụng file CSV/JSON có sẵn trên mạng
-
-## Công nghệ sử dụng
-
-- **React 18** - UI Framework
-- **TypeScript** - Type safety
-- **Vite** - Build tool
-- **CSS3** - Styling với gradient và animations
-
-## Cấu trúc dự án
-
-```
-src/
-├── components/          # Các components
-│   ├── TabNavigation.tsx
-│   ├── CheckVocabulary.tsx
-│   ├── Flashcard.tsx
-│   ├── PracticeWriting.tsx
-│   └── RandomPractice.tsx
-├── data/               # Dữ liệu từ vựng
-│   └── vocabulary.ts
-├── App.tsx            # Component chính
-├── App.css
-├── main.tsx           # Entry point
-└── index.css          # Global styles
-```
-
-## Sử dụng
-
-1. Chọn cấp độ HSK (1-5) ở tab navigation
-2. Chọn chức năng luyện tập mong muốn
-3. Bắt đầu học và luyện tập!
-
-## Ghi chú
-
-- Tất cả từ vựng được normalize (chuyển về lowercase, loại bỏ khoảng trắng thừa) khi so sánh đáp án
-- Pinyin có thể nhập với hoặc không có tone marks
-- Hỗ trợ cả chế độ nhập tay và chọn đáp án cho một số bài tập
-
-## Phát triển thêm
-
-Có thể mở rộng thêm:
-- Thêm nhiều từ vựng cho mỗi cấp độ
-- Thêm âm thanh phát âm
-- Lưu tiến độ học tập
-- Thống kê chi tiết
-- Chế độ luyện tập theo từ đã sai
-
+## 📄 License
+This project is licensed under the MIT License.
