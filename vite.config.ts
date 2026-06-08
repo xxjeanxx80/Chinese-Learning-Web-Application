@@ -42,7 +42,7 @@ function devTtsProxy() {
         }
 
         const googleUrl = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodedText}&tl=zh-CN&client=tw-ob`
-        const youdaoUrl = `https://dict.youdao.com/dictvoice?audio=${encodedText}&type=1`
+        const youdaoUrl = `https://dict.youdao.com/dictvoice?audio=${encodedText}&le=zh`
 
         let buffer: Buffer
         try {

@@ -82,7 +82,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   } catch {
     // Fallback: Youdao Dictionary TTS (also Mandarin)
     try {
-      const youdaoUrl = `https://dict.youdao.com/dictvoice?audio=${encodedText}&type=1`;
+      const youdaoUrl = `https://dict.youdao.com/dictvoice?audio=${encodedText}&le=zh`;
       const youdaoResponse = await fetch(youdaoUrl);
 
       if (!youdaoResponse.ok) {
