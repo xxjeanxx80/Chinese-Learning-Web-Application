@@ -4,7 +4,7 @@ import { getVocabulariesForLevel } from '../../utils/vocabularyStorage';
 import { markVocabularyLearned } from '../../utils/learnedItemsStorage';
 import { addStudySession } from '../../utils/statisticsStorage';
 import { saveSessionProgress, loadSessionProgress } from '../../utils/sessionProgressStorage';
-import { speakChinese } from '../../utils/speakChinese';
+import { speakChinese, preloadChineseAudio } from '../../utils/speakChinese';
 import StrokeOrderModal from '../StrokeOrderModal';
 import LearnedWordsPanel from '../LearnedWordsPanel';
 import './PracticeWriting.css';
@@ -32,6 +32,13 @@ const PracticeWriting: React.FC<PracticeWritingProps> = ({ level }) => {
   });
 
   const currentWord = vocabularies[currentIndex];
+
+  // Preload audio ngay khi từ mới hiển thị
+  useEffect(() => {
+    if (currentWord?.chinese) {
+      preloadChineseAudio(currentWord.chinese);
+    }
+  }, [currentWord]);
 
   // Save progress when wordResults changes
   useEffect(() => {

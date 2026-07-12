@@ -64,39 +64,3 @@ export function loadSessionProgress<T>(mode: string, level: string, subKey: stri
   }
   return defaultValue;
 }
-
-/**
- * Clear all session progress
- */
-export function clearAllSessionProgress(): void {
-  try {
-    const keys = Object.keys(localStorage);
-    keys.forEach(key => {
-      if (key.startsWith(SESSION_PREFIX)) {
-        localStorage.removeItem(key);
-      }
-    });
-  } catch (error) {
-    console.error('Error clearing all session progress:', error);
-  }
-}
-
-/**
- * Clear progress for a specific category (e.g., scores or flashcard)
- */
-export function clearSessionProgressByCategory(category: 'scores' | 'flashcard'): void {
-  try {
-    const keys = Object.keys(localStorage);
-    keys.forEach(key => {
-      if (key.startsWith(SESSION_PREFIX)) {
-        if (category === 'scores' && key.includes('_results')) {
-          localStorage.removeItem(key);
-        } else if (category === 'flashcard' && key.includes('_seen')) {
-          localStorage.removeItem(key);
-        }
-      }
-    });
-  } catch (error) {
-    console.error(`Error clearing session progress for category ${category}:`, error);
-  }
-}

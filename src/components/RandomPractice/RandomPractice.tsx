@@ -4,7 +4,7 @@ import { getVocabulariesForLevel } from '../../utils/vocabularyStorage';
 import { markVocabularyLearned } from '../../utils/learnedItemsStorage';
 import { addStudySession } from '../../utils/statisticsStorage';
 import { saveSessionProgress, loadSessionProgress } from '../../utils/sessionProgressStorage';
-import { speakChinese } from '../../utils/speakChinese';
+import { speakChinese, preloadChineseAudio } from '../../utils/speakChinese';
 import StrokeOrderModal from '../StrokeOrderModal';
 import LearnedWordsPanel from '../LearnedWordsPanel';
 import './RandomPractice.css';
@@ -40,6 +40,13 @@ const RandomPractice: React.FC<RandomPracticeProps> = ({ level }) => {
     return saved !== null ? JSON.parse(saved) : true;
   });
   const sessionStartTime = useRef<number>(Date.now());
+
+  // Preload audio ngay khi câu hỏi mới hiển thị
+  useEffect(() => {
+    if (currentQuestion?.word?.chinese) {
+      preloadChineseAudio(currentQuestion.word.chinese);
+    }
+  }, [currentQuestion]);
 
   // Save progress when wordResults changes
   useEffect(() => {

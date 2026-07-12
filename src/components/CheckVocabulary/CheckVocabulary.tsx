@@ -6,7 +6,7 @@ import { addWrongAnswer, markCorrect } from '../../utils/wrongAnswersStorage';
 import { markVocabularyLearned } from '../../utils/learnedItemsStorage';
 import { addStudySession } from '../../utils/statisticsStorage';
 import { saveSessionProgress, loadSessionProgress } from '../../utils/sessionProgressStorage';
-import { speakChinese } from '../../utils/speakChinese';
+import { speakChinese, preloadChineseAudio } from '../../utils/speakChinese';
 import StrokeOrderModal from '../StrokeOrderModal';
 import LearnedWordsPanel from '../LearnedWordsPanel';
 import './CheckVocabulary.css';
@@ -29,6 +29,13 @@ const CheckVocabulary: React.FC<CheckVocabularyProps> = ({ level }) => {
 
   // Memoize currentWord để tránh tính toán lại
   const currentWord = useMemo(() => vocabularies[currentIndex], [vocabularies, currentIndex]);
+
+  // Preload audio ngay khi từ mới hiển thị
+  useEffect(() => {
+    if (currentWord?.chinese) {
+      preloadChineseAudio(currentWord.chinese);
+    }
+  }, [currentWord]);
   
   // Save progress when wordResults changes
   useEffect(() => {

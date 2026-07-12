@@ -6,7 +6,7 @@ import { addStudySession } from '../../utils/statisticsStorage';
 import { addWrongSentence, markSentenceCorrect } from '../../utils/sentenceWrongAnswersStorage';
 import { markSentenceLearned } from '../../utils/learnedItemsStorage';
 import { saveSessionProgress, loadSessionProgress } from '../../utils/sessionProgressStorage';
-import { speakChinese } from '../../utils/speakChinese';
+import { speakChinese, preloadChineseAudio } from '../../utils/speakChinese';
 import StrokeOrderModal from '../StrokeOrderModal';
 import LearnedWordsPanel from '../LearnedWordsPanel';
 import './SentencePractice.css';
@@ -64,6 +64,13 @@ const SentencePractice: React.FC<SentencePracticeProps> = ({ level, currentTopic
   }, [showPinyin]);
   
   const currentSentence = sentences.length > 0 ? sentences[currentIndex] : null;
+
+  // Preload audio ngay khi câu mới hiển thị
+  useEffect(() => {
+    if (currentSentence?.chinese) {
+      preloadChineseAudio(currentSentence.chinese);
+    }
+  }, [currentSentence]);
 
   // Update practiceMode when initialMode prop changes
   useEffect(() => {

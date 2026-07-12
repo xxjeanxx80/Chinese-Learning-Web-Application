@@ -1,9 +1,9 @@
 /**
  * Speak Chinese text (Mandarin zh-CN).
- * Fast implementation using Baidu Fanyi TTS directly.
- * - Bypasses Brave's Google tracker block.
- * - Bypasses Brave's lack of built-in Web Speech voices.
- * - Accurate Mandarin pronunciation (fixes Youdao's "er" bug).
+ * - Gọi trực tiếp Baidu Fanyi TTS từ client (nhanh nhất, 1 hop).
+ * - Fallback qua Vercel proxy nếu client bị chặn.
+ * - Preload: fetch ngay khi hiển thị từ, phát tức thì khi click.
+ * - Cache blob URL để phát lại không cần request mạng.
  */
 
 const SILENT_KICKSTART = "data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQQAAAAAAA==";
@@ -12,11 +12,16 @@ let globalAudio: HTMLAudioElement | null = null;
 let isUnlocked = false;
 let isUnlocking = false;
 
-// Initialization and Unlocking
+// Cache: text -> blob URL
+const audioCache = new Map<string, string>();
+// Set các text đang được fetch, tránh fetch trùng lặp
+const pendingFetches = new Set<string>();
+
+// Initialization và Unlock audio context
 if (typeof window !== 'undefined') {
   const init = () => {
     globalAudio = document.getElementById('global-tts-player') as HTMLAudioElement;
-    
+
     const unlock = () => {
       if (isUnlocked || isUnlocking) return;
       isUnlocking = true;
@@ -41,7 +46,7 @@ if (typeof window !== 'undefined') {
         isUnlocking = false;
       }
     };
-    
+
     window.addEventListener('click', unlock);
     window.addEventListener('touchstart', unlock);
   };
@@ -53,9 +58,128 @@ if (typeof window !== 'undefined') {
   }
 }
 
+/**
+ * Lấy URL Baidu TTS. Ưu tiên gọi thẳng từ client để nhanh nhất.
+ * Fallback qua Vercel proxy nếu bị chặn.
+ */
+function getBaiduTtsUrl(text: string): { url: string; isDirect: boolean } {
+  const encodedText = encodeURIComponent(text);
+
+  // Ưu tiên gọi thẳng Baidu (1 hop, nhanh hơn proxy 2 hop)
+  return {
+    url: `https://fanyi.baidu.com/gettts?lan=zh&text=${encodedText}&spd=5&source=web`,
+    isDirect: true
+  };
+}
+
+/**
+ * Fetch audio từ URL và trả về blob URL.
+ */
+async function fetchAudioBlob(url: string): Promise<string> {
+  const response = await fetch(url, {
+    headers: {
+      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+      'Referer': 'https://fanyi.baidu.com/'
+    }
+  });
+
+  if (!response.ok) throw new Error(`HTTP ${response.status}`);
+  return URL.createObjectURL(await response.blob());
+}
+
+/**
+ * Fetch và cache audio cho text.
+ * Dùng chung cho cả preload và speak.
+ */
+async function fetchAndCacheAudio(text: string): Promise<string | null> {
+  // Kiểm tra cache trước
+  if (audioCache.has(text)) {
+    return audioCache.get(text)!;
+  }
+
+  // Tránh fetch trùng lặp
+  if (pendingFetches.has(text)) {
+    // Chờ một chút rồi thử lại (đang có fetch khác chạy)
+    await new Promise(r => setTimeout(r, 50));
+    if (audioCache.has(text)) return audioCache.get(text)!;
+    return null;
+  }
+
+  pendingFetches.add(text);
+
+  try {
+    // Thử gọi thẳng Baidu từ client (1 hop, nhanh nhất)
+    const { url } = getBaiduTtsUrl(text);
+    let blobUrl: string;
+    
+    try {
+      blobUrl = await fetchAudioBlob(url);
+    } catch (directErr) {
+      // Fallback qua Vercel proxy nếu client bị chặn
+      const encodedText = encodeURIComponent(text);
+      const proxyUrl = `/api/tts?text=${encodedText}`;
+      blobUrl = await fetchAudioBlob(proxyUrl);
+    }
+
+    audioCache.set(text, blobUrl);
+
+    // Giới hạn cache: tối đa 200 entries
+    if (audioCache.size > 200) {
+      const firstKey = audioCache.keys().next().value;
+      if (firstKey) {
+        const oldUrl = audioCache.get(firstKey);
+        if (oldUrl) URL.revokeObjectURL(oldUrl);
+        audioCache.delete(firstKey);
+      }
+    }
+
+    return blobUrl;
+  } catch (err) {
+    console.warn('TTS fetch failed:', err);
+    return null;
+  } finally {
+    pendingFetches.delete(text);
+  }
+}
+
+function playAudioFromUrl(url: string): void {
+  if (!globalAudio) return;
+
+  globalAudio.pause();
+  globalAudio.currentTime = 0;
+  globalAudio.playbackRate = 0.85;
+  globalAudio.src = url;
+
+  const playPromise = globalAudio.play();
+
+  if (playPromise !== undefined) {
+    playPromise.catch((err) => {
+      console.warn('Audio play failed:', err);
+    });
+  }
+}
+
+/**
+ * Preload audio trong background. Gọi ngay khi từ/câu hiển thị.
+ * Khi user click speak, audio đã sẵn sàng trong cache.
+ */
+export function preloadChineseAudio(text: string): void {
+  if (!text) return;
+  if (audioCache.has(text)) return;
+  if (pendingFetches.has(text)) return;
+
+  // Fire and forget - fetch trong background
+  fetchAndCacheAudio(text).catch(() => {});
+}
+
+/**
+ * Phát âm tiếng Trung.
+ * Nếu đã cached/preloaded: phát ngay lập tức.
+ * Nếu chưa: fetch rồi phát (sẽ có độ trễ lần đầu).
+ */
 export const speakChinese = (text: string): void => {
   if (!text) return;
-  
+
   if (!globalAudio) {
     globalAudio = document.getElementById('global-tts-player') as HTMLAudioElement;
     if (!globalAudio) {
@@ -64,31 +188,21 @@ export const speakChinese = (text: string): void => {
     }
   }
 
-  const encodedText = encodeURIComponent(text);
-  
-  // Dùng API Proxy nội bộ để gọi Baidu Fanyi.
-  // Lý do: 
-  // 1. Dùng proxy để bypass mọi lỗi CSP (Content Security Policy) trên trình duyệt.
-  // 2. Trình duyệt Brave sẽ không block request vì đây là request nội bộ (cùng domain).
-  // 3. Server Vercel gọi Baidu không bị chặn IP (như Google).
-  const proxyUrl = `/api/tts?text=${encodedText}`;
-
-  globalAudio.pause();
-  globalAudio.currentTime = 0;
-  
-  // Giảm tốc độ đọc xuống 85% để dễ nghe hơn
-  globalAudio.playbackRate = 0.85;
-  globalAudio.src = proxyUrl;
-  globalAudio.load();
-  
-  const playPromise = globalAudio.play();
-  
-  if (playPromise !== undefined) {
-    playPromise.catch((err) => {
-      console.warn('Baidu TTS failed, falling back to Web Speech API.', err);
-      fallbackWebSpeech(text);
-    });
+  // Nếu đã có trong cache, phát ngay lập tức
+  const cached = audioCache.get(text);
+  if (cached) {
+    playAudioFromUrl(cached);
+    return;
   }
+
+  // Chưa có cache, fetch và phát
+  fetchAndCacheAudio(text).then((blobUrl) => {
+    if (blobUrl) {
+      playAudioFromUrl(blobUrl);
+    } else {
+      fallbackWebSpeech(text);
+    }
+  });
 };
 
 function fallbackWebSpeech(text: string): void {
@@ -98,7 +212,6 @@ function fallbackWebSpeech(text: string): void {
     window.speechSynthesis.cancel();
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.lang = 'zh-CN';
-    // Web speech rate (0.1 to 10). 0.8 is slightly slower than normal.
     utterance.rate = 0.8;
     utterance.volume = 1;
 

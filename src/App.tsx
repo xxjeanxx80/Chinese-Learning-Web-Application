@@ -150,7 +150,7 @@ function App() {
               ☰
             </button>
             <div className="logo-container">
-              <img src="/logo.gif" alt="MikuHan Logo" className="app-logo" />
+              <img src="/hero_chara.png" alt="MikuHan Logo" className="app-logo" />
             </div>
             <h1>MikuHan</h1>
           </div>
