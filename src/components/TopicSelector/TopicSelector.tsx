@@ -1,4 +1,3 @@
-import { useState, useEffect, useRef } from 'react';
 import type React from 'react';
 import { getTopicsForLevel } from '../../utils/sentenceStorage';
 import './TopicSelector.css';
@@ -11,11 +10,11 @@ interface TopicSelectorProps {
 
 const getTopicName = (topic: string): string => {
   const topicMap: { [key: string]: string } = {
-    'office': 'Giao tiếp công sở',
-    'social': 'Giao tiếp xã hội',
-    'school': 'Giao tiếp trường lớp',
-    'shopping': 'Giao tiếp mua bán',
-    'daily': 'Giao tiếp hàng ngày',
+    'office': 'Công sở',
+    'social': 'Xã hội',
+    'school': 'Trường lớp',
+    'shopping': 'Mua bán',
+    'daily': 'Hàng ngày',
     'travel': 'Du lịch',
     'food': 'Ẩm thực',
     'health': 'Sức khỏe'
@@ -24,76 +23,31 @@ const getTopicName = (topic: string): string => {
 };
 
 const TopicSelector: React.FC<TopicSelectorProps> = ({ currentLevel, currentTopic, onTopicChange }) => {
-  const [isOpen, setIsOpen] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
   const topics = getTopicsForLevel(currentLevel);
-
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setIsOpen(false);
-      }
-    };
-
-    if (isOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
-    }
-
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [isOpen]);
-
-  const handleTopicSelect = (topic: string) => {
-    onTopicChange(topic);
-    setIsOpen(false);
-  };
 
   if (topics.length === 0) {
     return null;
   }
 
-  const currentTopicName = currentTopic ? getTopicName(currentTopic) : 'Tất cả chủ đề';
-
   return (
-    <div className="topic-selector-wrapper" ref={dropdownRef}>
+    <div className="topic-level-list">
       <button
-        className="topic-selector-button"
-        onClick={() => setIsOpen(!isOpen)}
+        className={`topic-level-pill ${!currentTopic ? 'active' : ''}`}
+        onClick={() => onTopicChange('')}
       >
-        <span className="topic-selector-icon">📂</span>
-        <span className="topic-selector-label">{currentTopicName}</span>
-        <span className="topic-selector-arrow">{isOpen ? '▲' : '▼'}</span>
+        <span className="topic-dot"></span>
+        <span className="topic-label">Tất cả chủ đề</span>
       </button>
-
-      {isOpen && (
-        <div className="topic-dropdown-menu">
-          <button
-            className={`topic-dropdown-item ${!currentTopic ? 'active' : ''}`}
-            onClick={() => handleTopicSelect('')}
-          >
-            <span className="topic-dropdown-icon">📚</span>
-            <span className="topic-dropdown-label">Tất cả chủ đề</span>
-            {!currentTopic && (
-              <span className="topic-dropdown-check">✓</span>
-            )}
-          </button>
-          {topics.map((topic) => (
-            <button
-              key={topic}
-              className={`topic-dropdown-item ${currentTopic === topic ? 'active' : ''}`}
-              onClick={() => handleTopicSelect(topic)}
-            >
-              <span className="topic-dropdown-icon">📂</span>
-              <span className="topic-dropdown-label">{getTopicName(topic)}</span>
-              {currentTopic === topic && (
-                <span className="topic-dropdown-check">✓</span>
-              )}
-            </button>
-          ))}
-          
-        </div>
-      )}
+      {topics.map((topic) => (
+        <button
+          key={topic}
+          className={`topic-level-pill ${currentTopic === topic ? 'active' : ''}`}
+          onClick={() => onTopicChange(topic)}
+        >
+          <span className="topic-dot"></span>
+          <span className="topic-label">{getTopicName(topic)}</span>
+        </button>
+      ))}
     </div>
   );
 };

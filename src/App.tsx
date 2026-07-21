@@ -1,5 +1,6 @@
 import { useState, lazy, Suspense, useMemo, useEffect } from 'react';
 import './App.css';
+import './AppNew.css';
 import HSKLevelSelector from './components/HSKLevelSelector';
 import TopicSelector from './components/TopicSelector';
 import { useTheme } from './contexts/ThemeContext';
@@ -13,7 +14,7 @@ import { useAppNavigation } from './hooks/useAppNavigation';
 import { useCustomBackground } from './hooks/useCustomBackground';
 import { Analytics } from '@vercel/analytics/react';
 
-// Lazy load components để giảm bundle size ban đầu
+// Lazy load components
 const CheckVocabulary = lazy(() => import('./components/CheckVocabulary'));
 const PracticeWriting = lazy(() => import('./components/PracticeWriting'));
 const PracticeMeaning = lazy(() => import('./components/PracticeMeaning'));
@@ -25,15 +26,10 @@ const RandomSentencePractice = lazy(() => import('./components/RandomSentencePra
 const Translate = lazy(() => import('./components/Translate'));
 const StatisticsDashboard = lazy(() => import('./components/StatisticsDashboard'));
 
-// Loading component đơn giản
 const ComponentLoader = () => (
-  <div style={{ 
-    display: 'flex', 
-    justifyContent: 'center', 
-    alignItems: 'center', 
-    minHeight: '400px',
-    fontSize: '1.2rem',
-    color: '#666'
+  <div style={{
+    display: 'flex', justifyContent: 'center', alignItems: 'center',
+    minHeight: '400px', fontSize: '1.2rem', color: '#666'
   }}>
     Đang tải...
   </div>
@@ -44,85 +40,58 @@ function App() {
   const [showShortcutsModal, setShowShortcutsModal] = useState(false);
   const [showSupportModal, setShowSupportModal] = useState(false);
   const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false);
+  const [isLearnedWordsOpen, setIsLearnedWordsOpen] = useState(false);
 
   const {
-    currentLevel,
-    setCurrentLevel,
-    currentFunction,
-    handleFunctionChange,
-    expandedMenu,
-    setExpandedMenu,
-    currentTopic,
-    setCurrentTopic
+    currentLevel, setCurrentLevel,
+    currentFunction, handleFunctionChange,
+    expandedMenu, setExpandedMenu,
+    currentTopic, setCurrentTopic
   } = useAppNavigation();
 
   const {
-    customBackground,
-    handleBackgroundUpload,
-    removeCustomBackground
+    customBackground, handleBackgroundUpload, removeCustomBackground
   } = useCustomBackground();
 
   const renderFunction = useMemo(() => {
     const props = { level: currentLevel };
     const managerProps = { currentLevel };
-    const sentenceProps = { 
-      level: currentLevel, 
-      currentTopic, 
-      onTopicChange: setCurrentTopic 
-    };
-    const sentenceManagerProps = {
-      currentLevel,
-      currentTopic,
+    const sentenceProps = {
+      level: currentLevel, currentTopic,
       onTopicChange: setCurrentTopic
     };
-    
+    const sentenceManagerProps = {
+      currentLevel, currentTopic,
+      onTopicChange: setCurrentTopic
+    };
+
     switch (currentFunction) {
-      case 'vocabulary':
-        return <CheckVocabulary {...props} />;
-      case 'writing':
-        return <PracticeWriting {...props} />;
-      case 'meaning':
-        return <PracticeMeaning {...props} />;
-      case 'random':
-        return <RandomPractice {...props} />;
-      case 'manage':
-        return <VocabularyManager {...managerProps} />;
-      case 'sentence-pinyin':
-        return <SentencePractice {...sentenceProps} initialMode="pinyin" />;
-      case 'sentence-writing':
-        return <SentencePractice {...sentenceProps} initialMode="writing" />;
-      case 'sentence-meaning':
-        return <SentencePractice {...sentenceProps} initialMode="meaning" />;
-      case 'sentence-random':
-        return <RandomSentencePractice {...sentenceProps} />;
-      case 'sentence-manage':
-        return <SentenceManager {...sentenceManagerProps} />;
-      case 'translate':
-        return <Translate currentLevel={currentLevel} />;
-      case 'statistics':
-        return <StatisticsDashboard currentLevel={currentLevel} />;
-      default:
-        return <CheckVocabulary {...props} />;
+      case 'vocabulary':        return <CheckVocabulary {...props} />;
+      case 'writing':           return <PracticeWriting {...props} />;
+      case 'meaning':           return <PracticeMeaning {...props} />;
+      case 'random':            return <RandomPractice {...props} />;
+      case 'manage':            return <VocabularyManager {...managerProps} />;
+      case 'sentence-pinyin':   return <SentencePractice {...sentenceProps} initialMode="pinyin" />;
+      case 'sentence-writing':  return <SentencePractice {...sentenceProps} initialMode="writing" />;
+      case 'sentence-meaning':  return <SentencePractice {...sentenceProps} initialMode="meaning" />;
+      case 'sentence-random':   return <RandomSentencePractice {...sentenceProps} />;
+      case 'sentence-manage':   return <SentenceManager {...sentenceManagerProps} />;
+      case 'translate':         return <Translate currentLevel={currentLevel} />;
+      case 'statistics':        return <StatisticsDashboard currentLevel={currentLevel} />;
+      default:                  return <CheckVocabulary {...props} />;
     }
   }, [currentFunction, currentLevel, currentTopic, setCurrentTopic]);
 
-  // Keyboard shortcuts
   useKeyboardShortcuts({
     onCtrlK: () => {
-      // Focus vào search box nếu có
       const searchInput = document.querySelector('.search-input') as HTMLInputElement;
-      if (searchInput) {
-        searchInput.focus();
-      }
+      if (searchInput) searchInput.focus();
     },
     onEscape: () => {
-      if (showShortcutsModal) {
-        setShowShortcutsModal(false);
-      }
+      if (showShortcutsModal) setShowShortcutsModal(false);
     },
   });
 
-  // Ctrl+/ or Cmd+/ để mở shortcuts modal
   useEffect(() => {
     const handleShortcutsModal = (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && e.key === '/') {
@@ -131,17 +100,15 @@ function App() {
       }
     };
     document.addEventListener('keydown', handleShortcutsModal);
-    return () => {
-      document.removeEventListener('keydown', handleShortcutsModal);
-    };
+    return () => document.removeEventListener('keydown', handleShortcutsModal);
   }, []);
 
   return (
-    <div className="app">
+    <div className="app-new">
       <header className="app-header">
         <div className="header-content">
           <div className="header-title">
-            <button 
+            <button
               className="mobile-menu-btn"
               onClick={() => setIsMobileDrawerOpen(true)}
               aria-label="Mở menu"
@@ -150,21 +117,12 @@ function App() {
               ☰
             </button>
             <div className="logo-container">
-              <img src="/hero_chara.png" alt="MikuHan Logo" className="app-logo" />
+              <img src="/mikulogo.jpg" alt="MikuHan Logo" className="app-logo" />
             </div>
             <h1>MikuHan</h1>
           </div>
           <div className="header-actions">
-            <button
-              onClick={() => setShowSupportModal(true)}
-              className="btn-support-header"
-              title="Buying miku a Milkkkkkkkiiuu"
-            >
-              <span>🥛</span>
-              <span className="support-text">Buying miku a Milkkkkkkkiiuu</span>
-              <span>🥛</span>
-            </button>
-            <HSKLevelSelector 
+            <HSKLevelSelector
               currentLevel={currentLevel}
               onLevelChange={setCurrentLevel}
             />
@@ -186,21 +144,29 @@ function App() {
                   🗑️
                 </button>
               ) : (
-                <label 
-                  className="btn-theme-toggle" 
+                <label
+                  className="btn-theme-toggle"
                   title="Tải lên ảnh nền (Dưới 5MB)"
                   style={{ cursor: 'pointer' }}
                 >
-                  <input 
-                    type="file" 
-                    accept="image/*" 
-                    onChange={handleBackgroundUpload} 
-                    style={{ display: 'none' }} 
+                  <input
+                    type="file" accept="image/*"
+                    onChange={handleBackgroundUpload}
+                    style={{ display: 'none' }}
                   />
                   🖼️
                 </label>
               )}
               
+              <button
+                onClick={() => setIsLearnedWordsOpen(prev => !prev)}
+                className={`btn-theme-toggle btn-learned-toggle ${isLearnedWordsOpen ? 'active' : ''}`}
+                title="Xem danh sách từ/câu đã học hoặc sai"
+                aria-label="Toggle learned words panel"
+              >
+                📖
+              </button>
+
               <button
                 onClick={toggleTheme}
                 className="btn-theme-toggle"
@@ -214,12 +180,11 @@ function App() {
         </div>
       </header>
 
-      {/* Mobile Drawer */}
-      <MobileDrawer 
-        isOpen={isMobileDrawerOpen} 
+      <MobileDrawer
+        isOpen={isMobileDrawerOpen}
         onClose={() => setIsMobileDrawerOpen(false)}
       >
-        <Sidebar 
+        <Sidebar
           currentFunction={currentFunction}
           expandedMenu={expandedMenu}
           onFunctionChange={(func) => handleFunctionChange(func, () => setIsMobileDrawerOpen(false))}
@@ -228,14 +193,23 @@ function App() {
       </MobileDrawer>
 
       <div className="app-layout">
-        {/* Desktop Sidebar - Ẩn trên mobile */}
         <aside className="sidebar desktop-sidebar">
-          <Sidebar 
+          <Sidebar
             currentFunction={currentFunction}
             expandedMenu={expandedMenu}
             onFunctionChange={handleFunctionChange}
             onToggleMenu={setExpandedMenu}
           />
+          <button
+            onClick={() => setShowSupportModal(true)}
+            className="btn-support-sidebar"
+            title="Buying miku a Milkkkkkkkiiuu"
+          >
+            <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" className="heart-icon" style={{ marginRight: '6px' }}>
+              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+            </svg>
+            <span className="support-text">Miku Support</span>
+          </button>
         </aside>
 
         <main className="app-main">
@@ -243,20 +217,24 @@ function App() {
             {renderFunction}
           </Suspense>
         </main>
-
-        {/* Portal target for right sidebar (LearnedWordsPanel) */}
-        <div id="right-sidebar-portal" />
+        
+        <div className={`learned-words-drawer ${isLearnedWordsOpen ? 'open' : ''}`}>
+          <div className="drawer-overlay" onClick={() => setIsLearnedWordsOpen(false)} />
+          <div className="drawer-content">
+            <button className="drawer-close-btn" onClick={() => setIsLearnedWordsOpen(false)}>×</button>
+            <div id="right-sidebar-portal" />
+          </div>
+        </div>
       </div>
 
-      {/* Bottom Navigation Bar - Chỉ hiện trên mobile */}
-      <BottomNavBar 
+      <BottomNavBar
         currentFunction={currentFunction}
         onFunctionChange={handleFunctionChange}
       />
 
-      <KeyboardShortcutsModal 
-        isOpen={showShortcutsModal} 
-        onClose={() => setShowShortcutsModal(false)} 
+      <KeyboardShortcutsModal
+        isOpen={showShortcutsModal}
+        onClose={() => setShowShortcutsModal(false)}
       />
 
       {showSupportModal && (
@@ -267,5 +245,6 @@ function App() {
     </div>
   );
 }
+
 
 export default App;

@@ -1,0 +1,1163 @@
+/* ============================================
+   MikuHan — Hatsune Miku Teal & Glass UI (NewVersion)
+   Miku Teal (#39C5BB) accent color, Liquid Glass 2.0,
+   smooth rounded corners, fluid transitions.
+   ============================================ */
+
+.app-new {
+  /* Design Variables - Hatsune Miku Teal Theme */
+  --accent-primary: #39C5BB;
+  --accent-primary-hover: #29b3aa;
+  --accent-subtle: rgba(57, 197, 187, 0.12);
+  --accent-subtle-hover: rgba(57, 197, 187, 0.22);
+  
+  /* Liquid Mesh Background Colors (Miku Theme) */
+  --mesh-bg: #e7f7f6; /* Very soft light teal-gray */
+  --mesh-1: rgba(57, 197, 187, 0.2);
+  --mesh-2: rgba(52, 199, 89, 0.12);
+  --mesh-3: rgba(0, 180, 216, 0.15);
+  --mesh-4: rgba(90, 200, 250, 0.15);
+  
+  --surface-glass: rgba(255, 255, 255, 0.22);
+  --surface-glass-card: rgba(255, 255, 255, 0.35);
+
+  min-height: 100vh;
+  background-color: var(--mesh-bg);
+  background-image: 
+    radial-gradient(ellipse at 10% 20%, var(--mesh-1) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 80%, var(--mesh-2) 0%, transparent 60%),
+    radial-gradient(ellipse at 90% 10%, var(--mesh-3) 0%, transparent 50%),
+    radial-gradient(ellipse at 30% 90%, var(--mesh-4) 0%, transparent 60%);
+  background-attachment: fixed;
+  background-size: 200% 200%;
+  animation: liquidBg 25s ease-in-out infinite alternate;
+  color: var(--text-primary);
+  transition: background 0.6s cubic-bezier(0.16, 1, 0.3, 1), color 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  overflow-x: hidden;
+  width: 100%;
+}
+
+:root.dark .app-new {
+  /* Design Variables (Dark Mode) */
+  --accent-primary: #39C5BB;
+  --accent-primary-hover: #4de5db;
+  --accent-subtle: rgba(57, 197, 187, 0.1);
+  --accent-subtle-hover: rgba(57, 197, 187, 0.2);
+  
+  /* Liquid Mesh Background (Deep Dark Navy + Teal) */
+  --mesh-bg: #061520; /* Deep dark ocean teal */
+  --mesh-1: rgba(57, 197, 187, 0.25);
+  --mesh-2: rgba(48, 209, 88, 0.12);
+  --mesh-3: rgba(0, 150, 199, 0.2);
+  --mesh-4: rgba(0, 30, 60, 0.4);
+  
+  --surface-glass: rgba(12, 28, 38, 0.4);
+  --surface-glass-card: rgba(22, 42, 54, 0.55);
+}
+
+
+/* ------- Header ------- */
+.app-new .app-header {
+  color: var(--text-primary);
+  padding: 14px 28px;
+  background: rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(50px) saturate(180%);
+  -webkit-backdrop-filter: blur(50px) saturate(180%);
+  border-bottom: 0.5px solid rgba(120, 130, 150, 0.15);
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.03);
+  margin: 0;
+  position: relative;
+  z-index: 1100;
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.app-new .header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 20px;
+  max-width: 100%;
+  width: 100%;
+  margin: 0 auto;
+}
+
+.app-new .header-title {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex: 1;
+  min-width: 280px;
+}
+
+.app-new .header-title h1 {
+  font-size: 1.5rem;
+  margin: 0;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -0.5px;
+}
+
+.app-new .logo-container {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.08);
+  transition: transform 0.2s ease;
+}
+
+.app-new .logo-container:hover {
+  transform: scale(1.05);
+}
+
+.app-new .app-logo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.app-new .header-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+/* ------- Buttons (header) ------- */
+.app-new .btn-theme-toggle,
+.app-new .btn-support-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 40px;
+  min-width: 40px;
+  padding: 0 16px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  border: 1px solid rgba(130, 140, 160, 0.2);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  backdrop-filter: blur(20px);
+  white-space: nowrap;
+  letter-spacing: 0.2px;
+}
+
+.app-new .btn-theme-toggle:hover,
+.app-new .btn-support-header:hover {
+  background: rgba(255, 255, 255, 0.15);
+  color: var(--text-primary);
+  border-color: rgba(130, 140, 160, 0.35);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+}
+
+.app-new .btn-theme-toggle:active {
+  transform: scale(0.96);
+}
+
+.app-new .btn-support-header .support-text {
+  display: inline-block;
+}
+
+.app-new .btn-support-header span:first-child,
+.app-new .btn-support-header span:last-child {
+  font-size: 1rem;
+}
+
+/* ------- Mobile Menu Button ------- */
+.app-new .mobile-menu-btn {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  margin-right: 10px;
+  border: 1px solid rgba(130, 140, 160, 0.2);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text-primary);
+  font-size: 1.3rem;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  padding: 0;
+  line-height: 1;
+}
+
+.app-new .mobile-menu-btn:hover {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(130, 140, 160, 0.35);
+}
+
+/* ------- Layout ------- */
+.app-new .app-layout {
+  display: flex;
+  max-width: 100%;
+  width: 100%;
+  margin: 0 auto;
+  gap: 20px;
+  padding: 20px;
+  min-height: calc(100vh - 120px);
+}
+
+/* ------- Sidebar ------- */
+.app-new .sidebar {
+  width: 260px;
+  flex-shrink: 0;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(130, 140, 160, 0.12);
+  backdrop-filter: blur(50px) saturate(180%);
+  -webkit-backdrop-filter: blur(50px) saturate(180%);
+  border-radius: 20px;
+  padding: 20px 16px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  height: calc(100vh - 120px);
+  position: sticky;
+  top: 20px;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  color: var(--text-primary);
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.app-new .sidebar-title {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--accent-primary);
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  margin: 0 0 16px 4px;
+  padding-left: 10px;
+  border-left: 3px solid var(--accent-primary);
+  opacity: 0.9;
+  font-family: var(--font-primary);
+  transition: color 0.3s ease, border-color 0.3s ease;
+  text-align: left;
+}
+
+.app-new .sidebar-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  position: relative;
+  padding-left: 18px;
+}
+
+.app-new .sidebar-menu::before {
+  content: '';
+  position: absolute;
+  top: -12px;
+  left: 5px;
+  width: 2px;
+  height: calc(100% - 20px);
+  background: linear-gradient(to bottom, var(--accent-primary) 0%, rgba(57, 197, 187, 0.15) 100%);
+  border-radius: 99px;
+  pointer-events: none;
+}
+
+.app-new .menu-group {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  position: relative;
+}
+
+.app-new .menu-group::before {
+  content: '';
+  position: absolute;
+  top: 18px;
+  left: -13px;
+  width: 12px;
+  height: 2px;
+  background: rgba(57, 197, 187, 0.3);
+  pointer-events: none;
+}
+
+.app-new .menu-group-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border: none;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  text-align: left;
+  font-size: 0.9rem;
+  font-weight: 650;
+  width: 100%;
+  letter-spacing: 0.2px;
+}
+
+.app-new .menu-group-header:hover {
+  background: rgba(0, 0, 0, 0.03);
+}
+
+.app-new .menu-arrow {
+  margin-left: auto;
+  font-size: 0.65rem;
+  transition: transform 0.25s ease;
+  opacity: 0.4;
+}
+
+.app-new .menu-submenu {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-left: 20px;
+  padding-left: 12px;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.app-new .menu-submenu::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 1.5px;
+  height: calc(100% - 16px);
+  background: rgba(57, 197, 187, 0.25);
+  border-radius: 99px;
+  pointer-events: none;
+}
+
+
+.app-new .menu-submenu.expanded {
+  max-height: 400px;
+  opacity: 1;
+  margin-top: 4px;
+  transform: translateY(0);
+}
+
+.app-new .menu-submenu.collapsed {
+  max-height: 0;
+  opacity: 0;
+  margin-top: 0;
+  transform: translateY(-8px);
+  pointer-events: none;
+}
+
+.app-new .menu-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 14px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  text-align: left;
+  font-size: 0.875rem;
+  font-weight: 550;
+  width: 100%;
+  letter-spacing: 0.1px;
+  position: relative;
+}
+
+.app-new .menu-submenu .menu-item::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: -12px;
+  width: 12px;
+  height: 1.5px;
+  background: rgba(57, 197, 187, 0.25);
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+.app-new .menu-item:hover {
+  background: rgba(0, 0, 0, 0.04);
+  color: var(--text-primary);
+}
+
+.app-new .menu-item:active {
+  transform: scale(0.98);
+}
+
+.app-new .menu-item.active {
+  background: var(--accent-primary);
+  color: white;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.2);
+}
+
+.app-new .menu-item-standalone {
+  margin-left: 0 !important;
+  margin-top: 8px;
+  border-top: 1px solid rgba(130, 140, 160, 0.1);
+  padding-top: 12px;
+}
+
+.app-new .menu-icon {
+  font-size: 1.1rem;
+  width: 22px;
+  text-align: center;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.7;
+}
+
+.app-new .menu-text {
+  flex: 1;
+  font-size: inherit;
+  font-weight: inherit;
+  letter-spacing: inherit;
+}
+
+/* ------- Main Content ------- */
+.app-new .app-main {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(130, 140, 160, 0.12);
+  backdrop-filter: blur(50px) saturate(180%);
+  -webkit-backdrop-filter: blur(50px) saturate(180%);
+  border-radius: 20px;
+  padding: 40px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  min-height: 600px;
+  color: var(--text-primary);
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+  box-sizing: border-box;
+}
+
+/* ------- Responsive ------- */
+@media (max-width: 768px) {
+  .app-new .mobile-menu-btn {
+    display: flex;
+  }
+
+  .app-new .desktop-sidebar {
+    display: none;
+  }
+
+  .app-new .header-title {
+    display: flex;
+    align-items: center;
+    width: auto;
+    flex: 1;
+    margin-bottom: 0;
+  }
+
+  .app-new .header-title h1 {
+    font-size: 1.2rem;
+    margin: 0;
+  }
+
+  .app-new .header-actions {
+    flex-wrap: nowrap;
+    gap: 6px;
+    width: auto;
+    justify-content: flex-end;
+  }
+
+  .app-new .btn-support-header {
+    padding: 0 10px;
+    font-size: 0.8rem;
+    gap: 3px;
+    width: auto;
+  }
+
+  .app-new .btn-support-header .support-text {
+    display: none;
+  }
+
+  .app-new .btn-theme-toggle {
+    height: 36px;
+    min-width: 36px;
+    padding: 0;
+    font-size: 1rem;
+  }
+
+  .app-new .app-layout {
+    padding: 12px;
+    padding-bottom: 80px;
+    gap: 12px;
+  }
+
+  .app-new .app-header {
+    padding: 10px 14px;
+  }
+
+  .app-new .header-content {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .app-new .app-main {
+    padding: 16px 12px;
+    border-radius: 16px;
+  }
+
+  .app-new .ui-toggle-btn {
+    top: 10px;
+    right: 10px;
+    padding: 6px 12px;
+    font-size: 0.75rem;
+  }
+}
+
+@media (max-width: 1024px) and (min-width: 769px) {
+  .app-new .app-layout {
+    flex-direction: column;
+  }
+
+  .app-new .sidebar {
+    width: 100%;
+    position: static;
+    height: auto !important;
+  }
+
+  .app-new .sidebar-menu {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+
+  .app-new .menu-item {
+    padding: 8px 10px;
+    font-size: 0.85rem;
+  }
+}
+
+/* ------- Slide-out Drawer cho bảng từ đã học ------- */
+.learned-words-drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 2000;
+  visibility: hidden;
+  pointer-events: none;
+  transition: visibility 0.4s;
+}
+
+.learned-words-drawer.open {
+  visibility: visible;
+  pointer-events: auto;
+}
+
+.drawer-overlay {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  background: rgba(0, 10, 20, 0.3);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  opacity: 0;
+  transition: opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.learned-words-drawer.open .drawer-overlay {
+  opacity: 1;
+}
+
+.drawer-content {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 340px;
+  background: rgba(255, 255, 255, 0.4);
+  backdrop-filter: blur(50px) saturate(180%);
+  -webkit-backdrop-filter: blur(50px) saturate(180%);
+  border-left: 1px solid rgba(255, 255, 255, 0.25);
+  box-shadow: -8px 0 32px rgba(0, 10, 25, 0.15);
+  transform: translateX(100%);
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  flex-direction: column;
+  padding: 20px 10px;
+  box-sizing: border-box;
+}
+
+:root.dark .drawer-content {
+  background: rgba(12, 28, 38, 0.7);
+  border-left-color: rgba(255, 255, 255, 0.08);
+  box-shadow: -8px 0 32px rgba(0, 0, 0, 0.5);
+}
+
+.learned-words-drawer.open .drawer-content {
+  transform: translateX(0);
+}
+
+.drawer-close-btn {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 1px solid rgba(130, 140, 160, 0.2);
+  background: rgba(255, 255, 255, 0.15);
+  color: var(--text-primary);
+  font-size: 1.1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 10;
+  transition: all 0.2s;
+  padding-bottom: 2px;
+}
+
+.drawer-close-btn:hover {
+  background: var(--accent-primary);
+  color: white;
+  border-color: var(--accent-primary);
+}
+
+/* integration với LearnedWordsPanel inside the drawer */
+.drawer-content #right-sidebar-portal {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  margin-top: 20px;
+}
+
+.drawer-content .learned-panel {
+  width: 100% !important;
+  height: 100% !important;
+  max-height: calc(100vh - 80px) !important;
+  position: static !important;
+  box-shadow: none !important;
+  background: transparent !important;
+  border: none !important;
+  backdrop-filter: none !important;
+  margin: 0 !important;
+}
+
+.drawer-content .learned-panel-list {
+  max-height: calc(100vh - 180px) !important;
+}
+
+/* ------- Scoped Styles for Children Components inside .app-new ------- */
+
+/* Thẻ bài tập / các khung Container con */
+.app-new .check-vocab,
+.app-new .writing-card,
+.app-new .meaning-card,
+.app-new .practice-card,
+.app-new .sentence-card,
+.app-new .translate-container,
+.app-new .stats-dashboard,
+.app-new .manager-container,
+.app-new .sentence-practice,
+.app-new .random-sentence-practice {
+  background: var(--surface-glass-card) !important;
+  backdrop-filter: blur(40px) saturate(120%) !important;
+  -webkit-backdrop-filter: blur(40px) saturate(120%) !important;
+  border-radius: 20px !important;
+  border: 1px solid rgba(255, 255, 255, 0.25) !important;
+  box-shadow: 0 12px 40px rgba(0, 10, 20, 0.05) !important;
+  padding: 30px !important;
+  box-sizing: border-box !important;
+  margin-bottom: 20px !important;
+}
+
+:root.dark .app-new .check-vocab,
+:root.dark .app-new .writing-card,
+:root.dark .app-new .meaning-card,
+:root.dark .app-new .practice-card,
+:root.dark .app-new .sentence-card,
+:root.dark .app-new .translate-container,
+:root.dark .app-new .stats-dashboard,
+:root.dark .app-new .manager-container,
+:root.dark .app-new .sentence-practice,
+:root.dark .app-new .random-sentence-practice {
+  background: var(--surface-glass-card) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4) !important;
+}
+
+/* Ô nhập liệu & dropdown */
+.app-new input[type="text"],
+.app-new input[type="search"],
+.app-new select,
+.app-new textarea {
+  border-radius: 12px !important;
+  border: 1.5px solid rgba(130, 140, 160, 0.25) !important;
+  background: rgba(255, 255, 255, 0.06) !important;
+  color: var(--text-primary) !important;
+  font-size: 1.05rem !important;
+  padding: 12px 16px !important;
+  outline: none !important;
+  box-shadow: none !important;
+  transition: all 0.2s ease !important;
+}
+
+.app-new input[type="text"]:focus,
+.app-new input[type="search"]:focus,
+.app-new select:focus,
+.app-new textarea:focus {
+  border-color: var(--accent-primary) !important;
+  box-shadow: 0 0 0 3px rgba(57, 197, 187, 0.25) !important;
+  background: rgba(255, 255, 255, 0.12) !important;
+}
+
+/* Nút bấm tổng quan */
+.app-new button:not(.mobile-menu-btn):not(.drawer-close-btn):not(.btn-theme-toggle):not(.learned-tab):not(.menu-group-header):not(.menu-item) {
+  border-radius: 12px !important;
+  font-weight: 700 !important;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+/* Nút bấm hành động chính */
+.app-new .check-button,
+.app-new .next-button,
+.app-new .btn-confirm-yes,
+.app-new .submit-button,
+.app-new .btn-add-vocab,
+.app-new .translate-button,
+.app-new .btn-reset-stats-new {
+  background: var(--accent-primary) !important;
+  color: white !important;
+  border: none !important;
+  box-shadow: 0 4px 16px rgba(57, 197, 187, 0.25) !important;
+  padding: 12px 28px !important;
+  cursor: pointer !important;
+}
+
+.app-new .check-button:hover,
+.app-new .next-button:hover,
+.app-new .btn-confirm-yes:hover,
+.app-new .submit-button:hover,
+.app-new .btn-add-vocab:hover,
+.app-new .translate-button:hover,
+.app-new .btn-reset-stats-new:hover {
+  background: var(--accent-primary-hover) !important;
+  box-shadow: 0 6px 20px rgba(57, 197, 187, 0.35) !important;
+  transform: translateY(-1px) !important;
+}
+
+.app-new .check-button:active,
+.app-new .next-button:active,
+.app-new .btn-confirm-yes:active,
+.app-new .submit-button:active,
+.app-new .btn-add-vocab:active,
+.app-new .translate-button:active,
+.app-new .btn-reset-stats-new:active {
+  transform: scale(0.97) !important;
+}
+
+/* Kiểu nút phụ (Hủy / Đóng) */
+.app-new .btn-confirm-no,
+.app-new .btn-cancel {
+  background: rgba(255, 255, 255, 0.1) !important;
+  border: 1px solid rgba(130, 140, 160, 0.2) !important;
+  color: var(--text-primary) !important;
+  padding: 12px 28px !important;
+}
+
+.app-new .btn-confirm-no:hover,
+.app-new .btn-cancel:hover {
+  background: rgba(255, 255, 255, 0.2) !important;
+  border-color: rgba(130, 140, 160, 0.35) !important;
+}
+
+/* Chữ Hán to (Hán tự) trong các thẻ học */
+.app-new .chinese-char h2,
+.app-new .chinese-display h2,
+.app-new .character-display h2,
+.app-new .pinyin-practice-char h2,
+.app-new .writing-area h2 {
+  font-size: 3.8rem !important;
+  font-family: var(--font-hanzi) !important;
+  font-weight: 700 !important;
+  color: var(--text-primary) !important;
+  text-shadow: 0 4px 16px rgba(57, 197, 187, 0.15) !important;
+  margin: 10px 0 !important;
+  letter-spacing: 0.05em !important;
+  text-align: center !important;
+}
+
+/* Nút phát âm loa phóng thanh */
+.app-new .speak-button {
+  width: 44px !important;
+  height: 44px !important;
+  border-radius: 50% !important;
+  background: var(--surface-glass) !important;
+  border: 1px solid rgba(255, 255, 255, 0.25) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  cursor: pointer !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05) !important;
+  color: var(--text-primary) !important;
+  outline: none !important;
+}
+
+.app-new .speak-button:hover {
+  background: var(--accent-subtle) !important;
+  border-color: var(--accent-primary) !important;
+  transform: scale(1.08) !important;
+  color: var(--accent-primary) !important;
+}
+
+.app-new .speak-button.speaking {
+  background: var(--accent-primary) !important;
+  color: white !important;
+  border-color: var(--accent-primary) !important;
+  box-shadow: 0 0 12px rgba(57, 197, 187, 0.5) !important;
+}
+
+/* Bảng điểm / Tiến trình dạng Badge */
+.app-new .score-display {
+  display: inline-flex !important;
+  gap: 10px !important;
+  padding: 10px 18px !important;
+  background: rgba(57, 197, 187, 0.1) !important;
+  border-radius: 12px !important;
+  border: 1px solid rgba(57, 197, 187, 0.25) !important;
+  color: var(--accent-primary) !important;
+  font-weight: 700 !important;
+  margin-bottom: 24px !important;
+  font-size: 0.9rem !important;
+  box-shadow: 0 2px 8px rgba(57, 197, 187, 0.05) !important;
+}
+
+.app-new .score-display span {
+  color: var(--accent-primary) !important;
+}
+
+/* Dropdown cấp độ HSK */
+.app-new .hsk-level-button {
+  border-radius: 12px !important;
+  background: rgba(255, 255, 255, 0.1) !important;
+  backdrop-filter: blur(20px) !important;
+  -webkit-backdrop-filter: blur(20px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05) !important;
+}
+
+.app-new .hsk-level-button:hover {
+  background: rgba(255, 255, 255, 0.2) !important;
+  border-color: var(--accent-primary) !important;
+}
+
+.app-new .hsk-mega-menu {
+  background: rgba(255, 255, 255, 0.65) !important;
+  backdrop-filter: blur(40px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(40px) saturate(180%) !important;
+  border-radius: 16px !important;
+  border: 1px solid rgba(255, 255, 255, 0.25) !important;
+  box-shadow: 0 12px 40px rgba(0, 10, 20, 0.1) !important;
+}
+
+:root.dark .app-new .hsk-mega-menu {
+  background: rgba(12, 28, 38, 0.8) !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+.app-new .mega-menu-item {
+  border-radius: 10px !important;
+  background: rgba(255, 255, 255, 0.2) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  font-size: 0.92rem !important;
+  transition: all 0.2s !important;
+}
+
+.app-new .mega-menu-item:hover {
+  background: var(--accent-subtle) !important;
+  border-color: var(--accent-primary) !important;
+  color: var(--text-primary) !important;
+  transform: translateY(-1px) !important;
+}
+
+.app-new .mega-menu-item.active {
+  background: var(--accent-primary) !important;
+  color: white !important;
+  border-color: var(--accent-primary) !important;
+  box-shadow: 0 4px 12px rgba(57, 197, 187, 0.3) !important;
+}
+
+/* Điều chỉnh bảng danh sách quản lý */
+.app-new table {
+  width: 100% !important;
+  border-collapse: separate !important;
+  border-spacing: 0 8px !important;
+  margin-top: 15px !important;
+}
+
+.app-new tr {
+  transition: background-color 0.2s ease !important;
+}
+
+.app-new tbody tr {
+  background: rgba(255, 255, 255, 0.04) !important;
+}
+
+.app-new tbody tr:hover td {
+  background-color: rgba(57, 197, 187, 0.08) !important;
+}
+
+.app-new th {
+  border-bottom: 2.5px solid rgba(130, 140, 160, 0.15) !important;
+  color: var(--text-secondary) !important;
+  padding: 12px 16px !important;
+  font-weight: 700 !important;
+}
+
+.app-new td {
+  padding: 14px 16px !important;
+  border-bottom: 1px solid rgba(130, 140, 160, 0.06) !important;
+  background: transparent !important;
+}
+
+.app-new td:first-child {
+  border-top-left-radius: 10px !important;
+  border-bottom-left-radius: 10px !important;
+}
+
+.app-new td:last-child {
+  border-top-right-radius: 10px !important;
+  border-bottom-right-radius: 10px !important;
+}
+
+/* Các nút phân trang (pagination) */
+.app-new .pagination-btn {
+  background: rgba(255, 255, 255, 0.15) !important;
+  border: 1px solid rgba(130, 140, 160, 0.15) !important;
+}
+
+.app-new .pagination-btn:hover:not(:disabled) {
+  background: var(--accent-subtle) !important;
+  border-color: var(--accent-primary) !important;
+  color: var(--accent-primary) !important;
+}
+
+.app-new .pagination-btn.active {
+  background: var(--accent-primary) !important;
+  color: white !important;
+  border-color: var(--accent-primary) !important;
+}
+
+/* Điều chỉnh Modal phụ */
+.app-new .modal-overlay {
+  background: rgba(0, 10, 20, 0.4) !important;
+  backdrop-filter: blur(8px) !important;
+  -webkit-backdrop-filter: blur(8px) !important;
+}
+
+.app-new .modal-content,
+.app-new .shortcuts-modal,
+.app-new .support-modal {
+  background: rgba(255, 255, 255, 0.5) !important;
+  backdrop-filter: blur(50px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(50px) saturate(180%) !important;
+  border-radius: 24px !important;
+  border: 1px solid rgba(255, 255, 255, 0.3) !important;
+  box-shadow: 0 20px 50px rgba(0, 10, 20, 0.15) !important;
+}
+
+:root.dark .app-new .modal-content,
+:root.dark .app-new .shortcuts-modal,
+:root.dark .app-new .support-modal {
+  background: rgba(12, 28, 38, 0.8) !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+/* Điều chỉnh màu Tab của bảng từ đã học */
+.app-new .learned-tab.active {
+  color: var(--accent-primary) !important;
+  border-bottom-color: var(--accent-primary) !important;
+}
+
+
+
+/* Căn chỉnh và đồng bộ kích thước các trang luyện tập để tránh bị lệch */
+.app-new .check-vocab,
+.app-new .practice-writing,
+.app-new .practice-meaning,
+.app-new .random-practice,
+.app-new .sentence-practice,
+.app-new .random-sentence-practice {
+  max-width: 720px !important;
+  margin: 0 auto !important;
+  width: 100% !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: stretch !important;
+  background: transparent !important; /* Loại bỏ card ngoài để tránh lồng card */
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+}
+
+/* Thẻ hiển thị từ vựng (Hán tự / Nghĩa) */
+.app-new .word-display,
+.app-new .question-display {
+  width: 100% !important;
+  max-width: 100% !important;
+  margin: 20px 0 !important;
+  box-sizing: border-box !important;
+  background: var(--surface-glass-card) !important;
+  backdrop-filter: blur(40px) saturate(120%) !important;
+  -webkit-backdrop-filter: blur(40px) saturate(120%) !important;
+  border-radius: 20px !important;
+  border: 1px solid rgba(255, 255, 255, 0.25) !important;
+  box-shadow: 0 12px 40px rgba(0, 10, 20, 0.05) !important;
+  padding: 35px 30px !important;
+}
+
+:root.dark .app-new .word-display,
+:root.dark .app-new .question-display {
+  background: var(--surface-glass-card) !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4) !important;
+}
+
+/* Đồng bộ ô nhập liệu */
+.app-new .input-section {
+  width: 100% !important;
+  max-width: 100% !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: stretch !important;
+  margin: 20px 0 !important;
+}
+
+.app-new .input-section input {
+  width: 100% !important;
+  max-width: 100% !important; /* Đè đè max-width: 400px cũ */
+  box-sizing: border-box !important;
+  text-align: center !important;
+}
+
+/* Đồng bộ các nút bấm chính */
+.app-new .check-button,
+.app-new .next-button {
+  width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+  margin-top: 10px !important;
+}
+
+/* Căn chỉnh bộ chọn chế độ phụ (secondary selector) */
+.app-new .practice-mode-selector,
+.app-new .practice-mode-selector-secondary {
+  display: flex !important;
+  justify-content: center !important;
+  gap: 10px !important;
+  margin-bottom: 20px !important;
+  flex-wrap: wrap !important;
+  width: 100% !important;
+}
+
+.app-new .practice-mode-selector button,
+.app-new .practice-mode-selector-secondary button {
+  padding: 8px 18px !important;
+  font-size: 0.92rem !important;
+  border-radius: 12px !important;
+  background: rgba(255, 255, 255, 0.15) !important;
+  border: 1px solid rgba(130, 140, 160, 0.2) !important;
+  color: var(--text-primary) !important;
+  cursor: pointer !important;
+  transition: all 0.2s !important;
+}
+
+.app-new .practice-mode-selector button:hover,
+.app-new .practice-mode-selector-secondary button:hover {
+  background: var(--accent-subtle) !important;
+  border-color: var(--accent-primary) !important;
+  color: var(--accent-primary) !important;
+}
+
+.app-new .practice-mode-selector button.active,
+.app-new .practice-mode-selector-secondary button.active {
+  background: var(--accent-primary) !important;
+  color: white !important;
+  border-color: var(--accent-primary) !important;
+  box-shadow: 0 4px 12px rgba(57, 197, 187, 0.3) !important;
+}
+
+/* Nút Support Miku ở chân Sidebar */
+.app-new .btn-support-sidebar {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  padding: 12px 16px !important;
+  border-radius: 12px !important;
+  background: var(--accent-subtle) !important;
+  border: 1px solid rgba(57, 197, 187, 0.25) !important;
+  color: var(--accent-primary) !important;
+  font-weight: 700 !important;
+  cursor: pointer !important;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  margin-top: auto !important; /* Đẩy nút xuống đáy Sidebar */
+  width: 100% !important;
+  box-sizing: border-box !important;
+  outline: none !important;
+}
+
+.app-new .btn-support-sidebar:hover {
+  background: var(--accent-primary) !important;
+  color: white !important;
+  box-shadow: 0 4px 14px rgba(57, 197, 187, 0.3) !important;
+  transform: translateY(-1px) !important;
+}
+
+.app-new .btn-support-sidebar:active {
+  transform: scale(0.97) !important;
+}
+
+.app-new .btn-support-sidebar svg {
+  transition: transform 0.25s ease !important;
+}
+
+.app-new .btn-support-sidebar:hover svg {
+  transform: scale(1.15) !important;
+}
+
+/* Hiển thị đáp án đúng và đáp án của bạn trên cùng 1 dòng */
+.app-new .correct-answer-row {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  justify-content: center !important;
+  align-items: center !important;
+  gap: 8px !important;
+  font-size: 1.05rem !important;
+  line-height: 1.4 !important;
+}
+
+.app-new .answer-divider {
+  opacity: 0.3 !important;
+  color: var(--text-primary) !important;
+  font-weight: 400 !important;
+  margin: 0 4px !important;
+}
+
+
+
+

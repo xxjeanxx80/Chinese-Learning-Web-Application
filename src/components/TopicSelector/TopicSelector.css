@@ -1,138 +1,75 @@
-.topic-selector-wrapper {
-  position: relative;
-  display: inline-block;
-}
-
-.topic-selector-button {
+.topic-level-list {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 8px 16px;
-  font-size: 0.95rem;
-  font-weight: 600;
-  border: var(--glass-border-light);
-  border-radius: var(--apple-radius-pill);
-  background: var(--bg-primary) !important; /* Đục 100% */
-  color: var(--text-primary);
-  cursor: pointer;
-  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-  backdrop-filter: none; /* Tắt kính mờ */
-  -webkit-backdrop-filter: none;
-  white-space: nowrap;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15); /* Nổi 3D */
+  flex-wrap: wrap;
 }
 
-.topic-selector-button:hover {
-  background: var(--glass-bg-hover);
-  transform: scale(0.96);
-  box-shadow: var(--glass-shadow-hover), var(--glass-inner-light);
-}
-
-.topic-selector-icon {
-  font-size: 1rem;
-}
-
-.topic-selector-label {
-  font-weight: 600;
-}
-
-.topic-selector-arrow {
-  font-size: 0.7rem;
-  margin-left: 4px;
-  transition: transform 0.3s;
-}
-
-.topic-dropdown-menu {
-  position: absolute;
-  top: calc(100% + 12px);
-  left: 0;
-  min-width: 220px;
-  background: var(--bg-primary); /* Menu dọc đục 100% */
-  backdrop-filter: none;
-  -webkit-backdrop-filter: none;
-  border: var(--glass-border-light);
-  border-radius: var(--apple-radius-lg);
-  box-shadow: var(--glass-shadow-hover), var(--glass-inner-light);
-  z-index: 10000;
-  overflow: hidden;
-  animation: slideDown 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-  padding: 8px;
-}
-
-@keyframes slideDown {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.topic-dropdown-item {
+.topic-level-pill {
   display: flex;
   align-items: center;
-  gap: 10px;
-  width: 100%;
-  padding: 12px 16px;
-  font-size: 0.95rem;
-  font-weight: 500;
-  border: none !important; /* Xoá toàn bộ khung viền lạ bao quanh mục con */
-  border-bottom: 1px solid rgba(0,0,0,0.03) !important; /* Chỉ giữ phân cách nhạt bên dưới */
-  background: var(--bg-primary) !important; /* Đục 100% mục con */
-  color: var(--text-primary);
-  border-radius: var(--apple-radius-md);
-  cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-  text-align: left;
-  margin-bottom: 4px;
-}
-
-.topic-dropdown-item:last-child {
-  border-bottom: none;
-  margin-bottom: 0;
-}
-
-.topic-dropdown-item:hover {
-  background: var(--glass-bg-hover);
-  transform: translateX(4px);
-}
-
-.topic-dropdown-item.active {
-  background: rgba(0, 122, 255, 0.8); /* Apple Blue trong suốt */
-  color: white;
-  font-weight: 600;
-  box-shadow: 0 4px 12px rgba(0, 122, 255, 0.3);
-}
-
-.topic-dropdown-icon {
-  font-size: 1rem;
-}
-
-.topic-dropdown-label {
-  flex: 1;
-}
-
-.topic-dropdown-check {
-  font-size: 1rem;
+  gap: 6px;
+  padding: 6px 12px;
+  font-size: 0.82rem;
   font-weight: 700;
+  border: 1px solid var(--accent-primary);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--accent-primary);
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
 }
 
+.topic-level-pill:hover {
+  background: rgba(255, 255, 255, 0.15);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.topic-level-pill.active {
+  background: var(--accent-primary) !important;
+  color: white !important;
+  box-shadow: 0 4px 12px rgba(57, 197, 187, 0.4);
+}
+
+.topic-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: var(--accent-primary);
+  transition: all 0.25s ease;
+}
+
+.topic-level-pill.active .topic-dot {
+  background-color: white !important;
+}
+
+/* Dark mode tweaks */
+:root.dark .topic-level-pill {
+  background: rgba(0, 0, 0, 0.2);
+}
+
+:root.dark .topic-level-pill:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+/* Responsive */
 @media (max-width: 768px) {
-  .topic-selector-button {
-    padding: 6px 12px;
-    font-size: 0.85rem;
-    background: var(--bg-primary) !important; /* Đục 100% bằng màu nền app */
-    backdrop-filter: none;
-    -webkit-backdrop-filter: none;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15); /* Viền nổi bồng bềnh 3D */
+  .topic-level-list {
+    gap: 4px;
+    justify-content: flex-start;
   }
 
-  .topic-dropdown-menu {
-    min-width: 200px;
-    right: 0;
-    left: auto;
+  .topic-level-pill {
+    padding: 4px 8px;
+    font-size: 0.72rem;
+    gap: 4px;
+  }
+
+  .topic-dot {
+    width: 4px;
+    height: 4px;
   }
 }
 

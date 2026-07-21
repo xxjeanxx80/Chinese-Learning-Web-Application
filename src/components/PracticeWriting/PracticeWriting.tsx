@@ -194,20 +194,20 @@ const PracticeWriting: React.FC<PracticeWritingProps> = ({ level }) => {
           className={!showOptions ? 'active' : ''}
           onClick={() => setShowOptions(false)}
         >
-          ⌨️ Viết Hán Tự
+          Viết Hán Tự
         </button>
         <button
           className={showOptions ? 'active' : ''}
           onClick={() => setShowOptions(true)}
         >
-          🎯 Chọn đáp án
+          Chọn đáp án
         </button>
         <button
           className={`pinyin-toggle ${!showPinyin ? 'off' : ''}`}
           onClick={() => setShowPinyin(!showPinyin)}
           title={showPinyin ? "Ẩn Pinyin" : "Hiện Pinyin"}
         >
-          {showPinyin ? '👁️ Pinyin' : '🙈 Pinyin'}
+          Pinyin
         </button>
       </div>
 
@@ -217,7 +217,10 @@ const PracticeWriting: React.FC<PracticeWritingProps> = ({ level }) => {
           onClick={() => speakChinese(currentWord.chinese)}
           title="Phát âm"
         >
-          🔊
+          <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" className="speaker-icon">
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+            <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+          </svg>
         </button>
         <div className="meaning-display-primary">
           <h2>{currentWord.vietnamese}</h2>
@@ -246,6 +249,11 @@ const PracticeWriting: React.FC<PracticeWritingProps> = ({ level }) => {
               </button>
             ))}
           </div>
+          {showResult && (
+            <button className="next-button" onClick={handleNext} autoFocus style={{ marginTop: '20px' }}>
+              Từ tiếp theo
+            </button>
+          )}
         </div>
       ) : (
         <div className="input-section">
@@ -257,9 +265,13 @@ const PracticeWriting: React.FC<PracticeWritingProps> = ({ level }) => {
             placeholder="Nhập chữ Hán..."
             disabled={showResult}
           />
-          {!showResult && (
+          {!showResult ? (
             <button className="check-button" onClick={handleTypeCheck}>
               Kiểm tra
+            </button>
+          ) : (
+            <button className="next-button" onClick={handleNext} autoFocus>
+              Từ tiếp theo
             </button>
           )}
         </div>
@@ -267,19 +279,17 @@ const PracticeWriting: React.FC<PracticeWritingProps> = ({ level }) => {
 
       {showResult && (
         <div className={`result-section ${isCorrect ? 'is-correct' : 'is-incorrect'}`}>
-          <div className="correct-answer">
+          <div className="correct-answer-row">
             {!isCorrect && (
-              <div className="user-wrong">
+              <span className="user-wrong">
                 Của bạn: <strong>{userAnswer}</strong>
-              </div>
+              </span>
             )}
-            <div className="actual-correct">
+            {!isCorrect && <span className="answer-divider"> | </span>}
+            <span className="actual-correct">
               Đáp án đúng: <strong>{currentWord.chinese}</strong>
-            </div>
+            </span>
           </div>
-          <button className="next-button" onClick={handleNext} autoFocus>
-            Từ tiếp theo
-          </button>
         </div>
       )}
     </div>

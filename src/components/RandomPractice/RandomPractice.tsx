@@ -290,16 +290,16 @@ const RandomPractice: React.FC<RandomPracticeProps> = ({ level }) => {
         </div>
         <div className="practice-controls">
           <div className="question-type">
-            {currentQuestion.type === 'pinyin' && '📝 Kiểm tra Pinyin'}
-            {currentQuestion.type === 'writing' && '✍️ Kiểm tra Chữ Hán'}
-            {currentQuestion.type === 'meaning' && '💭 Kiểm tra Nghĩa'}
+            {currentQuestion.type === 'pinyin' && 'Kiểm tra Pinyin'}
+            {currentQuestion.type === 'writing' && 'Kiểm tra Chữ Hán'}
+            {currentQuestion.type === 'meaning' && 'Kiểm tra Nghĩa'}
           </div>
           <button
             className={`pinyin-toggle ${!showPinyin ? 'off' : ''}`}
             onClick={() => setShowPinyin(!showPinyin)}
             title={showPinyin ? "Ẩn Pinyin" : "Hiện Pinyin"}
           >
-            {showPinyin ? '👁️ Pinyin' : '🙈 Pinyin'}
+            Pinyin
           </button>
         </div>
       </div>
@@ -310,7 +310,10 @@ const RandomPractice: React.FC<RandomPracticeProps> = ({ level }) => {
           onClick={() => speakChinese(currentQuestion.word.chinese)}
           title="Phát âm"
         >
-          🔊
+          <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" className="speaker-icon">
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+            <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+          </svg>
         </button>
         <p className="question-text">{currentQuestion.question}</p>
       </div>
@@ -329,6 +332,11 @@ const RandomPractice: React.FC<RandomPracticeProps> = ({ level }) => {
               </button>
             ))}
           </div>
+          {showResult && (
+            <button className="next-button" onClick={handleNext} autoFocus style={{ marginTop: '20px' }}>
+              Câu tiếp theo
+            </button>
+          )}
         </div>
       ) : (
         <div className="input-section">
@@ -340,9 +348,13 @@ const RandomPractice: React.FC<RandomPracticeProps> = ({ level }) => {
             placeholder="Nhập đáp án..."
             disabled={showResult}
           />
-          {!showResult && (
+          {!showResult ? (
             <button className="check-button" onClick={() => handleCheck()}>
               Kiểm tra
+            </button>
+          ) : (
+            <button className="next-button" onClick={handleNext} autoFocus>
+              Câu tiếp theo
             </button>
           )}
         </div>
@@ -351,38 +363,36 @@ const RandomPractice: React.FC<RandomPracticeProps> = ({ level }) => {
       {showResult && (
         <div className={`result-section ${isCorrect ? 'is-correct' : 'is-incorrect'}`}>
           <div className="answer-details">
-            <div className="correct-answer">
+            <div className="correct-answer-row">
               {!isCorrect && (
-                <div className="user-wrong">
+                <span className="user-wrong">
                   Của bạn: <strong>{userAnswer}</strong>
-                </div>
+                </span>
               )}
-              <div className="actual-correct">
+              {!isCorrect && <span className="answer-divider"> | </span>}
+              <span className="actual-correct">
                 Đáp án đúng: <strong>{currentQuestion.answer}</strong>
-              </div>
+              </span>
             </div>
             {currentQuestion.type === 'pinyin' && (
-              <div className="word-info">
+              <div className="word-info" style={{ marginTop: '8px' }}>
                 Chữ: <strong>{currentQuestion.word.chinese}</strong> | 
                 Nghĩa: <strong>{currentQuestion.word.vietnamese}</strong>
               </div>
             )}
             {currentQuestion.type === 'writing' && (
-              <div className="word-info">
+              <div className="word-info" style={{ marginTop: '8px' }}>
                 Pinyin: <strong>{currentQuestion.word.pinyin}</strong> | 
                 Nghĩa: <strong>{currentQuestion.word.vietnamese}</strong>
               </div>
             )}
             {currentQuestion.type === 'meaning' && (
-              <div className="word-info">
+              <div className="word-info" style={{ marginTop: '8px' }}>
                 Chữ: <strong>{currentQuestion.word.chinese}</strong> | 
                 Pinyin: <strong>{currentQuestion.word.pinyin}</strong>
               </div>
             )}
           </div>
-          <button className="next-button" onClick={handleNext} autoFocus>
-            Câu tiếp theo
-          </button>
         </div>
       )}
     </div>
