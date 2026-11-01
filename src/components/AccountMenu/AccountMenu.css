@@ -17,9 +17,13 @@
   -webkit-backdrop-filter: var(--glass-blur);
   border: var(--glass-border-light);
   box-shadow: var(--glass-shadow), var(--glass-inner-light);
-  display: flex;
+  display: none;
   flex-direction: column;
   gap: 14px;
+}
+
+.account-panel.open {
+  display: flex;
 }
 
 .account-section {

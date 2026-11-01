@@ -102,10 +102,3 @@
   background: var(--glass-bg);
   color: var(--text-primary);
 }
-
-.pomo-note {
-  margin: 0;
-  font-size: 0.68rem;
-  line-height: 1.4;
-  color: var(--text-tertiary);
-}

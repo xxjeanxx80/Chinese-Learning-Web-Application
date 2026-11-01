@@ -4,21 +4,19 @@
  * Defaults: 25 min focus, 5 min break, and a 40 min long break after every
  * 4th focus round. Durations are editable and remembered in localStorage.
  *
- * The background track the user asked for is a copyrighted YouTube upload.
- * Browsers cannot play a YouTube watch URL as audio, and downloading it would
- * copy the recording, so the timer uses a short chime generated locally
- * instead of that track.
+ * The countdown is anchored to a wall-clock end time, so closing the panel
+ * or the tab does not freeze it: reopening shows the time that actually
+ * passed. While a focus round runs, public/music.mp3 loops in the background.
  */
 
 import { useEffect, useRef, useState } from 'react';
 import { IconSettings } from '../Icons/Icons';
 import './Pomodoro.css';
 
-const FOCUS_S = 25 * 60;
-const BREAK_S = 5 * 60;
-const LONG_BREAK_S = 40 * 60;
 const ROUNDS_BEFORE_LONG = 4;
 const PREFS_KEY = 'mikuhan_pomodoro';
+const RUN_KEY = 'mikuhan_pomodoro_run';
+const MUSIC_SRC = '/music.mp3';
 
 type Phase = 'focus' | 'break' | 'long';
 
@@ -26,6 +24,15 @@ interface Prefs {
   focusMin: number;
   breakMin: number;
   longBreakMin: number;
+}
+
+interface RunState {
+  phase: Phase;
+  round: number;
+  /** Epoch ms when the current phase ends. Absent when paused. */
+  endsAt: number | null;
+  /** Seconds left when paused. */
+  remaining: number;
 }
 
 function loadPrefs(): Prefs {
@@ -51,6 +58,23 @@ function clamp(value: unknown, min: number, max: number, fallback: number): numb
   return Math.min(max, Math.max(min, Math.round(n)));
 }
 
+function loadRun(prefs: Prefs): RunState {
+  try {
+    const raw = localStorage.getItem(RUN_KEY);
+    if (raw) {
+      const r = JSON.parse(raw) as Partial<RunState>;
+      const phase: Phase = r.phase === 'break' || r.phase === 'long' ? r.phase : 'focus';
+      const round = clamp(r.round, 1, 99, 1);
+      const endsAt = typeof r.endsAt === 'number' ? r.endsAt : null;
+      const remaining = clamp(r.remaining, 0, 24 * 60 * 60, prefs.focusMin * 60);
+      return { phase, round, endsAt, remaining };
+    }
+  } catch {
+    /* start fresh */
+  }
+  return { phase: 'focus', round: 1, endsAt: null, remaining: prefs.focusMin * 60 };
+}
+
 function chime() {
   const Ctx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
   if (!Ctx) return;
@@ -73,33 +97,24 @@ function chime() {
 }
 
 function format(total: number): string {
-  const m = Math.floor(total / 60);
-  const s = total % 60;
+  const safe = Math.max(0, total);
+  const m = Math.floor(safe / 60);
+  const s = safe % 60;
   return `${m}:${s.toString().padStart(2, '0')}`;
 }
 
 export default function Pomodoro() {
   const prefs = useRef<Prefs>(loadPrefs());
-  const [phase, setPhase] = useState<Phase>('focus');
-  const [round, setRound] = useState(1);
-  const [remaining, setRemaining] = useState(prefs.current.focusMin * 60);
-  const [running, setRunning] = useState(false);
+  const initial = useRef<RunState>(loadRun(prefs.current));
+  const [phase, setPhase] = useState<Phase>(initial.current.phase);
+  const [round, setRound] = useState(initial.current.round);
+  const [endsAt, setEndsAt] = useState<number | null>(initial.current.endsAt);
+  const [remaining, setRemaining] = useState(initial.current.remaining);
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState<Prefs>(prefs.current);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  useEffect(() => {
-    if (!running) return;
-    const id = setInterval(() => {
-      setRemaining((r) => {
-        if (r > 1) return r - 1;
-        advance();
-        return 0;
-      });
-    }, 1000);
-    return () => clearInterval(id);
-    // advance reads current phase/round; restarting the interval on change is intended
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [running, phase, round]);
+  const running = endsAt !== null;
 
   function secondsFor(next: Phase, p: Prefs = prefs.current): number {
     if (next === 'focus') return p.focusMin * 60;
@@ -107,24 +122,100 @@ export default function Pomodoro() {
     return p.longBreakMin * 60;
   }
 
-  function advance() {
-    chime();
-    if (phase === 'focus') {
-      const next: Phase = round % ROUNDS_BEFORE_LONG === 0 ? 'long' : 'break';
-      setPhase(next);
-      setRemaining(secondsFor(next));
-      return;
+  function persist(next: RunState) {
+    localStorage.setItem(RUN_KEY, JSON.stringify(next));
+  }
+
+  // One audio element for the life of the panel. It only plays during focus.
+  useEffect(() => {
+    const audio = new Audio(MUSIC_SRC);
+    audio.loop = true;
+    audio.preload = 'none';
+    audioRef.current = audio;
+    return () => {
+      audio.pause();
+      audioRef.current = null;
+    };
+  }, []);
+
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+    if (running && phase === 'focus') {
+      void audio.play().catch(() => {
+        /* autoplay blocked until the next click; the button click usually unlocks it */
+      });
+    } else {
+      audio.pause();
     }
-    setRound(phase === 'long' ? 1 : round + 1);
-    setPhase('focus');
-    setRemaining(secondsFor('focus'));
+  }, [running, phase]);
+
+  // Recompute from the wall clock once a second, and immediately on return
+  // to the tab, so the displayed time tracks real time instead of ticks.
+  useEffect(() => {
+    if (endsAt === null) return;
+    const tick = () => {
+      const left = Math.round((endsAt - Date.now()) / 1000);
+      if (left > 0) {
+        setRemaining(left);
+        return;
+      }
+      // The phase ended while we were away: step through every elapsed phase.
+      let cursor = endsAt;
+      let nextPhase: Phase = phase;
+      let nextRound = round;
+      let guard = 0;
+      while (cursor <= Date.now() && guard < 500) {
+        guard += 1;
+        if (nextPhase === 'focus') {
+          nextPhase = nextRound % ROUNDS_BEFORE_LONG === 0 ? 'long' : 'break';
+        } else {
+          nextRound = nextPhase === 'long' ? 1 : nextRound + 1;
+          nextPhase = 'focus';
+        }
+        cursor += secondsFor(nextPhase) * 1000;
+      }
+      chime();
+      const leftAfter = Math.max(1, Math.round((cursor - Date.now()) / 1000));
+      setPhase(nextPhase);
+      setRound(nextRound);
+      setEndsAt(cursor);
+      setRemaining(leftAfter);
+      persist({ phase: nextPhase, round: nextRound, endsAt: cursor, remaining: leftAfter });
+    };
+    tick();
+    const id = setInterval(tick, 1000);
+    document.addEventListener('visibilitychange', tick);
+    return () => {
+      clearInterval(id);
+      document.removeEventListener('visibilitychange', tick);
+    };
+    // secondsFor only depends on prefs, which are stable between edits
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [endsAt, phase, round]);
+
+  function start() {
+    const end = Date.now() + remaining * 1000;
+    setEndsAt(end);
+    persist({ phase, round, endsAt: end, remaining });
+  }
+
+  function pause() {
+    const left = endsAt === null ? remaining : Math.max(1, Math.round((endsAt - Date.now()) / 1000));
+    setEndsAt(null);
+    setRemaining(left);
+    persist({ phase, round, endsAt: null, remaining: left });
   }
 
   function reset() {
-    setRunning(false);
+    const fresh = prefs.current.focusMin * 60;
+    setEndsAt(null);
     setPhase('focus');
     setRound(1);
-    setRemaining(prefs.current.focusMin * 60);
+    setRemaining(fresh);
+    localStorage.removeItem(RUN_KEY);
+    const audio = audioRef.current;
+    if (audio) audio.currentTime = 0;
   }
 
   function savePrefs() {
@@ -137,7 +228,11 @@ export default function Pomodoro() {
     setDraft(next);
     localStorage.setItem(PREFS_KEY, JSON.stringify(next));
     setEditing(false);
-    if (!running && phase === 'focus' && round === 1) setRemaining(next.focusMin * 60);
+    if (!running && phase === 'focus' && round === 1) {
+      const fresh = next.focusMin * 60;
+      setRemaining(fresh);
+      persist({ phase, round, endsAt: null, remaining: fresh });
+    }
   }
 
   const total = secondsFor(phase);
@@ -154,11 +249,11 @@ export default function Pomodoro() {
 
       <div className="pomo-time">{format(remaining)}</div>
       <div className="pomo-bar">
-        <div style={{ width: `${Math.max(0, (remaining / total) * 100)}%` }} />
+        <div style={{ width: `${Math.min(100, Math.max(0, (remaining / total) * 100))}%` }} />
       </div>
 
       <div className="pomo-actions">
-        <button className="pomo-start" onClick={() => setRunning((v) => !v)}>
+        <button className="pomo-start" onClick={running ? pause : start}>
           {running ? 'Tạm dừng' : 'Bắt đầu'}
         </button>
         <button className="pomo-reset" onClick={reset}>Đặt lại</button>
@@ -184,11 +279,6 @@ export default function Pomodoro() {
           <button className="pomo-start" onClick={savePrefs}>Lưu</button>
         </div>
       )}
-
-      <p className="pomo-note">
-        Mặc định {FOCUS_S / 60}/{BREAK_S / 60} phút, nghỉ {LONG_BREAK_S / 60} phút mỗi {ROUNDS_BEFORE_LONG} vòng.
-        Nhạc YouTube không phát được trong app — hết giờ có tiếng chuông.
-      </p>
     </div>
   );
 }

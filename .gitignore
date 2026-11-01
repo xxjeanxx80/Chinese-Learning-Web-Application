@@ -28,3 +28,6 @@ dist-ssr
 .vercel
 .agent
 
+
+# Local background audio, too large for the repo
+public/music.mp3

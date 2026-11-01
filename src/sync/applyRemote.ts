@@ -5,7 +5,7 @@
  * wins if it is strictly newer than what we have locally.
  */
 
-import { dbPut, dbAll, dbGet } from '../storage/db';
+import { dbPut, dbGet } from '../storage/db';
 import { STORES } from '../storage/types';
 
 export interface RemoteLearningItem {
@@ -21,47 +21,14 @@ export interface RemoteLearningItem {
   updated_at: string;
 }
 
-/** Merge remote learning_items into the local learned_vocab / learned_sentences stores. */
-export async function applyRemoteItems(rows: RemoteLearningItem[]): Promise<void> {
-  if (!rows || rows.length === 0) return;
-
-  const learnedVocab = await dbAll<any>(STORES.LEARNED_VOCAB);
-  const learnedSent = await dbAll<any>(STORES.LEARNED_SENTENCES);
-  const vocabMap = new Map<string, any>(learnedVocab.map((r) => [r.id, r]));
-  const sentMap = new Map<string, any>(learnedSent.map((r) => [r.id, r]));
-
-  for (const row of rows) {
-    const isVocab = row.kind === 'vocab';
-    const store = isVocab ? STORES.LEARNED_VOCAB : STORES.LEARNED_SENTENCES;
-    const id = `${isVocab ? 'lv' : 'ls'}_${row.kind}_${row.ref_id}`;
-    const map = isVocab ? vocabMap : sentMap;
-
-    const existing = map.get(id);
-    const existingTs = existing?.updated_at ? new Date(existing.updated_at).getTime() : 0;
-    const remoteTs = new Date(row.updated_at).getTime();
-
-    // LWW — only overwrite when remote is strictly newer.
-    if (existing && existingTs >= remoteTs) continue;
-
-    const payload = existing?.payload ?? {};
-    const next = {
-      ...payload,
-      status: row.status,
-      srs_box: row.srs_box,
-      srs_due_at: row.srs_due_at,
-      wrong_count: row.wrong_count,
-      lastPracticed: remoteTs,
-      passedTests: {
-        pinyin: row.status === 'mastered' ? true : payload.passedTests?.pinyin ?? false,
-        writing: row.status === 'mastered' ? true : payload.passedTests?.writing ?? false,
-        meaning: row.status === 'mastered' ? true : payload.passedTests?.meaning ?? false,
-      },
-    };
-
-    const wrapped = { id, payload: next, updated_at: row.updated_at };
-    await dbPut(store, wrapped);
-    map.set(id, wrapped);
-  }
+/**
+ * learning_items mirrors SRS scheduling only. The learned and wrong stores are
+ * singleton blobs owned by applyRemoteContent, so per-item rows must never be
+ * written into them: a row with a non-singleton id comes back as a fake level
+ * on the next load and crashes the screen that reads it.
+ */
+export async function applyRemoteItems(_rows: RemoteLearningItem[]): Promise<void> {
+  return;
 }
 
 const CONTENT_STORES = new Set<string>([
@@ -91,6 +58,9 @@ export async function applyRemoteContent(rows: RemoteContent[]): Promise<boolean
   let changed = false;
   for (const row of rows) {
     if (!CONTENT_STORES.has(row.kind) || row.payload == null) continue;
+    // A blob store holds one object. A string or array here is a corrupted row
+    // from the old per-item sync, and writing it back wipes the local progress.
+    if (typeof row.payload !== 'object' || Array.isArray(row.payload)) continue;
     const existing = await dbGet<any>(row.kind, 'singleton');
     const localTs = existing?.updated_at ? new Date(existing.updated_at).getTime() : 0;
     const remoteTs = new Date(row.updated_at).getTime();

@@ -49,6 +49,29 @@ function setState(s: SyncState) {
   listeners.forEach((fn) => fn(s));
 }
 
+/**
+ * One INSERT … ON CONFLICT statement may not touch the same row twice.
+ * A batch can carry two writes for one item or one content blob (a retry, or
+ * two answers in the same flush). Keep the newest and drop the rest.
+ */
+function dedupeOps(ops: SyncOp[]): SyncOp[] {
+  const rank = new Map<string, { op: SyncOp; ts: number; index: number }>();
+  const passthrough: SyncOp[] = [];
+  ops.forEach((op, index) => {
+    const ts = Date.parse(op.updated_at ?? '') || 0;
+    let key: string | null = null;
+    if (op.target === 'content' && op.kind) key = `content:${op.kind}`;
+    else if (op.target === 'item' && op.kind && op.ref_id) key = `item:${op.kind}:${op.ref_id}`;
+    if (key === null) {
+      passthrough.push(op);
+      return;
+    }
+    const prev = rank.get(key);
+    if (!prev || ts >= prev.ts) rank.set(key, { op, ts, index });
+  });
+  return [...passthrough, ...[...rank.values()].sort((a, b) => a.index - b.index).map((v) => v.op)];
+}
+
 /** Map an outbox entry to wire ops for apply_ops. One entry may fan out. */
 function toWireOps(entry: { store: string; op: 'put' | 'delete'; payload: any }): SyncOp[] {
   const p = entry.payload ?? {};
@@ -56,13 +79,15 @@ function toWireOps(entry: { store: string; op: 'put' | 'delete'; payload: any })
   switch (entry.store) {
     case 'statistics': {
       // Study events are queued under the statistics store with an `id` and
-      // `ts`; they map to the append-only study_events table.
+      // `ts`. Their wire kind must differ from the statistics blob's kind,
+      // or one apply_ops call updates the same (user_id, kind) row twice and
+      // Postgres rejects the whole batch.
       if (p.id && p.ts && p.kind) {
         return [{
           target: 'event',
           id: p.id,
           ts: p.ts,
-          kind: p.kind,
+          kind: `event_${p.kind}`,
           level: p.level ?? undefined,
           correct: p.correct ?? undefined,
           duration_ms: p.duration_ms ?? undefined,
@@ -155,7 +180,7 @@ export async function flush(): Promise<void> {
 
   try {
     batch = pending.slice(0, BATCH_SIZE);
-    const ops = batch.flatMap(toWireOps);
+    const ops = dedupeOps(batch.flatMap(toWireOps));
 
     if (ops.length === 0) {
       // Nothing mappable — drop them so the queue cannot stall forever.

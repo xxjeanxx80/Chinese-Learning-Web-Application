@@ -57,7 +57,23 @@ export async function initStorage(): Promise<void> {
     // 1. Migrate from legacy localStorage if not done
     await runMigration();
 
-    // 2. Load every store into cache
+    // 2. A sync bug once wrote per-item rows into the singleton blob stores.
+    //    Those rows read back as fake levels and crash the screen, so drop
+    //    anything that is not the singleton before the cache is built.
+    const blobStores = [
+      STORES.CUSTOM_VOCAB, STORES.VOCAB_OVERRIDES, STORES.CUSTOM_SENTENCES,
+      STORES.LEARNED_VOCAB, STORES.LEARNED_SENTENCES,
+      STORES.WRONG_VOCAB, STORES.WRONG_SENTENCES,
+      STORES.STATISTICS, STORES.SETTINGS, STORES.SRS_STATE,
+    ];
+    for (const storeName of blobStores) {
+      const rows = await dbAll<any>(storeName);
+      await Promise.all(
+        rows.filter((r) => r?.id !== 'singleton').map((r) => dbDelete(storeName, r.id)),
+      );
+    }
+
+    // 3. Load every store into cache
     for (const storeName of Object.values(STORES)) {
       if (storeName === STORES.OUTBOX) continue;
       const rows = await dbAll<any>(storeName);
@@ -129,7 +145,8 @@ export async function deleteKeyed(store: string, key: string): Promise<void> {
 
 /** Read an array store (custom vocab, wrong answers, etc.) — returns cached raw rows. */
 export function readRows<T = any>(store: string): T[] {
-  const rows = (cache.get(store) as any[]) || [];
+  const cached = cache.get(store);
+  const rows = Array.isArray(cached) ? cached : [];
   return rows.map((r) => (r && r.payload !== undefined ? r.payload : r)) as T[];
 }
 

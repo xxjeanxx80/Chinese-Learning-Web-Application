@@ -42,8 +42,7 @@ export default function AccountMenu() {
         <IconMenu />
       </button>
 
-      {open && (
-        <div className="account-panel">
+      <div className={`account-panel ${open ? 'open' : ''}`}>
           <div className="account-section">
             <div className="account-label">Tài khoản</div>
             {authState === 'signed-in' ? (
@@ -65,7 +64,6 @@ export default function AccountMenu() {
             <Pomodoro />
           </div>
         </div>
-      )}
-    </div>
+      </div>
   );
 }
