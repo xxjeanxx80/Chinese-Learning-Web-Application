@@ -120,10 +120,12 @@ export function removeWrongAnswer(level: string, vocabulary: Vocabulary): void {
  * Xóa tất cả từ sai
  */
 export function clearAllWrongAnswers(level?: string): void {
-  const allWrong = getWrongAnswers();
-  if (level) {
-    delete allWrong[level];
+  if (!level) {
+    void writeSingleton(STORES.WRONG_VOCAB, {});
+    return;
   }
+  const allWrong = getWrongAnswers();
+  delete allWrong[level];
   void writeSingleton(STORES.WRONG_VOCAB, allWrong);
 }
 

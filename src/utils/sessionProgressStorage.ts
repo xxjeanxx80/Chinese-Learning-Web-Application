@@ -48,3 +48,16 @@ export function loadSessionProgress<T>(mode: string, level: string, subKey: stri
   }
   return defaultValue;
 }
+
+/** Drop every in-progress session and push the empty map to the server. */
+export function clearSessionProgress(): void {
+  const map = readKeyedMap(STORES.SESSION_PROGRESS);
+  void (async () => {
+    const { deleteKeyed } = await import('../storage');
+    for (const key of Object.keys(map)) {
+      await deleteKeyed(STORES.SESSION_PROGRESS, key);
+    }
+    const { enqueue } = await import('../storage/syncQueue');
+    await enqueue(STORES.SESSION_PROGRESS, 'put', { id: 'singleton', payload: {}, updated_at: Date.now() });
+  })();
+}

@@ -2,6 +2,9 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { getStatistics, getStatisticsByPeriod, resetStatistics, Statistics } from '../../utils/statisticsStorage';
 import { getAllLearnedVocabularyCounts, getAllLearnedSentenceCounts, getTotalLearnedVocabularyCount, getTotalLearnedSentenceCount, clearLearnedItems } from '../../utils/learnedItemsStorage';
 import { getVocabulariesForLevel } from '../../utils/vocabularyStorage';
+import { clearAllWrongAnswers } from '../../utils/wrongAnswersStorage';
+import { clearAllWrongSentences } from '../../utils/sentenceWrongAnswersStorage';
+import { clearSessionProgress } from '../../utils/sessionProgressStorage';
 import './StatisticsDashboard.css';
 
 interface StatisticsDashboardProps {
@@ -35,6 +38,9 @@ const StatisticsDashboard: React.FC<StatisticsDashboardProps> = ({ currentLevel:
   const handleReset = () => {
     resetStatistics();
     clearLearnedItems();
+    clearAllWrongAnswers();
+    clearAllWrongSentences();
+    clearSessionProgress();
     const stats = getStatistics();
     stats.wordsByLevel = getAllLearnedVocabularyCounts();
     stats.sentencesByLevel = getAllLearnedSentenceCounts();

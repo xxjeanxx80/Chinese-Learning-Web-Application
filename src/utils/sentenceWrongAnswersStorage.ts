@@ -126,12 +126,14 @@ export function removeWrongSentence(level: string, topic: string, sentence: Sent
  * Xóa tất cả câu sai
  */
 export function clearAllWrongSentences(level?: string, topic?: string): void {
+  if (!level) {
+    void writeSingleton(STORES.WRONG_SENTENCES, {});
+    return;
+  }
   const allWrong = getWrongSentences();
-  if (level && topic) {
-    if (allWrong[level]?.[topic]) {
-      delete allWrong[level][topic];
-    }
-  } else if (level) {
+  if (topic) {
+    if (allWrong[level]?.[topic]) delete allWrong[level][topic];
+  } else {
     delete allWrong[level];
   }
   void writeSingleton(STORES.WRONG_SENTENCES, allWrong);

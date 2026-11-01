@@ -147,22 +147,18 @@ export function addStudySession(
 }
 
 /**
- * Reset tất cả thống kê
+ * Clear learned-item counts and per-level accuracy.
+ * The streak and the total study time are history, not progress, so they stay.
  */
 export function resetStatistics(): void {
-  const emptyStats: Statistics = {
-    dailyStats: [],
-    currentStreak: 0,
-    longestStreak: 0,
-    lastStudyDate: null,
-    totalWordsLearned: 0,
-    totalSentencesLearned: 0,
-    totalTimeSpent: 0,
-    accuracyByLevel: {},
-    wordsByLevel: {},
-    sentencesByLevel: {},
-  };
-  saveStatistics(emptyStats);
+  const stats = getStatistics();
+  stats.dailyStats = [];
+  stats.totalWordsLearned = 0;
+  stats.totalSentencesLearned = 0;
+  stats.accuracyByLevel = {};
+  stats.wordsByLevel = {};
+  stats.sentencesByLevel = {};
+  saveStatistics(stats);
 }
 
 /**
