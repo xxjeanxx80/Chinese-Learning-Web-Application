@@ -13,7 +13,6 @@ import Sidebar from './components/Sidebar/Sidebar';
 import { useAppNavigation } from './hooks/useAppNavigation';
 import { useCustomBackground } from './hooks/useCustomBackground';
 import { Analytics } from '@vercel/analytics/react';
-import { exportBackup, importBackup } from './storage/backup';
 import SyncStatus from './components/SyncStatus';
 
 // Lazy load components
@@ -44,32 +43,6 @@ function App() {
   const [showSupportModal, setShowSupportModal] = useState(false);
   const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false);
   const [isLearnedWordsOpen, setIsLearnedWordsOpen] = useState(false);
-
-  const handleExportBackup = async () => {
-    try {
-      await exportBackup();
-    } catch (e) {
-      console.error('Export backup failed', e);
-      alert('Lỗi khi xuất bản sao lưu!');
-    }
-  };
-
-  const handleImportBackup = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    e.target.value = ''; // allow re-import of same file
-    if (!file) return;
-    try {
-      const res = await importBackup(file, 'replace');
-      if (res.errors > 0) {
-        alert(`Khôi phục: ${res.added} mục, ${res.errors} lỗi.`);
-      } else {
-        alert(`Khôi phục thành công! Đã khôi phục ${res.added} mục. Vui lòng tải lại trang.`);
-      }
-    } catch (err) {
-      console.error('Import backup failed', err);
-      alert('Lỗi khi khôi phục bản sao lưu!');
-    }
-  };
 
   const {
     currentLevel, setCurrentLevel,
@@ -207,28 +180,6 @@ function App() {
                 {theme === 'light' ? '🌙' : '☀️'}
               </button>
 
-              <button
-                onClick={handleExportBackup}
-                className="btn-theme-toggle"
-                title="Xuất bản sao lưu dữ liệu (JSON)"
-                aria-label="Export backup"
-              >
-                💾
-              </button>
-
-              <label
-                className="btn-theme-toggle"
-                title="Khôi phục dữ liệu từ bản sao lưu JSON"
-                style={{ cursor: 'pointer' }}
-              >
-                📂
-                <input
-                  type="file"
-                  accept="application/json,.json"
-                  onChange={handleImportBackup}
-                  style={{ display: 'none' }}
-                />
-              </label>
             </div>
           </div>
         </div>
