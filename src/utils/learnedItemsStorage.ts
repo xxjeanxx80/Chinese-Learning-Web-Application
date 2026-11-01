@@ -51,15 +51,32 @@ export interface LearnedSentences {
  */
 export function getLearnedVocabularies(): LearnedVocabularies {
   const learned = readSingleton<LearnedVocabularies>(STORES.LEARNED_VOCAB, EMPTY_LEARNED);
-  // Migrate old data: thêm passedTests nếu chưa có
+  // A corrupted sync once stored non-item values (the string 'singleton')
+  // inside this blob. Drop anything that is not a learned-item object, and
+  // backfill passedTests for items saved before that field existed.
+  let dirty = false;
   Object.keys(learned).forEach((level) => {
-    Object.keys(learned[level] || {}).forEach((chinese) => {
-      const item = learned[level][chinese];
+    const group = learned[level];
+    if (!group || typeof group !== 'object') {
+      delete learned[level];
+      dirty = true;
+      return;
+    }
+    Object.keys(group).forEach((chinese) => {
+      const item = group[chinese];
+      if (!item || typeof item !== 'object') {
+        delete group[chinese];
+        dirty = true;
+        return;
+      }
       if (!item.passedTests) {
         item.passedTests = { pinyin: false, writing: false, meaning: false };
+        dirty = true;
       }
     });
   });
+  // Persist the cleaned blob so the bad values are not synced back to the server.
+  if (dirty) saveLearnedVocabularies(learned);
   return learned;
 }
 
@@ -68,15 +85,28 @@ export function getLearnedVocabularies(): LearnedVocabularies {
  */
 export function getLearnedSentences(): LearnedSentences {
   const learned = readSingleton<LearnedSentences>(STORES.LEARNED_SENTENCES, EMPTY_LEARNED);
-  // Migrate old data: thêm passedTests nếu chưa có
+  let dirty = false;
   Object.keys(learned).forEach((level) => {
-    Object.keys(learned[level] || {}).forEach((chinese) => {
-      const item = learned[level][chinese];
+    const group = learned[level];
+    if (!group || typeof group !== 'object') {
+      delete learned[level];
+      dirty = true;
+      return;
+    }
+    Object.keys(group).forEach((chinese) => {
+      const item = group[chinese];
+      if (!item || typeof item !== 'object') {
+        delete group[chinese];
+        dirty = true;
+        return;
+      }
       if (!item.passedTests) {
         item.passedTests = { pinyin: false, writing: false, meaning: false };
+        dirty = true;
       }
     });
   });
+  if (dirty) saveLearnedSentences(learned);
   return learned;
 }
 
