@@ -185,9 +185,9 @@ const BLOB_STORES: string[] = [
  */
 export async function enqueueFullSync(): Promise<void> {
   for (const store of [...BLOB_STORES, STORES.STATISTICS]) {
-    const payload = await collapseToBlob(store);
-    if (!payload) continue;
-    await enqueue(store, 'put', { id: 'singleton', payload, updated_at: Date.now() });
+    const collapsed = await collapseToBlob(store);
+    if (!collapsed) continue;
+    await enqueue(store, 'put', { id: 'singleton', payload: collapsed.payload, updated_at: collapsed.updatedAt });
   }
   // Session progress is one row per key locally but one blob on the server.
   const sessions = await dbAll<any>(STORES.SESSION_PROGRESS);
@@ -212,18 +212,20 @@ export async function enqueueFullSync(): Promise<void> {
  * way each store is keyed. A row whose payload is itself an array is the
  * corrupted value that overwrote the server, so it is skipped.
  */
-async function collapseToBlob(store: string): Promise<Record<string, any> | null> {
+async function collapseToBlob(store: string): Promise<{ payload: Record<string, any>; updatedAt: number } | null> {
   const rows = await dbAll<any>(store);
   const out: Record<string, any> = {};
 
   const singleton = rows.find((r) => r?.id === 'singleton');
   const base = singleton?.payload;
   if (base && typeof base === 'object' && !Array.isArray(base)) Object.assign(out, base);
+  let newest = singleton?.updated_at ?? 0;
 
   for (const r of rows) {
     if (!r || r.id === 'singleton') continue;
     const payload = r.payload;
     if (payload == null || typeof payload !== 'object' || Array.isArray(payload)) continue;
+    newest = Math.max(newest, r.updated_at ?? 0);
     if (r.level != null && r.chinese != null) {
       if (!out[r.level]) out[r.level] = {};
       if (!out[r.level][r.chinese]) out[r.level][r.chinese] = payload;
@@ -237,7 +239,7 @@ async function collapseToBlob(store: string): Promise<Record<string, any> | null
     }
   }
 
-  return Object.keys(out).length > 0 ? out : null;
+  return Object.keys(out).length > 0 ? { payload: out, updatedAt: newest } : null;
 }
 
 /** Merge leftover per-item rows into the singleton blob, then delete them. */
@@ -245,7 +247,7 @@ async function foldBlobStore(store: string): Promise<void> {
   const rows = await dbAll<any>(store);
   const extras = rows.filter((r) => r?.id !== 'singleton');
   if (extras.length === 0) return;
-  const payload = await collapseToBlob(store);
-  if (payload) await dbPut(store, { id: 'singleton', payload, updated_at: Date.now() });
+  const collapsed = await collapseToBlob(store);
+  if (collapsed) await dbPut(store, { id: 'singleton', payload: collapsed.payload, updated_at: Date.now() });
   await Promise.all(extras.map((r) => dbDelete(store, r.id)));
 }

@@ -16,7 +16,13 @@ const SESSION_PREFIX = 'hsk_session_';
 export function saveSessionProgress(mode: string, level: string, subKey: string, data: any): void {
   try {
     const key = `${SESSION_PREFIX}${mode}_${level}_${subKey}`;
-    void writeKeyed(STORES.SESSION_PROGRESS, key, toStorable(data));
+    const stored = toStorable(data);
+    // The practice screens save their state on mount even when nothing has
+    // changed. Writing it again would stamp a new time and the next pull would
+    // reload the page to fetch what this browser just uploaded.
+    const current = readKeyedMap(STORES.SESSION_PROGRESS)[key];
+    if (JSON.stringify(current) === JSON.stringify(stored)) return;
+    void writeKeyed(STORES.SESSION_PROGRESS, key, stored);
     // The server stores the whole map as one blob, so upload every key, not
     // just the one that changed. Otherwise the next pull wipes the rest.
     void enqueueSessionSync();
