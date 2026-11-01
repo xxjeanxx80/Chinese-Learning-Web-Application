@@ -109,13 +109,19 @@ function toWireOps(entry: { store: string; op: 'put' | 'delete'; payload: any })
     case 'learned_vocab':
     case 'learned_sentences':
     case 'wrong_vocab':
-    case 'wrong_sentences':
+    case 'wrong_sentences': {
+      // These stores are one object keyed by level. An array here is a leftover
+      // from the old per-item sync, and uploading it would replace the real
+      // progress on the server with garbage.
+      const payload = p.payload ?? p;
+      if (!payload || typeof payload !== 'object' || Array.isArray(payload)) return [];
       return [{
         target: 'content',
         kind: entry.store,
-        payload: p.payload ?? p,
+        payload,
         updated_at: new Date(p.updated_at ?? Date.now()).toISOString(),
       }];
+    }
 
     case 'session_progress':
       // The server keeps one row per kind, so the whole session map travels as

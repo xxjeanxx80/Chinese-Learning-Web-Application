@@ -18,7 +18,6 @@ import {
   dbAll,
   dbClear,
   dbDelete,
-  dbGet,
 } from './db';
 import { enqueue } from './syncQueue';
 import { migrateFromLocalStorage as runMigration } from './migrate';
@@ -185,9 +184,9 @@ export async function enqueueFullSync(): Promise<void> {
     STORES.SRS_STATE,
   ];
   for (const store of blobStores) {
-    const row = await dbGet<any>(store, 'singleton');
-    if (!row || row.payload == null) continue;
-    await enqueue(store, 'put', { id: 'singleton', payload: row.payload, updated_at: row.updated_at });
+    const payload = await collapseToBlob(store);
+    if (!payload) continue;
+    await enqueue(store, 'put', { id: 'singleton', payload, updated_at: Date.now() });
   }
   // Session progress is one row per key locally but one blob on the server.
   const sessions = await dbAll<any>(STORES.SESSION_PROGRESS);
@@ -204,4 +203,38 @@ export async function enqueueFullSync(): Promise<void> {
   // must not download a stale server copy before this upload lands.
   const { flush } = await import('../sync/syncEngine');
   await flush();
+}
+
+/**
+ * The server keeps one object per store, but the first migration wrote one row
+ * per word. Fold those rows back into the object the screens read, keyed the
+ * way each store is keyed. A row whose payload is itself an array is the
+ * corrupted value that overwrote the server, so it is skipped.
+ */
+async function collapseToBlob(store: string): Promise<Record<string, any> | null> {
+  const rows = await dbAll<any>(store);
+  const out: Record<string, any> = {};
+
+  const singleton = rows.find((r) => r?.id === 'singleton');
+  const base = singleton?.payload;
+  if (base && typeof base === 'object' && !Array.isArray(base)) Object.assign(out, base);
+
+  for (const r of rows) {
+    if (!r || r.id === 'singleton') continue;
+    const payload = r.payload;
+    if (payload == null || typeof payload !== 'object' || Array.isArray(payload)) continue;
+    if (r.level != null && r.chinese != null) {
+      if (!out[r.level]) out[r.level] = {};
+      if (!out[r.level][r.chinese]) out[r.level][r.chinese] = payload;
+    } else if (r.level != null && r.topic != null) {
+      if (!out[r.level]) out[r.level] = {};
+      if (!out[r.level][r.topic]) out[r.level][r.topic] = [];
+      out[r.level][r.topic].push(payload);
+    } else if (r.level != null) {
+      if (!out[r.level]) out[r.level] = [];
+      out[r.level].push(payload);
+    }
+  }
+
+  return Object.keys(out).length > 0 ? out : null;
 }
