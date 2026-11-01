@@ -60,11 +60,27 @@ export function loadSessionProgress<T>(mode: string, level: string, subKey: stri
     const key = `${SESSION_PREFIX}${mode}_${level}_${subKey}`;
     const map = readKeyedMap(STORES.SESSION_PROGRESS);
     const stored = map[key];
-    if (stored) {
-      return stored as T;
+    if (stored !== undefined && stored !== null) {
+      return revive(stored) as T;
     }
   } catch (error) {
     console.error(`Error loading session progress for ${mode}_${level}_${subKey}:`, error);
   }
   return defaultValue;
+}
+
+/**
+ * IndexedDB stores plain objects, so a Map or Set comes back as
+ * {dataType, value}. Rebuild the real collection. Also accept a bare
+ * entries array, which is what older saves persisted.
+ */
+function revive(stored: any): any {
+  if (stored && typeof stored === 'object' && !Array.isArray(stored)) {
+    if (stored.dataType === 'Map' && Array.isArray(stored.value)) return new Map(stored.value);
+    if (stored.dataType === 'Set' && Array.isArray(stored.value)) return new Set(stored.value);
+  }
+  if (Array.isArray(stored) && stored.every((e) => Array.isArray(e) && e.length === 2)) {
+    return new Map(stored);
+  }
+  return stored;
 }
