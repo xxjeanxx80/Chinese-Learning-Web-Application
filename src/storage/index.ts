@@ -56,20 +56,12 @@ export async function initStorage(): Promise<void> {
     // 1. Migrate from legacy localStorage if not done
     await runMigration();
 
-    // 2. A sync bug once wrote per-item rows into the singleton blob stores.
-    //    Those rows read back as fake levels and crash the screen, so drop
-    //    anything that is not the singleton before the cache is built.
-    const blobStores = [
-      STORES.CUSTOM_VOCAB, STORES.VOCAB_OVERRIDES, STORES.CUSTOM_SENTENCES,
-      STORES.LEARNED_VOCAB, STORES.LEARNED_SENTENCES,
-      STORES.WRONG_VOCAB, STORES.WRONG_SENTENCES,
-      STORES.STATISTICS, STORES.SETTINGS, STORES.SRS_STATE,
-    ];
-    for (const storeName of blobStores) {
-      const rows = await dbAll<any>(storeName);
-      await Promise.all(
-        rows.filter((r) => r?.id !== 'singleton').map((r) => dbDelete(storeName, r.id)),
-      );
+    // 2. The first migration stored one row per word, and a later sync stored
+    //    the whole list as the cache. Fold any leftover per-word rows into the
+    //    singleton blob and delete them, so the cache and the server both see
+    //    one object and nothing gets wiped on the next load.
+    for (const storeName of BLOB_STORES) {
+      await foldBlobStore(storeName);
     }
 
     // 3. Load every store into cache
@@ -86,6 +78,14 @@ export async function initStorage(): Promise<void> {
           map[r.id] = r.payload ?? r;
         });
         cache.set(storeName, map);
+      } else if (BLOB_STORES.includes(storeName)) {
+        // Learned words, wrong answers and the rest are one object per store.
+        // The cache must be that object. Caching the raw row list made
+        // readSingleton return an array, and the cleanup pass then treated
+        // every entry as corrupt and wiped it on the next load.
+        const row = rows.find((r) => r.id === 'singleton');
+        const payload = row?.payload;
+        cache.set(storeName, payload && typeof payload === 'object' && !Array.isArray(payload) ? payload : {});
       } else {
         cache.set(storeName, rows);
       }
@@ -166,24 +166,25 @@ export async function writeRows<T = any>(store: string, rows: T[]): Promise<void
 export { STORES } from './types';
 export type { StoreName } from './types';
 
+// Stores that hold one object rather than one row per item.
+const BLOB_STORES: string[] = [
+  STORES.CUSTOM_VOCAB,
+  STORES.VOCAB_OVERRIDES,
+  STORES.CUSTOM_SENTENCES,
+  STORES.LEARNED_VOCAB,
+  STORES.LEARNED_SENTENCES,
+  STORES.WRONG_VOCAB,
+  STORES.WRONG_SENTENCES,
+  STORES.SRS_STATE,
+];
+
 /**
  * Queue every persisted store for upload.
  * Existing data was written before sync existed, so it never entered the
  * outbox. Called once on sign-in; the server keeps the newer copy (LWW).
  */
 export async function enqueueFullSync(): Promise<void> {
-  const blobStores = [
-    STORES.CUSTOM_VOCAB,
-    STORES.VOCAB_OVERRIDES,
-    STORES.CUSTOM_SENTENCES,
-    STORES.LEARNED_VOCAB,
-    STORES.LEARNED_SENTENCES,
-    STORES.WRONG_VOCAB,
-    STORES.WRONG_SENTENCES,
-    STORES.STATISTICS,
-    STORES.SRS_STATE,
-  ];
-  for (const store of blobStores) {
+  for (const store of [...BLOB_STORES, STORES.STATISTICS]) {
     const payload = await collapseToBlob(store);
     if (!payload) continue;
     await enqueue(store, 'put', { id: 'singleton', payload, updated_at: Date.now() });
@@ -237,4 +238,14 @@ async function collapseToBlob(store: string): Promise<Record<string, any> | null
   }
 
   return Object.keys(out).length > 0 ? out : null;
+}
+
+/** Merge leftover per-item rows into the singleton blob, then delete them. */
+async function foldBlobStore(store: string): Promise<void> {
+  const rows = await dbAll<any>(store);
+  const extras = rows.filter((r) => r?.id !== 'singleton');
+  if (extras.length === 0) return;
+  const payload = await collapseToBlob(store);
+  if (payload) await dbPut(store, { id: 'singleton', payload, updated_at: Date.now() });
+  await Promise.all(extras.map((r) => dbDelete(store, r.id)));
 }
