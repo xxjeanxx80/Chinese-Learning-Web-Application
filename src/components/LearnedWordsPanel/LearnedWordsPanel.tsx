@@ -5,6 +5,7 @@ import { speakChinese } from '../../utils/speakChinese';
 import { getLearnedVocabularies, getLearnedSentences } from '../../utils/learnedItemsStorage';
 import { getWrongAnswersByLevel } from '../../utils/wrongAnswersStorage';
 import { getWrongSentences } from '../../utils/sentenceWrongAnswersStorage';
+import { getSentencesForLevel } from '../../utils/sentenceStorage';
 import StrokeOrderModal from '../StrokeOrderModal';
 import './LearnedWordsPanel.css';
 
@@ -76,13 +77,16 @@ const LearnedWordsPanel: React.FC<LearnedWordsPanelProps> = ({
     };
   }, [level, itemType]);
 
-  // Filter and prepare items
+  // Filter and prepare items. For sentences the caller passes only the current
+  // topic, which would hide sentences learned or missed in every other topic,
+  // so scan the whole level instead.
   const { learnedList, wrongList } = useMemo(() => {
     const levelLearned = (globalLearned as any)[level] || {};
     const resultLearned: any[] = [];
     const resultWrong: any[] = [];
-    
-    vocabularies.forEach((item, index) => {
+    const items = itemType === 'sentence' ? getSentencesForLevel(level) : vocabularies;
+
+    items.forEach((item, index) => {
       const chinese = item.chinese;
       const isSessionTrue = wordResults.has(chinese) && wordResults.get(chinese) === true;
       const isSessionFalse = wordResults.has(chinese) && wordResults.get(chinese) === false;
@@ -112,7 +116,7 @@ const LearnedWordsPanel: React.FC<LearnedWordsPanelProps> = ({
       learnedList: resultLearned.sort(sortFn),
       wrongList: resultWrong.sort(sortFn)
     };
-  }, [globalLearned, globalWrong, level, vocabularies, wordResults]);
+  }, [globalLearned, globalWrong, level, itemType, vocabularies, wordResults]);
 
   const displayItems = activeTab === 'learned' ? learnedList : wrongList;
 
