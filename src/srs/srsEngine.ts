@@ -121,9 +121,13 @@ export function reviewSrsItem(kind: SrsKind, refId: string, correct: boolean): S
   }
 
   const days = BOX_INTERVAL_DAYS[item.box] ?? BOX_INTERVAL_DAYS[MAX_BOX];
-  const ms = item.box === 0
-    ? BOX_INTERVAL_MINUTES * 60 * 1000
-    : Math.round(days * item.ease * 24 * 60 * 60 * 1000);
+  // A wrong answer is due again immediately, so it shows up in Ôn hôm nay
+  // right away instead of disappearing for 10 minutes.
+  const ms = !correct
+    ? 0
+    : item.box === 0
+      ? BOX_INTERVAL_MINUTES * 60 * 1000
+      : Math.round(days * item.ease * 24 * 60 * 60 * 1000);
 
   item.dueAt = now + ms;
   item.lastReviewed = now;

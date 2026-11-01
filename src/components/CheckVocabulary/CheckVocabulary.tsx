@@ -169,15 +169,15 @@ const CheckVocabulary: React.FC<CheckVocabularyProps> = ({ level }) => {
     <>
     <div className="check-vocab">
       <div className="score-display">
-        <span>Từ đã học được: {score.correct}/{score.total}</span>
+        <span className="score-count">{score.correct}/{score.total}</span>
         {score.total > 0 && (
           <span className="percentage">
-            ({Math.round((score.correct / score.total) * 100)}%)
+            {Math.round((score.correct / score.total) * 100)}%
           </span>
         )}
         {wordResults.size > 0 && (
           <span className="progress-info">
-            (Đã làm: {wordResults.size}/{score.total})
+            đã làm {wordResults.size}
           </span>
         )}
       </div>

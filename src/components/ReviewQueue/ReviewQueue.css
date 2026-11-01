@@ -15,10 +15,12 @@
   padding: 40px 32px;
   max-width: 460px;
   width: 100%;
-  border-radius: 18px;
-  background: var(--card, #fff);
-  border: 1px solid var(--border, rgba(0, 0, 0, 0.08));
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+  border-radius: var(--apple-radius-lg);
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: var(--glass-border-light);
+  box-shadow: var(--glass-shadow), var(--glass-inner-light);
   text-align: center;
 }
 
@@ -30,17 +32,17 @@
 .review-start-card h2 {
   margin: 0;
   font-size: 1.35rem;
-  color: var(--foreground, #222);
+  color: var(--text-primary);
 }
 
 .review-due-count {
   margin: 0;
   font-size: 0.95rem;
-  color: var(--foreground, #222);
+  color: var(--text-primary);
 }
 
 .review-due-count strong {
-  color: var(--accent, #ff3b30);
+  color: var(--accent-primary);
   font-size: 1.1rem;
 }
 
@@ -48,7 +50,7 @@
   margin: 0;
   font-size: 0.85rem;
   line-height: 1.5;
-  color: var(--muted-foreground, #666);
+  color: var(--text-secondary);
 }
 
 .review-start-btn {
@@ -56,8 +58,8 @@
   padding: 11px 24px;
   border: none;
   border-radius: 11px;
-  background: var(--accent, #ff3b30);
-  color: #fff;
+  background: var(--accent-primary);
+  color: #06221f;
   font-size: 0.95rem;
   font-weight: 600;
   cursor: pointer;
@@ -78,9 +80,9 @@
   margin-top: 8px;
   padding: 11px 20px;
   border-radius: 11px;
-  border: 1px solid var(--border, rgba(0, 0, 0, 0.15));
+  border: 1px solid var(--border-color);
   background: transparent;
-  color: var(--muted-foreground, #666);
+  color: var(--text-secondary);
   font-size: 0.9rem;
   cursor: pointer;
 }
@@ -97,7 +99,7 @@
   width: 100%;
   max-width: 520px;
   font-size: 0.82rem;
-  color: var(--muted-foreground, #666);
+  color: var(--text-secondary);
 }
 
 .review-progress-accuracy {
@@ -113,10 +115,12 @@
   width: 100%;
   max-width: 520px;
   padding: 34px 28px 28px;
-  border-radius: 18px;
-  background: var(--card, #fff);
-  border: 1px solid var(--border, rgba(0, 0, 0, 0.08));
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+  border-radius: var(--apple-radius-lg);
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: var(--glass-border-light);
+  box-shadow: var(--glass-shadow), var(--glass-inner-light);
 }
 
 .review-speak {
@@ -134,22 +138,22 @@
   font-size: 3.2rem;
   font-weight: 600;
   line-height: 1.2;
-  color: var(--foreground, #222);
+  color: var(--text-primary);
   text-align: center;
   word-break: break-word;
 }
 
 .review-question {
   font-size: 0.9rem;
-  color: var(--muted-foreground, #666);
+  color: var(--text-secondary);
 }
 
 .review-reveal-btn {
   padding: 10px 22px;
   border-radius: 10px;
-  border: 1px solid var(--border, rgba(0, 0, 0, 0.15));
+  border: 1px solid var(--border-color);
   background: transparent;
-  color: var(--foreground, #222);
+  color: var(--text-primary);
   font-size: 0.9rem;
   cursor: pointer;
 }
@@ -173,20 +177,20 @@
 
 .review-answer-pinyin {
   font-size: 1.05rem;
-  color: var(--accent, #ff3b30);
+  color: var(--accent-primary);
   font-style: italic;
 }
 
 .review-answer-hanviet {
   font-size: 0.95rem;
   letter-spacing: 0.04em;
-  color: var(--muted-foreground, #888);
+  color: var(--text-tertiary);
 }
 
 .review-answer-vi {
   font-size: 1.15rem;
   font-weight: 600;
-  color: var(--foreground, #222);
+  color: var(--text-primary);
   text-align: center;
 }
 

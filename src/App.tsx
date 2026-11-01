@@ -11,9 +11,9 @@ import MobileDrawer from './components/MobileDrawer';
 import BottomNavBar from './components/BottomNavBar';
 import Sidebar from './components/Sidebar/Sidebar';
 import { useAppNavigation } from './hooks/useAppNavigation';
-import { useCustomBackground } from './hooks/useCustomBackground';
 import { Analytics } from '@vercel/analytics/react';
-import SyncStatus from './components/SyncStatus';
+import AccountMenu from './components/AccountMenu/AccountMenu';
+import { IconMenu, IconBook, IconMoon, IconSun } from './components/Icons/Icons';
 
 // Lazy load components
 const CheckVocabulary = lazy(() => import('./components/CheckVocabulary'));
@@ -50,10 +50,6 @@ function App() {
     expandedMenu, setExpandedMenu,
     currentTopic, setCurrentTopic
   } = useAppNavigation();
-
-  const {
-    customBackground, handleBackgroundUpload, removeCustomBackground
-  } = useCustomBackground();
 
   const renderFunction = useMemo(() => {
     const props = { level: currentLevel };
@@ -96,6 +92,11 @@ function App() {
   });
 
   useEffect(() => {
+    // The custom-background feature was removed; drop any previously saved image.
+    if (localStorage.getItem('custom_app_background')) {
+      localStorage.removeItem('custom_app_background');
+      document.body.style.backgroundImage = '';
+    }
     const handleShortcutsModal = (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && e.key === '/') {
         e.preventDefault();
@@ -117,7 +118,7 @@ function App() {
               aria-label="Mở menu"
               title="Menu"
             >
-              ☰
+              <IconMenu />
             </button>
             <div className="logo-container">
               <img src="/mikulogo.jpg" alt="MikuHan Logo" className="app-logo" />
@@ -137,38 +138,15 @@ function App() {
               />
             )}
             <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-              <SyncStatus />
-              {customBackground ? (
-                <button
-                  onClick={removeCustomBackground}
-                  className="btn-theme-toggle"
-                  title="Xoá ảnh nền tuỳ chỉnh"
-                  style={{ background: 'rgba(255, 59, 48, 0.2)', borderColor: 'rgba(255, 59, 48, 0.5)' }}
-                >
-                  🗑️
-                </button>
-              ) : (
-                <label
-                  className="btn-theme-toggle"
-                  title="Tải lên ảnh nền (Dưới 5MB)"
-                  style={{ cursor: 'pointer' }}
-                >
-                  <input
-                    type="file" accept="image/*"
-                    onChange={handleBackgroundUpload}
-                    style={{ display: 'none' }}
-                  />
-                  🖼️
-                </label>
-              )}
-              
+              <AccountMenu />
+
               <button
                 onClick={() => setIsLearnedWordsOpen(prev => !prev)}
                 className={`btn-theme-toggle btn-learned-toggle ${isLearnedWordsOpen ? 'active' : ''}`}
                 title="Xem danh sách từ/câu đã học hoặc sai"
                 aria-label="Toggle learned words panel"
               >
-                📖
+                <IconBook />
               </button>
 
               <button
@@ -177,7 +155,7 @@ function App() {
                 title={theme === 'light' ? 'Chuyển sang Dark Mode' : 'Chuyển sang Light Mode'}
                 aria-label="Toggle theme"
               >
-                {theme === 'light' ? '🌙' : '☀️'}
+                {theme === 'light' ? <IconMoon /> : <IconSun />}
               </button>
 
             </div>

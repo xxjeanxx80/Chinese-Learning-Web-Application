@@ -4,25 +4,25 @@
 }
 
 .score-display {
-  margin-bottom: 30px;
-  font-size: 1.2rem;
-  font-weight: 600;
-  color: var(--accent-primary, #667eea);
+  margin-bottom: 24px;
   display: flex;
   justify-content: center;
+  align-items: baseline;
   gap: 10px;
-  align-items: center;
+  font-variant-numeric: tabular-nums;
 }
 
-.percentage {
-  font-size: 0.9rem;
-  color: var(--text-secondary, #666);
+.score-count {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text-primary);
 }
 
+.percentage,
 .progress-info {
   font-size: 0.85rem;
-  color: var(--text-tertiary, #999);
   font-weight: 500;
+  color: var(--text-secondary);
 }
 
 .word-display {

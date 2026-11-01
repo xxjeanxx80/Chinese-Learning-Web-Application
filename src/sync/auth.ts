@@ -7,6 +7,7 @@
  */
 
 import { getSupabase, isSupabaseConfigured } from './supabase';
+import { enqueueFullSync } from '../storage';
 import type { Session, User } from '@supabase/supabase-js';
 
 export type AuthState = 'loading' | 'signed-out' | 'signed-in';
@@ -96,8 +97,21 @@ export async function initAuth(): Promise<void> {
 
   const { data } = await supabase.auth.getSession();
   emit(data.session ? 'signed-in' : 'signed-out', data.session?.user ?? null);
+  if (data.session) void syncNow();
 
   supabase.auth.onAuthStateChange((_event: string, session: Session | null) => {
+    const was = currentUser?.id ?? null;
+    const next = session?.user.id ?? null;
     emit(session ? 'signed-in' : 'signed-out', session?.user ?? null);
+    // Only when the signed-in user actually changes — not on token refresh.
+    if (next && next !== was) void syncNow();
+  });
+}
+
+/** Push this browser's existing data, then pull whatever the server has newer. */
+function syncNow(): Promise<void> {
+  return enqueueFullSync().then(async () => {
+    const { pull } = await import('./syncEngine');
+    await pull();
   });
 }

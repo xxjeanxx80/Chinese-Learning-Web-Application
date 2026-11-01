@@ -1,4 +1,5 @@
 import React from 'react';
+import { IconChevron } from '../Icons/Icons';
 import { 
   FunctionType, 
   MenuGroup, 
@@ -53,7 +54,7 @@ const Sidebar: React.FC<SidebarProps> = ({
         >
           {renderIcon(group.iconPath)}
           <span className="menu-text">{group.label}</span>
-          <span className="menu-arrow">{isExpanded ? '▼' : '▶'}</span>
+          <span className={`menu-arrow ${isExpanded ? 'open' : ''}`}><IconChevron /></span>
         </button>
         <div className={`menu-submenu ${isExpanded ? 'expanded' : 'collapsed'}`}>
           {group.items.map(item => renderMenuItem(item))}

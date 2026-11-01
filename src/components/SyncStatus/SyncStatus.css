@@ -34,16 +34,16 @@
 }
 
 .sync-login-popover {
-  position: absolute;
-  top: calc(100% + 8px);
-  right: 0;
-  z-index: 1000;
-  width: 280px;
-  padding: 14px;
-  border-radius: 12px;
-  background: var(--card, #fff);
-  border: 1px solid var(--border, rgba(0, 0, 0, 0.1));
-  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.18);
+  position: static;
+  top: auto;
+  right: auto;
+  z-index: auto;
+  width: auto;
+  padding: 0;
+  border-radius: 0;
+  background: transparent;
+  border: none;
+  box-shadow: none;
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -52,22 +52,22 @@
 .sync-login-title {
   font-weight: 600;
   font-size: 0.9rem;
-  color: var(--foreground, #222);
+  color: var(--text-primary);
 }
 
 .sync-login-hint {
   font-size: 0.75rem;
   line-height: 1.4;
-  color: var(--muted-foreground, #666);
+  color: var(--text-secondary);
 }
 
 .sync-login-input {
   width: 100%;
   padding: 8px 10px;
   border-radius: 8px;
-  border: 1px solid var(--border, rgba(0, 0, 0, 0.15));
-  background: var(--background, #fff);
-  color: var(--foreground, #222);
+  border: 1px solid var(--border-color);
+  background: var(--glass-bg);
+  color: var(--text-primary);
   font-size: 0.85rem;
   box-sizing: border-box;
 }
@@ -82,8 +82,8 @@
   padding: 7px 10px;
   border-radius: 8px;
   border: none;
-  background: var(--accent, #ff3b30);
-  color: #fff;
+  background: var(--accent-primary);
+  color: #06221f;
   font-size: 0.8rem;
   font-weight: 600;
   cursor: pointer;
@@ -96,16 +96,16 @@
 .sync-login-cancel {
   padding: 7px 10px;
   border-radius: 8px;
-  border: 1px solid var(--border, rgba(0, 0, 0, 0.15));
+  border: 1px solid var(--border-color);
   background: transparent;
-  color: var(--muted-foreground, #666);
+  color: var(--text-secondary);
   font-size: 0.8rem;
   cursor: pointer;
 }
 
 .sync-login-msg {
   font-size: 0.72rem;
-  color: var(--muted-foreground, #666);
+  color: var(--text-secondary);
   line-height: 1.4;
 }
 

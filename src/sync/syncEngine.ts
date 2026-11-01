@@ -81,6 +81,10 @@ function toWireOps(entry: { store: string; op: 'put' | 'delete'; payload: any })
     case 'custom_vocab':
     case 'vocab_overrides':
     case 'custom_sentences':
+    case 'learned_vocab':
+    case 'learned_sentences':
+    case 'wrong_vocab':
+    case 'wrong_sentences':
       return [{
         target: 'content',
         kind: entry.store,
@@ -110,40 +114,11 @@ function toWireOps(entry: { store: string; op: 'put' | 'delete'; payload: any })
     }
 
     case 'learned_vocab':
-    case 'learned_sentences': {
-      const chinese = p.chinese ?? p.payload?.chinese;
-      if (!chinese) return [];
-      const item = p.payload ?? p;
-      return [{
-        target: 'item',
-        kind: entry.store === 'learned_vocab' ? 'vocab' : 'sentence',
-        ref_id: chinese,
-        status: item.passedTests?.pinyin && item.passedTests?.writing && item.passedTests?.meaning
-          ? 'mastered'
-          : 'learning',
-        srs_box: 0,
-        wrong_count: 0,
-        deleted: false,
-        updated_at: new Date(item.lastPracticed ?? p.updated_at ?? Date.now()).toISOString(),
-      }];
-    }
-
+    case 'learned_sentences':
     case 'wrong_vocab':
-    case 'wrong_sentences': {
-      const item = p.payload ?? p;
-      const chinese = item.vocabulary?.chinese ?? item.sentence?.chinese;
-      if (!chinese) return [];
-      return [{
-        target: 'item',
-        kind: entry.store === 'wrong_vocab' ? 'vocab' : 'sentence',
-        ref_id: chinese,
-        status: 'learning',
-        srs_box: 0,
-        wrong_count: item.wrongCount ?? 0,
-        deleted: false,
-        updated_at: new Date(item.lastWrong ?? p.updated_at ?? Date.now()).toISOString(),
-      }];
-    }
+    case 'wrong_sentences':
+      // Whole-store blobs, handled above as custom_content.
+      return [];
 
     default:
       return [];
@@ -224,12 +199,29 @@ export function scheduleFlush(): void {
   idleTimer = setTimeout(() => void flush(), IDLE_FLUSH_MS);
 }
 
-/** Pull remote changes newer than the given cursor into local storage. */
+/** Pull remote changes into local storage, then reload so the UI sees them. */
 export async function pull(sinceIso?: string): Promise<void> {
   const supabase = getSupabase();
   if (!supabase || !isSupabaseConfigured) return;
   const { data: sessionData } = await supabase.auth.getSession();
   if (!sessionData.session) return;
+
+  const { data: content, error: contentError } = await supabase
+    .from('custom_content')
+    .select('kind, payload, updated_at');
+
+  if (contentError) {
+    console.warn('[sync] pull content failed:', contentError.message);
+  } else if (content && content.length > 0) {
+    const { applyRemoteContent } = await import('./applyRemote');
+    const changed = await applyRemoteContent(content);
+    if (changed) {
+      // Blobs were merged under the React tree; a reload is the only way the
+      // in-memory cache and mounted screens agree with what just arrived.
+      window.location.reload();
+      return;
+    }
+  }
 
   const { data, error } = await supabase
     .from('learning_items')

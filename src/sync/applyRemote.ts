@@ -5,7 +5,7 @@
  * wins if it is strictly newer than what we have locally.
  */
 
-import { dbPut, dbAll } from '../storage/db';
+import { dbPut, dbAll, dbGet } from '../storage/db';
 import { STORES } from '../storage/types';
 
 export interface RemoteLearningItem {
@@ -62,4 +62,41 @@ export async function applyRemoteItems(rows: RemoteLearningItem[]): Promise<void
     await dbPut(store, wrapped);
     map.set(id, wrapped);
   }
+}
+
+const CONTENT_STORES = new Set<string>([
+  STORES.CUSTOM_VOCAB,
+  STORES.VOCAB_OVERRIDES,
+  STORES.CUSTOM_SENTENCES,
+  STORES.LEARNED_VOCAB,
+  STORES.LEARNED_SENTENCES,
+  STORES.WRONG_VOCAB,
+  STORES.WRONG_SENTENCES,
+  STORES.STATISTICS,
+  STORES.SRS_STATE,
+]);
+
+export interface RemoteContent {
+  kind: string;
+  payload: any;
+  updated_at: string;
+}
+
+/**
+ * Merge server blobs into the singleton stores.
+ * Returns true when at least one local row changed, so the caller can reload.
+ * A remote blob only wins when it is strictly newer than the local copy.
+ */
+export async function applyRemoteContent(rows: RemoteContent[]): Promise<boolean> {
+  let changed = false;
+  for (const row of rows) {
+    if (!CONTENT_STORES.has(row.kind) || row.payload == null) continue;
+    const existing = await dbGet<any>(row.kind, 'singleton');
+    const localTs = existing?.updated_at ? new Date(existing.updated_at).getTime() : 0;
+    const remoteTs = new Date(row.updated_at).getTime();
+    if (localTs >= remoteTs) continue;
+    await dbPut(row.kind, { id: 'singleton', payload: row.payload, updated_at: remoteTs });
+    changed = true;
+  }
+  return changed;
 }

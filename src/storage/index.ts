@@ -18,6 +18,7 @@ import {
   dbAll,
   dbClear,
   dbDelete,
+  dbGet,
 } from './db';
 import { enqueue } from './syncQueue';
 import { migrateFromLocalStorage as runMigration } from './migrate';
@@ -150,3 +151,35 @@ export async function writeRows<T = any>(store: string, rows: T[]): Promise<void
 // Re-export STORES for convenience
 export { STORES } from './types';
 export type { StoreName } from './types';
+
+/**
+ * Queue every persisted store for upload.
+ * Existing data was written before sync existed, so it never entered the
+ * outbox. Called once on sign-in; the server keeps the newer copy (LWW).
+ */
+export async function enqueueFullSync(): Promise<void> {
+  const blobStores = [
+    STORES.CUSTOM_VOCAB,
+    STORES.VOCAB_OVERRIDES,
+    STORES.CUSTOM_SENTENCES,
+    STORES.LEARNED_VOCAB,
+    STORES.LEARNED_SENTENCES,
+    STORES.WRONG_VOCAB,
+    STORES.WRONG_SENTENCES,
+    STORES.STATISTICS,
+    STORES.SRS_STATE,
+  ];
+  for (const store of blobStores) {
+    const row = await dbGet<any>(store, 'singleton');
+    if (!row || row.payload == null) continue;
+    await enqueue(store, 'put', { id: 'singleton', payload: row.payload, updated_at: row.updated_at });
+  }
+  const sessions = await dbAll<any>(STORES.SESSION_PROGRESS);
+  for (const row of sessions) {
+    await enqueue(STORES.SESSION_PROGRESS, 'put', { id: row.id, payload: row.payload, updated_at: row.updated_at });
+  }
+  // Flush now, not on the 5s debounce: the caller pulls immediately after and
+  // must not download a stale server copy before this upload lands.
+  const { flush } = await import('../sync/syncEngine');
+  await flush();
+}

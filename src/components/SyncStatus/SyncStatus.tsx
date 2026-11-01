@@ -8,9 +8,10 @@
 import { useEffect, useState } from 'react';
 import { sendMagicLink, verifyEmailCode, signOut, onAuthChange, getAuthState } from '../../sync/auth';
 import { onSyncStateChange, getSyncState, flush } from '../../sync/syncEngine';
+import { IconHourglass, IconCloudOff, IconAlert, IconCloud, IconPower } from '../Icons/Icons';
 import './SyncStatus.css';
 
-export default function SyncStatus() {
+export default function SyncStatus({ hideButton = false }: { hideButton?: boolean }) {
   const [authState, setAuthState] = useState(getAuthState());
   const [syncState, setSyncState] = useState(getSyncState());
   const [email, setEmail] = useState('');
@@ -37,11 +38,10 @@ export default function SyncStatus() {
   };
 
   const label =
-    syncState === 'syncing' ? '⏳'
-    : syncState === 'offline' ? '📴'
-    : syncState === 'error' ? '⚠️'
-    : authState === 'signed-in' ? '☁️'
-    : '☁️';
+    syncState === 'syncing' ? <IconHourglass />
+    : syncState === 'offline' ? <IconCloudOff />
+    : syncState === 'error' ? <IconAlert />
+    : <IconCloud />;
 
   const title =
     syncState === 'syncing' ? 'Đang đồng bộ...'
@@ -52,32 +52,34 @@ export default function SyncStatus() {
 
   return (
     <div className="sync-status-wrap">
-      <button
-        className={`btn-theme-toggle sync-status-btn sync-${syncState} ${authState === 'signed-in' ? 'sync-authed' : ''}`}
-        title={title}
-        aria-label={title}
-        onClick={() => {
-          if (authState === 'signed-in') {
-            void flush();
-          } else {
-            setShowLogin((v) => !v);
-          }
-        }}
-      >
-        {label}
-      </button>
+      {!hideButton && (
+        <button
+          className={`btn-theme-toggle sync-status-btn sync-${syncState} ${authState === 'signed-in' ? 'sync-authed' : ''}`}
+          title={title}
+          aria-label={title}
+          onClick={() => {
+            if (authState === 'signed-in') {
+              void flush();
+            } else {
+              setShowLogin((v) => !v);
+            }
+          }}
+        >
+          {label}
+        </button>
+      )}
 
-      {authState === 'signed-in' && (
+      {authState === 'signed-in' && !hideButton && (
         <button
           className="btn-theme-toggle sync-signout"
           title="Đăng xuất"
           onClick={() => void signOut()}
         >
-          ⏻
+          <IconPower />
         </button>
       )}
 
-      {showLogin && authState !== 'signed-in' && (
+      {(showLogin || hideButton) && authState !== 'signed-in' && (
         <div className="sync-login-popover">
           <div className="sync-login-title">Đăng nhập để đồng bộ</div>
           <div className="sync-login-hint">

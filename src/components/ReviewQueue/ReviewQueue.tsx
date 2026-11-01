@@ -42,30 +42,26 @@ const ReviewQueue: React.FC<ReviewQueueProps> = ({ level }) => {
 
   const buildCards = useCallback((): Card[] => {
     const due = getDueItems();
+    // Review across every level. Filtering to the level selected in the header
+    // hid items the user had just got wrong on a different level.
+    const levels = ['hsk1', 'hsk2', 'hsk3', 'hsk4', 'hsk5', 'tuluyen'];
+
     const vocabMap = new Map<string, { chinese: string; pinyin: string; vietnamese: string }>();
-    getVocabulariesForLevel(level).forEach((v) => vocabMap.set(v.chinese, v));
+    levels.forEach((lv) => getVocabulariesForLevel(lv).forEach((v) => vocabMap.set(v.chinese, v)));
 
     const sentenceMap = new Map<string, { chinese: string; pinyin: string; vietnamese: string }>();
-    getSentencesForLevel(level).forEach((s) =>
-      sentenceMap.set(s.chinese.replace(/[.。?？！!]/g, ''), s)
-    );
+    levels.forEach((lv) => getSentencesForLevel(lv).forEach((s) => {
+      sentenceMap.set(s.chinese, s);
+      sentenceMap.set(s.chinese.replace(/[.。?？！!]/g, ''), s);
+    }));
 
     const result: Card[] = [];
     due.forEach((item) => {
-      if (item.kind === 'vocab') {
-        const v = vocabMap.get(item.refId);
-        if (v) {
-          result.push({ srs: item, ...v, isSentence: false });
-          return;
-        }
-      }
-      const s = sentenceMap.get(item.refId);
-      if (s) {
-        result.push({ srs: item, ...s, isSentence: true });
-      }
+      const found = item.kind === 'vocab' ? vocabMap.get(item.refId) : sentenceMap.get(item.refId);
+      if (found) result.push({ srs: item, ...found, isSentence: item.kind === 'sentence' });
     });
     return result;
-  }, [level]);
+  }, []);
 
   useEffect(() => {
     setDueNow(getDueCount());
