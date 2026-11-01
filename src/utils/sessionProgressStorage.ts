@@ -47,9 +47,19 @@ export function saveSessionProgress(mode: string, level: string, subKey: string,
     const serialized = JSON.stringify(data, replacer);
     const parsed = JSON.parse(serialized, reviver);
     void writeKeyed(STORES.SESSION_PROGRESS, key, parsed);
+    // The server stores the whole map as one blob, so upload every key, not
+    // just the one that changed. Otherwise the next pull wipes the rest.
+    void enqueueSessionSync();
   } catch (error) {
     console.error(`Error saving session progress for ${mode}_${level}_${subKey}:`, error);
   }
+}
+
+async function enqueueSessionSync(): Promise<void> {
+  const { readKeyedMap } = await import('../storage');
+  const map = readKeyedMap(STORES.SESSION_PROGRESS);
+  const { enqueue } = await import('../storage/syncQueue');
+  await enqueue(STORES.SESSION_PROGRESS, 'put', { id: 'singleton', payload: map, updated_at: Date.now() });
 }
 
 /**

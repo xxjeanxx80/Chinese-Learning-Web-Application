@@ -117,6 +117,16 @@ function toWireOps(entry: { store: string; op: 'put' | 'delete'; payload: any })
         updated_at: new Date(p.updated_at ?? Date.now()).toISOString(),
       }];
 
+    case 'session_progress':
+      // The server keeps one row per kind, so the whole session map travels as
+      // a single blob. A per-key write would overwrite every other key.
+      return [{
+        target: 'content',
+        kind: 'session_progress',
+        payload: p.payload ?? p,
+        updated_at: new Date(p.updated_at ?? Date.now()).toISOString(),
+      }];
+
     case 'srs_state': {
       // SRS scheduling mirrors into learning_items (srs_box / srs_due_at).
       const state = p.payload ?? p;

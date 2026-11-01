@@ -5,7 +5,7 @@
  * wins if it is strictly newer than what we have locally.
  */
 
-import { dbPut, dbGet } from '../storage/db';
+import { dbPut, dbGet, dbAll, dbDelete } from '../storage/db';
 import { STORES } from '../storage/types';
 
 export interface RemoteLearningItem {
@@ -57,6 +57,10 @@ export interface RemoteContent {
 export async function applyRemoteContent(rows: RemoteContent[]): Promise<boolean> {
   let changed = false;
   for (const row of rows) {
+    if (row.kind === STORES.SESSION_PROGRESS) {
+      if (await applySessionProgress(row)) changed = true;
+      continue;
+    }
     if (!CONTENT_STORES.has(row.kind) || row.payload == null) continue;
     // A blob store holds one object. A string or array here is a corrupted row
     // from the old per-item sync, and writing it back wipes the local progress.
@@ -69,4 +73,26 @@ export async function applyRemoteContent(rows: RemoteContent[]): Promise<boolean
     changed = true;
   }
   return changed;
+}
+
+/**
+ * Session progress is stored as one row per key locally but travels as one
+ * blob. Replace the local rows with the blob's entries when the blob is newer
+ * than the newest local row.
+ */
+async function applySessionProgress(row: RemoteContent): Promise<boolean> {
+  const payload = row.payload;
+  if (!payload || typeof payload !== 'object' || Array.isArray(payload)) return false;
+  const remoteTs = new Date(row.updated_at).getTime();
+  const existing = await dbAll<any>(STORES.SESSION_PROGRESS);
+  const newest = existing.reduce((max, r) => Math.max(max, r?.updated_at ?? 0), 0);
+  if (newest >= remoteTs) return false;
+  const incoming = payload as Record<string, any>;
+  for (const r of existing) {
+    if (!(r.id in incoming)) await dbDelete(STORES.SESSION_PROGRESS, r.id);
+  }
+  for (const [key, value] of Object.entries(incoming)) {
+    await dbPut(STORES.SESSION_PROGRESS, { id: key, payload: value, updated_at: remoteTs });
+  }
+  return true;
 }

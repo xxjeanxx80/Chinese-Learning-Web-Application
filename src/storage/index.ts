@@ -130,8 +130,6 @@ export async function writeKeyed(store: string, key: string, value: any): Promis
   map[key] = value;
   cache.set(store, map);
   await dbPut(store, { id: key, payload: value, updated_at: Date.now() });
-  await enqueue(store, 'put', { id: key, payload: value });
-  triggerFlush();
 }
 
 export async function deleteKeyed(store: string, key: string): Promise<void> {
@@ -191,9 +189,16 @@ export async function enqueueFullSync(): Promise<void> {
     if (!row || row.payload == null) continue;
     await enqueue(store, 'put', { id: 'singleton', payload: row.payload, updated_at: row.updated_at });
   }
+  // Session progress is one row per key locally but one blob on the server.
   const sessions = await dbAll<any>(STORES.SESSION_PROGRESS);
-  for (const row of sessions) {
-    await enqueue(STORES.SESSION_PROGRESS, 'put', { id: row.id, payload: row.payload, updated_at: row.updated_at });
+  if (sessions.length > 0) {
+    const payload: Record<string, any> = {};
+    let newest = 0;
+    for (const row of sessions) {
+      payload[row.id] = row.payload;
+      newest = Math.max(newest, row.updated_at ?? 0);
+    }
+    await enqueue(STORES.SESSION_PROGRESS, 'put', { id: 'singleton', payload, updated_at: newest });
   }
   // Flush now, not on the 5s debounce: the caller pulls immediately after and
   // must not download a stale server copy before this upload lands.

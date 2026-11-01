@@ -82,7 +82,7 @@ begin
       and o->>'kind' in (
         'custom_vocab', 'vocab_overrides', 'custom_sentences', 'statistics',
         'learned_vocab', 'learned_sentences', 'wrong_vocab', 'wrong_sentences',
-        'srs_state'
+        'srs_state', 'session_progress'
       )
     order by o->>'kind',
       coalesce(nullif(o->>'updated_at', '')::timestamptz, now()) desc

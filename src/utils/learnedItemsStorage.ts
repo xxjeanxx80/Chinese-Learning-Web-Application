@@ -270,10 +270,13 @@ export function isItemMastered(passedTests: { pinyin: boolean; writing: boolean;
 }
 
 /**
- * Kiểm tra xem từ vựng đã vượt qua cả 3 bài test chưa
+ * A word counts as learned once any one test has been answered correctly.
+ * Requiring all three tests left the statistics stuck at zero for anyone who
+ * only practises one mode.
  */
-function hasPassedAllTests(passedTests: { pinyin: boolean; writing: boolean; meaning: boolean }): boolean {
-  return isItemMastered(passedTests);
+function hasAnyPass(passedTests: { pinyin: boolean; writing: boolean; meaning: boolean } | undefined): boolean {
+  if (!passedTests) return false;
+  return passedTests.pinyin || passedTests.writing || passedTests.meaning;
 }
 
 /**
@@ -283,8 +286,8 @@ export function getLearnedVocabularyCount(level: string): number {
   const learned = getLearnedVocabularies();
   if (!learned[level]) return 0;
   
-  return Object.values(learned[level]).filter(item => 
-    hasPassedAllTests(item.passedTests)
+  return Object.values(learned[level]).filter(item =>
+    hasAnyPass(item.passedTests)
   ).length;
 }
 
@@ -295,8 +298,8 @@ export function getLearnedSentenceCount(level: string): number {
   const learned = getLearnedSentences();
   if (!learned[level]) return 0;
   
-  return Object.values(learned[level]).filter(item => 
-    hasPassedAllTests(item.passedTests)
+  return Object.values(learned[level]).filter(item =>
+    hasAnyPass(item.passedTests)
   ).length;
 }
 
@@ -307,8 +310,8 @@ export function getAllLearnedVocabularyCounts(): { [level: string]: number } {
   const learned = getLearnedVocabularies();
   const counts: { [level: string]: number } = {};
   Object.keys(learned).forEach(level => {
-    counts[level] = Object.values(learned[level]).filter(item => 
-      hasPassedAllTests(item.passedTests)
+    counts[level] = Object.values(learned[level]).filter(item =>
+      hasAnyPass(item.passedTests)
     ).length;
   });
   return counts;
@@ -321,8 +324,8 @@ export function getAllLearnedSentenceCounts(): { [level: string]: number } {
   const learned = getLearnedSentences();
   const counts: { [level: string]: number } = {};
   Object.keys(learned).forEach(level => {
-    counts[level] = Object.values(learned[level]).filter(item => 
-      hasPassedAllTests(item.passedTests)
+    counts[level] = Object.values(learned[level]).filter(item =>
+      hasAnyPass(item.passedTests)
     ).length;
   });
   return counts;
