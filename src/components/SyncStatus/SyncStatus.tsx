@@ -6,7 +6,7 @@
  */
 
 import { useEffect, useState } from 'react';
-import { sendMagicLink, signOut, onAuthChange, getAuthState } from '../../sync/auth';
+import { sendMagicLink, verifyEmailCode, signOut, onAuthChange, getAuthState } from '../../sync/auth';
 import { onSyncStateChange, getSyncState, flush } from '../../sync/syncEngine';
 import './SyncStatus.css';
 
@@ -14,6 +14,7 @@ export default function SyncStatus() {
   const [authState, setAuthState] = useState(getAuthState());
   const [syncState, setSyncState] = useState(getSyncState());
   const [email, setEmail] = useState('');
+  const [code, setCode] = useState('');
   const [showLogin, setShowLogin] = useState(false);
   const [message, setMessage] = useState('');
 
@@ -24,6 +25,13 @@ export default function SyncStatus() {
     if (!email.trim()) return;
     setMessage('Đang gửi...');
     const res = await sendMagicLink(email.trim());
+    setMessage(res.message);
+  };
+
+  const handleCode = async () => {
+    if (!email.trim() || !code.trim()) return;
+    setMessage('Đang kiểm tra mã...');
+    const res = await verifyEmailCode(email.trim(), code.trim());
     setMessage(res.message);
     if (res.ok) setShowLogin(false);
   };
@@ -73,7 +81,7 @@ export default function SyncStatus() {
         <div className="sync-login-popover">
           <div className="sync-login-title">Đăng nhập để đồng bộ</div>
           <div className="sync-login-hint">
-            Nhập email — Supabase sẽ gửi link đăng nhập. Không cần mật khẩu.
+            Nhập email để nhận mã. Nếu mail đã có trong hộp thư, nhập mã 8 số bên dưới — không cần gửi lại.
           </div>
           <input
             type="email"
@@ -87,10 +95,28 @@ export default function SyncStatus() {
           />
           <div className="sync-login-actions">
             <button className="sync-login-btn" onClick={() => void handleLogin()}>
-              Gửi link đăng nhập
+              Gửi mã đăng nhập
             </button>
             <button className="sync-login-cancel" onClick={() => setShowLogin(false)}>
               Đóng
+            </button>
+          </div>
+          <input
+            type="text"
+            inputMode="numeric"
+            autoComplete="one-time-code"
+            maxLength={8}
+            className="sync-login-input"
+            placeholder="Mã 8 số trong email"
+            value={code}
+            onChange={(e) => setCode(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') void handleCode();
+            }}
+          />
+          <div className="sync-login-actions">
+            <button className="sync-login-btn" onClick={() => void handleCode()}>
+              Đăng nhập bằng mã
             </button>
           </div>
           {message && <div className="sync-login-msg">{message}</div>}
