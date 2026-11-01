@@ -4,49 +4,19 @@
  */
 
 import { readKeyedMap, writeKeyed, STORES } from '../storage';
+import { toStorable, fromStorable } from './sessionCodec';
 
 const SESSION_PREFIX = 'hsk_session_';
 
 /**
- * Serialization helper for Map and Set
- */
-const replacer = (_key: string, value: any) => {
-  if (value instanceof Map) {
-    return {
-      dataType: 'Map',
-      value: Array.from(value.entries()),
-    };
-  }
-  if (value instanceof Set) {
-    return {
-      dataType: 'Set',
-      value: Array.from(value),
-    };
-  }
-  return value;
-};
-
-const reviver = (_key: string, value: any) => {
-  if (typeof value === 'object' && value !== null) {
-    if (value.dataType === 'Map') {
-      return new Map(value.value);
-    }
-    if (value.dataType === 'Set') {
-      return new Set(value.value);
-    }
-  }
-  return value;
-};
-
-/**
- * Save progress for a specific mode and level
+ * Save progress for a specific mode and level.
+ * The value is stored in its plain tagged form: a live Map or Set would be
+ * saved as an empty object by IndexedDB and come back unusable.
  */
 export function saveSessionProgress(mode: string, level: string, subKey: string, data: any): void {
   try {
     const key = `${SESSION_PREFIX}${mode}_${level}_${subKey}`;
-    const serialized = JSON.stringify(data, replacer);
-    const parsed = JSON.parse(serialized, reviver);
-    void writeKeyed(STORES.SESSION_PROGRESS, key, parsed);
+    void writeKeyed(STORES.SESSION_PROGRESS, key, toStorable(data));
     // The server stores the whole map as one blob, so upload every key, not
     // just the one that changed. Otherwise the next pull wipes the rest.
     void enqueueSessionSync();
@@ -63,7 +33,7 @@ async function enqueueSessionSync(): Promise<void> {
 }
 
 /**
- * Load progress for a specific mode and level
+ * Load progress for a specific mode and level.
  */
 export function loadSessionProgress<T>(mode: string, level: string, subKey: string, defaultValue: T): T {
   try {
@@ -71,26 +41,10 @@ export function loadSessionProgress<T>(mode: string, level: string, subKey: stri
     const map = readKeyedMap(STORES.SESSION_PROGRESS);
     const stored = map[key];
     if (stored !== undefined && stored !== null) {
-      return revive(stored) as T;
+      return fromStorable(stored, defaultValue);
     }
   } catch (error) {
     console.error(`Error loading session progress for ${mode}_${level}_${subKey}:`, error);
   }
   return defaultValue;
-}
-
-/**
- * IndexedDB stores plain objects, so a Map or Set comes back as
- * {dataType, value}. Rebuild the real collection. Also accept a bare
- * entries array, which is what older saves persisted.
- */
-function revive(stored: any): any {
-  if (stored && typeof stored === 'object' && !Array.isArray(stored)) {
-    if (stored.dataType === 'Map' && Array.isArray(stored.value)) return new Map(stored.value);
-    if (stored.dataType === 'Set' && Array.isArray(stored.value)) return new Set(stored.value);
-  }
-  if (Array.isArray(stored) && stored.every((e) => Array.isArray(e) && e.length === 2)) {
-    return new Map(stored);
-  }
-  return stored;
 }
