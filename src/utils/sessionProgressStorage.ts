@@ -3,6 +3,8 @@
  * This ensures progress is not lost on page reload.
  */
 
+import { readKeyedMap, writeKeyed, STORES } from '../storage';
+
 const SESSION_PREFIX = 'hsk_session_';
 
 /**
@@ -43,7 +45,8 @@ export function saveSessionProgress(mode: string, level: string, subKey: string,
   try {
     const key = `${SESSION_PREFIX}${mode}_${level}_${subKey}`;
     const serialized = JSON.stringify(data, replacer);
-    localStorage.setItem(key, serialized);
+    const parsed = JSON.parse(serialized, reviver);
+    void writeKeyed(STORES.SESSION_PROGRESS, key, parsed);
   } catch (error) {
     console.error(`Error saving session progress for ${mode}_${level}_${subKey}:`, error);
   }
@@ -55,9 +58,10 @@ export function saveSessionProgress(mode: string, level: string, subKey: string,
 export function loadSessionProgress<T>(mode: string, level: string, subKey: string, defaultValue: T): T {
   try {
     const key = `${SESSION_PREFIX}${mode}_${level}_${subKey}`;
-    const stored = localStorage.getItem(key);
+    const map = readKeyedMap(STORES.SESSION_PROGRESS);
+    const stored = map[key];
     if (stored) {
-      return JSON.parse(stored, reviver) as T;
+      return stored as T;
     }
   } catch (error) {
     console.error(`Error loading session progress for ${mode}_${level}_${subKey}:`, error);

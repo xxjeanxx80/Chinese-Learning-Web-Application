@@ -4,9 +4,10 @@
 
 import { Vocabulary } from '../data/vocabulary';
 import { Sentence } from '../data/sentences';
+import { readSingleton, writeSingleton, STORES } from '../storage';
+import { reviewSrsItem, ensureSrsItem } from '../srs/srsEngine';
 
-const LEARNED_VOCAB_KEY = 'hsk_learned_vocabularies';
-const LEARNED_SENTENCES_KEY = 'hsk_learned_sentences';
+const EMPTY_LEARNED = {};
 
 export type PracticeType = 'pinyin' | 'writing' | 'meaning';
 
@@ -49,80 +50,48 @@ export interface LearnedSentences {
  * Lấy từ vựng đã học từ localStorage
  */
 export function getLearnedVocabularies(): LearnedVocabularies {
-  try {
-    const stored = localStorage.getItem(LEARNED_VOCAB_KEY);
-    if (stored) {
-      const learned = JSON.parse(stored);
-      // Migrate old data: thêm passedTests nếu chưa có
-      Object.keys(learned).forEach(level => {
-        Object.keys(learned[level] || {}).forEach(chinese => {
-          const item = learned[level][chinese];
-          if (!item.passedTests) {
-            item.passedTests = {
-              pinyin: false,
-              writing: false,
-              meaning: false,
-            };
-          }
-        });
-      });
-      return learned;
-    }
-  } catch (error) {
-    console.error('Error loading learned vocabularies:', error);
-  }
-  return {};
+  const learned = readSingleton<LearnedVocabularies>(STORES.LEARNED_VOCAB, EMPTY_LEARNED);
+  // Migrate old data: thêm passedTests nếu chưa có
+  Object.keys(learned).forEach((level) => {
+    Object.keys(learned[level] || {}).forEach((chinese) => {
+      const item = learned[level][chinese];
+      if (!item.passedTests) {
+        item.passedTests = { pinyin: false, writing: false, meaning: false };
+      }
+    });
+  });
+  return learned;
 }
 
 /**
  * Lấy câu đã học từ localStorage
  */
 export function getLearnedSentences(): LearnedSentences {
-  try {
-    const stored = localStorage.getItem(LEARNED_SENTENCES_KEY);
-    if (stored) {
-      const learned = JSON.parse(stored);
-      // Migrate old data: thêm passedTests nếu chưa có
-      Object.keys(learned).forEach(level => {
-        Object.keys(learned[level] || {}).forEach(chinese => {
-          const item = learned[level][chinese];
-          if (!item.passedTests) {
-            item.passedTests = {
-              pinyin: false,
-              writing: false,
-              meaning: false,
-            };
-          }
-        });
-      });
-      return learned;
-    }
-  } catch (error) {
-    console.error('Error loading learned sentences:', error);
-  }
-  return {};
+  const learned = readSingleton<LearnedSentences>(STORES.LEARNED_SENTENCES, EMPTY_LEARNED);
+  // Migrate old data: thêm passedTests nếu chưa có
+  Object.keys(learned).forEach((level) => {
+    Object.keys(learned[level] || {}).forEach((chinese) => {
+      const item = learned[level][chinese];
+      if (!item.passedTests) {
+        item.passedTests = { pinyin: false, writing: false, meaning: false };
+      }
+    });
+  });
+  return learned;
 }
 
 /**
  * Lưu từ vựng đã học vào localStorage
  */
 export function saveLearnedVocabularies(learned: LearnedVocabularies): void {
-  try {
-    localStorage.setItem(LEARNED_VOCAB_KEY, JSON.stringify(learned));
-  } catch (error) {
-    console.error('Error saving learned vocabularies:', error);
-  }
+  void writeSingleton(STORES.LEARNED_VOCAB, learned);
 }
 
 /**
  * Lưu câu đã học vào localStorage
  */
 export function saveLearnedSentences(learned: LearnedSentences): void {
-  try {
-    localStorage.setItem(LEARNED_SENTENCES_KEY, JSON.stringify(learned));
-  } catch (error) {
-    console.error('Error saving learned sentences:', error);
-  }
+  void writeSingleton(STORES.LEARNED_SENTENCES, learned);
 }
 
 /**
@@ -182,10 +151,14 @@ export function markVocabularyLearned(
   }
 
   saveLearnedVocabularies(learned);
-  
+
+  // Schedule the item for spaced repetition.
+  ensureSrsItem('vocab', chinese);
+  reviewSrsItem('vocab', chinese, isCorrect);
+
   // Dispatch event for UI synchronization
-  window.dispatchEvent(new CustomEvent('learnedItemsUpdated', { 
-    detail: { type: 'vocabulary', level, chinese, practiceType, isCorrect } 
+  window.dispatchEvent(new CustomEvent('learnedItemsUpdated', {
+    detail: { type: 'vocabulary', level, chinese, practiceType, isCorrect }
   }));
 }
 
@@ -249,9 +222,13 @@ export function markSentenceLearned(
 
   saveLearnedSentences(learned);
 
+  // Schedule the item for spaced repetition.
+  ensureSrsItem('sentence', chinese);
+  reviewSrsItem('sentence', chinese, isCorrect);
+
   // Dispatch event for UI synchronization
-  window.dispatchEvent(new CustomEvent('learnedItemsUpdated', { 
-    detail: { type: 'sentence', level, topic, chinese, practiceType, isCorrect } 
+  window.dispatchEvent(new CustomEvent('learnedItemsUpdated', {
+    detail: { type: 'sentence', level, topic, chinese, practiceType, isCorrect }
   }));
 }
 
@@ -341,11 +318,7 @@ export function getTotalLearnedSentenceCount(): number {
  * Xóa tất cả dữ liệu đã học
  */
 export function clearLearnedItems(): void {
-  try {
-    localStorage.removeItem(LEARNED_VOCAB_KEY);
-    localStorage.removeItem(LEARNED_SENTENCES_KEY);
-  } catch (error) {
-    console.error('Error clearing learned items:', error);
-  }
+  saveLearnedVocabularies({});
+  saveLearnedSentences({});
 }
 

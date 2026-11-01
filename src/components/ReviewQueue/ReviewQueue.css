@@ -1,0 +1,232 @@
+.review-queue {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+  padding: 20px;
+  min-height: 60vh;
+}
+
+.review-start-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 40px 32px;
+  max-width: 460px;
+  width: 100%;
+  border-radius: 18px;
+  background: var(--card, #fff);
+  border: 1px solid var(--border, rgba(0, 0, 0, 0.08));
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+  text-align: center;
+}
+
+.review-start-icon {
+  font-size: 3rem;
+  line-height: 1;
+}
+
+.review-start-card h2 {
+  margin: 0;
+  font-size: 1.35rem;
+  color: var(--foreground, #222);
+}
+
+.review-due-count {
+  margin: 0;
+  font-size: 0.95rem;
+  color: var(--foreground, #222);
+}
+
+.review-due-count strong {
+  color: var(--accent, #ff3b30);
+  font-size: 1.1rem;
+}
+
+.review-hint {
+  margin: 0;
+  font-size: 0.85rem;
+  line-height: 1.5;
+  color: var(--muted-foreground, #666);
+}
+
+.review-start-btn {
+  margin-top: 8px;
+  padding: 11px 24px;
+  border: none;
+  border-radius: 11px;
+  background: var(--accent, #ff3b30);
+  color: #fff;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: filter 0.15s ease, transform 0.1s ease;
+}
+
+.review-start-btn:hover:not(:disabled) {
+  filter: brightness(1.08);
+  transform: translateY(-1px);
+}
+
+.review-start-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.review-secondary-btn {
+  margin-top: 8px;
+  padding: 11px 20px;
+  border-radius: 11px;
+  border: 1px solid var(--border, rgba(0, 0, 0, 0.15));
+  background: transparent;
+  color: var(--muted-foreground, #666);
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.review-secondary-btn:hover {
+  background: rgba(128, 128, 128, 0.08);
+}
+
+/* ---------- Active card ---------- */
+.review-progress {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  max-width: 520px;
+  font-size: 0.82rem;
+  color: var(--muted-foreground, #666);
+}
+
+.review-progress-accuracy {
+  font-weight: 600;
+}
+
+.review-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  max-width: 520px;
+  padding: 34px 28px 28px;
+  border-radius: 18px;
+  background: var(--card, #fff);
+  border: 1px solid var(--border, rgba(0, 0, 0, 0.08));
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+}
+
+.review-speak {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: 1.3rem;
+  padding: 4px;
+}
+
+.review-chinese {
+  font-size: 3.2rem;
+  font-weight: 600;
+  line-height: 1.2;
+  color: var(--foreground, #222);
+  text-align: center;
+  word-break: break-word;
+}
+
+.review-question {
+  font-size: 0.9rem;
+  color: var(--muted-foreground, #666);
+}
+
+.review-reveal-btn {
+  padding: 10px 22px;
+  border-radius: 10px;
+  border: 1px solid var(--border, rgba(0, 0, 0, 0.15));
+  background: transparent;
+  color: var(--foreground, #222);
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.review-reveal-btn:hover {
+  background: rgba(128, 128, 128, 0.08);
+}
+
+.review-answer {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: center;
+  animation: reviewFadeIn 0.2s ease;
+}
+
+@keyframes reviewFadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: none; }
+}
+
+.review-answer-pinyin {
+  font-size: 1.05rem;
+  color: var(--accent, #ff3b30);
+  font-style: italic;
+}
+
+.review-answer-hanviet {
+  font-size: 0.95rem;
+  letter-spacing: 0.04em;
+  color: var(--muted-foreground, #888);
+}
+
+.review-answer-vi {
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: var(--foreground, #222);
+  text-align: center;
+}
+
+.review-actions {
+  display: flex;
+  gap: 12px;
+  width: 100%;
+  margin-top: 6px;
+}
+
+.review-btn {
+  flex: 1;
+  padding: 12px 0;
+  border-radius: 11px;
+  border: none;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: filter 0.15s ease;
+}
+
+.review-btn:hover {
+  filter: brightness(1.06);
+}
+
+.review-btn-wrong {
+  background: rgba(255, 59, 48, 0.14);
+  color: #ff3b30;
+}
+
+.review-btn-correct {
+  background: rgba(52, 199, 89, 0.16);
+  color: #1f9d4e;
+}
+
+@media (max-width: 640px) {
+  .review-chinese {
+    font-size: 2.6rem;
+  }
+  .review-start-card {
+    padding: 30px 20px;
+  }
+}

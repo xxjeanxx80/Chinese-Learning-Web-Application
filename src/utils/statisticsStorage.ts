@@ -2,7 +2,8 @@
  * Utility để lưu và quản lý thống kê học tập
  */
 
-const STORAGE_KEY = 'hsk_statistics';
+import { readSingleton, writeSingleton, STORES } from '../storage';
+import { recordStudyEvent } from '../srs/eventQueue';
 
 export interface StudySession {
   date: string; // YYYY-MM-DD
@@ -28,48 +29,38 @@ export interface Statistics {
   lastStudyDate: string | null;
   totalWordsLearned: number;
   totalSentencesLearned: number;
-  totalTimeSpent: number; // seconds
+  totalTimeSpent: number;
   accuracyByLevel: { [level: string]: { correct: number; total: number } };
-  wordsByLevel: { [level: string]: number }; // Số từ đã học theo level
-  sentencesByLevel: { [level: string]: number }; // Số câu đã học theo level
+  wordsByLevel: { [level: string]: number };
+  sentencesByLevel: { [level: string]: number };
 }
 
 /**
  * Lấy thống kê từ localStorage
  */
 export function getStatistics(): Statistics {
-  try {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    if (stored) {
-      return JSON.parse(stored);
-    }
-  } catch (error) {
-    console.error('Error loading statistics:', error);
-  }
-  return {
-    dailyStats: [],
-    currentStreak: 0,
-    longestStreak: 0,
-    lastStudyDate: null,
-    totalWordsLearned: 0,
-    totalSentencesLearned: 0,
-    totalTimeSpent: 0,
-    accuracyByLevel: {},
-    wordsByLevel: {},
-    sentencesByLevel: {},
-  };
+  return readSingleton<Statistics>(STORES.STATISTICS, EMPTY_STATS);
 }
 
 /**
  * Lưu thống kê vào localStorage
  */
 export function saveStatistics(stats: Statistics): void {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(stats));
-  } catch (error) {
-    console.error('Error saving statistics:', error);
-  }
+  void writeSingleton(STORES.STATISTICS, stats);
 }
+
+const EMPTY_STATS: Statistics = {
+  dailyStats: [],
+  currentStreak: 0,
+  longestStreak: 0,
+  lastStudyDate: null,
+  totalWordsLearned: 0,
+  totalSentencesLearned: 0,
+  totalTimeSpent: 0,
+  accuracyByLevel: {},
+  wordsByLevel: {},
+  sentencesByLevel: {},
+};
 
 /**
  * Thêm một session học tập
@@ -140,10 +131,19 @@ export function addStudySession(
   
   // Cập nhật tổng thời gian
   stats.totalTimeSpent += duration;
-  
+
   // Cập nhật tổng từ đã học - sẽ được cập nhật trong StatisticsDashboard component
   // để tránh circular dependency
   saveStatistics(stats);
+
+  // Queue a server-side event so the streak survives a device change.
+  recordStudyEvent({
+    kind: 'session_end',
+    level,
+    correct: total > 0 ? correct / total >= 0.5 : undefined,
+    durationMs: duration * 1000,
+    meta: { correct, total, function: functionType },
+  });
 }
 
 /**

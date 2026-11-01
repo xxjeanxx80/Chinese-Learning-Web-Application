@@ -1,6 +1,9 @@
 import { Sentence, getSentencesByLevel } from '../data/sentences';
+import { readSingleton, writeSingleton, STORES } from '../storage';
 
-const STORAGE_KEY = 'hsk_custom_sentences';
+const EMPTY_SENTENCES: CustomSentences = {
+  hsk1: {}, hsk2: {}, hsk3: {}, hsk4: {}, hsk5: {}, tuluyen: {},
+};
 
 // Cấu trúc: level -> topic -> sentences[]
 export interface CustomSentences {
@@ -13,33 +16,14 @@ export interface CustomSentences {
  * Lấy câu custom từ localStorage
  */
 export function getCustomSentences(): CustomSentences {
-  try {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    if (stored) {
-      return JSON.parse(stored);
-    }
-  } catch (error) {
-    console.error('Error loading custom sentences:', error);
-  }
-  return {
-    hsk1: {},
-    hsk2: {},
-    hsk3: {},
-    hsk4: {},
-    hsk5: {},
-    tuluyen: {}
-  };
+  return readSingleton<CustomSentences>(STORES.CUSTOM_SENTENCES, EMPTY_SENTENCES);
 }
 
 /**
- * Lưu câu custom vào localStorage
+ * Lưu câu custom
  */
 export function saveCustomSentences(sentences: CustomSentences): void {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(sentences));
-  } catch (error) {
-    console.error('Error saving custom sentences:', error);
-  }
+  void writeSingleton(STORES.CUSTOM_SENTENCES, sentences);
 }
 
 /**
@@ -154,7 +138,7 @@ export function getTopicsForLevel(level: string): string[] {
  * Xóa tất cả câu custom
  */
 export function clearAllCustomSentences(): void {
-  localStorage.removeItem(STORAGE_KEY);
+  saveCustomSentences(EMPTY_SENTENCES);
 }
 
 /**

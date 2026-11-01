@@ -1,44 +1,27 @@
 import { Vocabulary } from '../data/vocabulary';
 import { hskVocabulary } from '../data/vocabulary';
+import { readSingleton, writeSingleton, STORES } from '../storage';
 
-const STORAGE_KEY = 'hsk_custom_vocabularies';
-const OVERRIDE_KEY = 'hsk_vocabulary_overrides';
+const EMPTY_CUSTOM: CustomVocabularies = {
+  hsk1: [], hsk2: [], hsk3: [], hsk4: [], hsk5: [], tuluyen: [],
+};
 
 export interface CustomVocabularies {
   [level: string]: Vocabulary[];
 }
 
 /**
- * Lấy từ vựng custom từ localStorage
+ * Lấy từ vựng custom
  */
 export function getCustomVocabularies(): CustomVocabularies {
-  try {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    if (stored) {
-      return JSON.parse(stored);
-    }
-  } catch (error) {
-    console.error('Error loading custom vocabularies:', error);
-  }
-  return {
-    hsk1: [],
-    hsk2: [],
-    hsk3: [],
-    hsk4: [],
-    hsk5: [],
-    tuluyen: []
-  };
+  return readSingleton<CustomVocabularies>(STORES.CUSTOM_VOCAB, EMPTY_CUSTOM);
 }
 
 /**
- * Lưu từ vựng custom vào localStorage
+ * Lưu từ vựng custom
  */
 export function saveCustomVocabularies(vocabularies: CustomVocabularies): void {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(vocabularies));
-  } catch (error) {
-    console.error('Error saving custom vocabularies:', error);
-  }
+  void writeSingleton(STORES.CUSTOM_VOCAB, vocabularies);
 }
 
 /**
@@ -85,36 +68,17 @@ export function updateVocabulary(level: string, index: number, vocabulary: Vocab
 }
 
 /**
- * Lấy từ vựng override từ localStorage
+ * Lấy từ vựng override
  */
 export function getVocabularyOverrides(): CustomVocabularies {
-  try {
-    const stored = localStorage.getItem(OVERRIDE_KEY);
-    if (stored) {
-      return JSON.parse(stored);
-    }
-  } catch (error) {
-    console.error('Error loading vocabulary overrides:', error);
-  }
-  return {
-    hsk1: [],
-    hsk2: [],
-    hsk3: [],
-    hsk4: [],
-    hsk5: [],
-    tuluyen: []
-  };
+  return readSingleton<CustomVocabularies>(STORES.VOCAB_OVERRIDES, EMPTY_CUSTOM);
 }
 
 /**
- * Lưu từ vựng override vào localStorage
+ * Lưu từ vựng override
  */
 export function saveVocabularyOverrides(overrides: CustomVocabularies): void {
-  try {
-    localStorage.setItem(OVERRIDE_KEY, JSON.stringify(overrides));
-  } catch (error) {
-    console.error('Error saving vocabulary overrides:', error);
-  }
+  void writeSingleton(STORES.VOCAB_OVERRIDES, overrides);
 }
 
 /**
@@ -153,15 +117,15 @@ export function getVocabulariesForLevel(level: string): Vocabulary[] {
  * Xóa tất cả từ vựng custom
  */
 export function clearAllCustomVocabularies(): void {
-  localStorage.removeItem(STORAGE_KEY);
+  saveCustomVocabularies(EMPTY_CUSTOM);
 }
 
 /**
  * Xóa tất cả từ vựng (custom + overrides)
  */
 export function clearAllVocabularies(): void {
-  localStorage.removeItem(STORAGE_KEY);
-  localStorage.removeItem(OVERRIDE_KEY);
+  saveCustomVocabularies(EMPTY_CUSTOM);
+  saveVocabularyOverrides(EMPTY_CUSTOM);
 }
 
 /**

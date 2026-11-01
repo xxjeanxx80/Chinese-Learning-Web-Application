@@ -4,7 +4,9 @@
 
 import { Vocabulary } from '../data/vocabulary';
 
-const STORAGE_KEY = 'hsk_wrong_answers';
+import { readSingleton, writeSingleton, STORES } from '../storage';
+
+const EMPTY_WRONG = {};
 
 export interface WrongAnswer {
   vocabulary: Vocabulary;
@@ -23,15 +25,7 @@ interface WrongAnswersByLevel {
  * Lấy tất cả từ sai từ localStorage
  */
 export function getWrongAnswers(): WrongAnswersByLevel {
-  try {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    if (stored) {
-      return JSON.parse(stored);
-    }
-  } catch (error) {
-    console.error('Error loading wrong answers:', error);
-  }
-  return {};
+  return readSingleton<WrongAnswersByLevel>(STORES.WRONG_VOCAB, EMPTY_WRONG);
 }
 
 /**
@@ -73,11 +67,7 @@ export function addWrongAnswer(level: string, vocabulary: Vocabulary): void {
     });
   }
 
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(allWrong));
-  } catch (error) {
-    console.error('Error saving wrong answers:', error);
-  }
+  void writeSingleton(STORES.WRONG_VOCAB, allWrong);
 }
 
 /**
@@ -103,13 +93,8 @@ export function markCorrect(level: string, vocabulary: Vocabulary): boolean {
       allWrong[level].splice(existingIndex, 1);
     }
 
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(allWrong));
-      return true;
-    } catch (error) {
-      console.error('Error saving wrong answers:', error);
-      return false;
-    }
+    void writeSingleton(STORES.WRONG_VOCAB, allWrong);
+    return true;
   }
 
   return false;
@@ -128,32 +113,18 @@ export function removeWrongAnswer(level: string, vocabulary: Vocabulary): void {
     wa => wa.vocabulary.chinese !== vocabulary.chinese
   );
 
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(allWrong));
-  } catch (error) {
-    console.error('Error saving wrong answers:', error);
-  }
+  void writeSingleton(STORES.WRONG_VOCAB, allWrong);
 }
 
 /**
  * Xóa tất cả từ sai
  */
 export function clearAllWrongAnswers(level?: string): void {
+  const allWrong = getWrongAnswers();
   if (level) {
-    const allWrong = getWrongAnswers();
     delete allWrong[level];
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(allWrong));
-    } catch (error) {
-      console.error('Error saving wrong answers:', error);
-    }
-  } else {
-    try {
-      localStorage.removeItem(STORAGE_KEY);
-    } catch (error) {
-      console.error('Error clearing wrong answers:', error);
-    }
   }
+  void writeSingleton(STORES.WRONG_VOCAB, allWrong);
 }
 
 /**

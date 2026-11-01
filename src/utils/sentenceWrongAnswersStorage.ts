@@ -3,8 +3,9 @@
  */
 
 import { Sentence } from '../data/sentences';
+import { readSingleton, writeSingleton, STORES } from '../storage';
 
-const STORAGE_KEY = 'hsk_sentence_wrong_answers';
+const EMPTY_WRONG_SENTENCES = {};
 
 export interface WrongSentence {
   sentence: Sentence;
@@ -26,15 +27,7 @@ interface WrongSentencesByLevel {
  * Lấy tất cả câu sai từ localStorage
  */
 export function getWrongSentences(): WrongSentencesByLevel {
-  try {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    if (stored) {
-      return JSON.parse(stored);
-    }
-  } catch (error) {
-    console.error('Error loading wrong sentences:', error);
-  }
-  return {};
+  return readSingleton<WrongSentencesByLevel>(STORES.WRONG_SENTENCES, EMPTY_WRONG_SENTENCES);
 }
 
 /**
@@ -80,11 +73,7 @@ export function addWrongSentence(level: string, topic: string, sentence: Sentenc
     });
   }
 
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(allWrong));
-  } catch (error) {
-    console.error('Error saving wrong sentences:', error);
-  }
+  void writeSingleton(STORES.WRONG_SENTENCES, allWrong);
 }
 
 /**
@@ -110,13 +99,8 @@ export function markSentenceCorrect(level: string, topic: string, sentence: Sent
       allWrong[level][topic].splice(existingIndex, 1);
     }
 
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(allWrong));
-      return true;
-    } catch (error) {
-      console.error('Error saving wrong sentences:', error);
-      return false;
-    }
+    void writeSingleton(STORES.WRONG_SENTENCES, allWrong);
+    return true;
   }
 
   return false;
@@ -135,42 +119,22 @@ export function removeWrongSentence(level: string, topic: string, sentence: Sent
     ws => ws.sentence.chinese !== sentence.chinese
   );
 
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(allWrong));
-  } catch (error) {
-    console.error('Error saving wrong sentences:', error);
-  }
+  void writeSingleton(STORES.WRONG_SENTENCES, allWrong);
 }
 
 /**
  * Xóa tất cả câu sai
  */
 export function clearAllWrongSentences(level?: string, topic?: string): void {
+  const allWrong = getWrongSentences();
   if (level && topic) {
-    const allWrong = getWrongSentences();
     if (allWrong[level]?.[topic]) {
       delete allWrong[level][topic];
-      try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(allWrong));
-      } catch (error) {
-        console.error('Error saving wrong sentences:', error);
-      }
     }
   } else if (level) {
-    const allWrong = getWrongSentences();
     delete allWrong[level];
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(allWrong));
-    } catch (error) {
-      console.error('Error saving wrong sentences:', error);
-    }
-  } else {
-    try {
-      localStorage.removeItem(STORAGE_KEY);
-    } catch (error) {
-      console.error('Error clearing wrong sentences:', error);
-    }
   }
+  void writeSingleton(STORES.WRONG_SENTENCES, allWrong);
 }
 
 /**

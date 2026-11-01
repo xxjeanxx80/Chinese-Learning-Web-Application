@@ -1,7 +1,7 @@
-export type FunctionType = 
-  | 'vocabulary' | 'writing' | 'meaning' | 'random' | 'manage' 
-  | 'sentence-pinyin' | 'sentence-writing' | 'sentence-meaning' | 'sentence-random' | 'sentence-manage' 
-  | 'translate' | 'statistics';
+export type FunctionType =
+  | 'vocabulary' | 'writing' | 'meaning' | 'random' | 'manage'
+  | 'sentence-pinyin' | 'sentence-writing' | 'sentence-meaning' | 'sentence-random' | 'sentence-manage'
+  | 'translate' | 'statistics' | 'review';
 
 export type MenuGroup = 'vocab' | 'sentence' | null;
 
@@ -34,6 +34,7 @@ const ICON = {
   chatBubble: 'M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z',
   globe: 'M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zM2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z',
   barChart: 'M18 20V10M12 20V4M6 20v-6',
+  calendar: 'M8 2v4M16 2v4M3 10h18M5 4h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z',
 };
 
 export const vocabMenuGroup: MenuGroupDef = {
@@ -63,6 +64,7 @@ export const sentenceMenuGroup: MenuGroupDef = {
 };
 
 export const standaloneItems: StandaloneMenuItem[] = [
+  { id: 'review', label: 'Ôn hôm nay', iconPath: ICON.calendar },
   { id: 'translate', label: 'Dịch thuật', iconPath: ICON.globe },
   { id: 'statistics', label: 'Thống kê', iconPath: ICON.barChart },
 ];
